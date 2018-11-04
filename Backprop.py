@@ -1,0 +1,242 @@
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import sys
+import HelperClasses as hc
+import HelperFunctions as hf
+
+class Layer():
+    def __init__(self, inDim, layerDim, outDim, forwardNonLin = 'relu', backwardNonLin = 'linear', learningRate = 0.01):
+        self.layerDim = layerDim
+        self.inDim = inDim
+        self.outDim = outDim
+        self.forwardNonLin = forwardNonLin
+        self.backwardNonLin = backwardNonLin
+        self.initParameters()
+        self.learningRate = learningRate
+
+
+
+    def initParameters(self):
+        self.forwardWeights = torch.rand(self.layerDim, self.inDim)
+        self.forwardBias = torch.zeros(self.layerDim,1)
+        self.forwardWeightsGrad = torch.zeros(self.layerDim, self.inDim)
+        self.forwardBiasGrad = torch.zeros(self.layerDim,1)
+        self.backwardWeights = torch.rand(self.layerDim, self.outDim)
+        self.backwardBias = torch.zeros(self.layerDim,1)
+        self.backwardWeightsGrad = torch.zeros(self.layerDim,self.outDim)
+        self.backwardBiasGrad = torch.zeros(self.layerDim,1)
+
+    def setForwardParameters(self, forwardWeights, forwardBias):
+        self.forwardWeights = forwardWeights
+        self.forwardBias = forwardBias
+
+    def setBackwardParametres(self, backwardWeights, backwardBias):
+        self.backwardWeights = backwardWeights
+        self.backwardBias = backwardBias
+
+    def zeroGrad(self):
+        self.forwardWeightsGrad = torch.zeros(self.layerDim, self.inDim)
+        self.forwardBiasGrad = torch.zeros(self.layerDim,1)
+
+    def propagateForward(self,lowerLayer):
+        """
+        :param lowerLayer: The first layer upstream of the layer 'self'
+        :type lowerLayer: Layer
+        :return saves the computed output of the layer to self.forwardOutput.
+                forwardOutput is a 3D tensor of size batchDimension x layerDimension x 1
+        """
+        self.forwardInput = lowerLayer.forwardOutput
+        self.linearActivation = torch.matmul(self.forwardWeights,self.forwardInput) + self.forwardBias
+        if self.forwardNonLin == 'relu':
+            self.forwardOutput = F.relu(self.linearActivation)
+        elif self.forwardNonLin == 'linear':
+            self.forwardOutput = self.linearActivation
+        elif self.forwardNonLin == 'softmax':
+            softmax = torch.nn.Softmax(1)
+            self.forwardOutput = softmax(self.linearActivation)
+        else:
+            print("Error cause: ", str(self.forwardNonLin), ' is not defined as an output nonlinearity')
+            sys.exit("Forward error: BPNet class is expecting different output nonlinearity")
+
+    def propagateBackward(self,upperLayer):
+        """
+        :param upperLayer: the layer one step downstream of the layer 'self'
+        :type upperLayer: Layer
+        :return: saves the backwards output in self. backwardOutput is of size batchDimension x layerdimension  x 1
+        TODO: fix all nonlinearities in same format as softmax
+        """
+        self.backwardInput = upperLayer.backwardOutput
+        if upperLayer.forwardNonLin == 'relu':
+            activationDer = torch.tensor([[[1.] if upperLayer.linearActivation[i,j,1]>0 else [0.] for j in
+                                           range(upperLayer.linearActivation.size(1))] for i in
+                                          range(upperLayer.linearActivation.size(0))])
+        elif upperLayer.forwardNonLin == 'linear':
+            activationDer = torch.ones(upperLayer.linearActivation.size())
+
+        elif upperLayer.forwardNonLin == 'softmax':
+            softmaxActivations = upperLayer.forwardOutput
+            activationDer = torch.tensor([[[softmaxActivations[i,j,1]*(hf.kronecker(j,k)- softmaxActivations[i,k,1])
+                                            for k in range(softmaxActivations.size(1))]
+                                           for j in range(softmaxActivations.size(1))]
+                                          for i in range(softmaxActivations.size(0))])
+            self.backwardOutput = torch.matmul(torch.transpose(upperLayer.forwardWeights,1,2),
+                                                            torch.matmul(torch.transpose(activationDer,1,2)
+                                                            ,self.backwardInput))
+            return
+        else:
+            print("Error cause: ", str(self.forwardNonLin), ' is not defined as a forward nonlinearity')
+            sys.exit("Backward error: BPNet class is expecting different output nonlinearity")
+
+        # construct 3D tensor with on first dimension the different batch samples, and on the second and third dimension
+        # the adjusted weight matrix (element wise multiplication of entire column with the derivative evaluated in the
+        # linear activation
+        weights_tilde = torch.empty(self.linearActivation.size(0),self.forwardWeights.size(1),self.forwardWeights.size(0))
+        for i in range(weights_tilde.size(0)):
+            weights_tilde[i,:,:] = torch.mul(self.forwardWeights,activationDer[i,:,:]).t()
+        self.backwardOutput = torch.matmul(weights_tilde,self.backwardInput)
+
+
+    def updateForwardParameters(self,lowerLayer):
+        self.forwardWeights = self.forwardWeights - torch.mul(self.forwardWeightsGrad,self.learningRate)
+        self.forwardBias = self.forwardBias - torch.mul(self.forwardBiasGrad, self.learningRate)
+
+    def computeGradients(self, lowerLayer):
+        """
+        :param lowerLayer: first layer upstream of the layer self
+        :type lowerLayer: Layer
+        :return: saves the gradients of the cost function to the layer parameters for all the batch samples
+        TODO: check gradient update for softmax, not sure if it's completely correct
+        """
+        if self.forwardNonLin == 'relu':
+            activationDer = torch.tensor([[[1.] if self.linearActivation[i,j,1]>0 else [0.] for j in
+                                           range(self.linearActivation.size(1))] for i in
+                                          range(self.linearActivation.size(0))])
+        elif self.forwardNonLin == 'linear':
+            activationDer = torch.ones(self.linearActivation.size())
+        elif self.forwardNonLin == 'softmax':
+            softmaxActivations = self.forwardOutput
+            activationDer = torch.tensor([[[softmaxActivations[i,j,1]*(hf.kronecker(j,k)- softmaxActivations[i,k,1])
+                                            for k in range(softmaxActivations.size(1))]
+                                           for j in range(softmaxActivations.size(1))]
+                                          for i in range(softmaxActivations.size(0))])
+            weight_gradients = torch.matmul(torch.matmul(torch.transpose(activationDer,1,2) ,self.backwardInput),
+                                               torch.transpose(lowerLayer.forwardOutput,1,2))
+            bias_gradients = torch.matmul(torch.transpose(activationDer,1,2) ,self.backwardInput)
+            batchsize = float(weight_gradients.size(0))
+            self.forwardWeightsGrad = torch.mul(torch.sum(weight_gradients, 0), 1. / batchsize)
+            self.forwardBiasGrad = torch.mul(torch.sum(bias_gradients, 0), 1. / batchsize)
+            return
+        else:
+            print("Error cause: ", str(self.forwardNonLin), ' is not defined as a forward nonlinearity')
+            sys.exit("Backward error: BPNet class is expecting different output nonlinearity")
+
+        weight_gradients = torch.mul(torch.matmul(self.backwardOutput, torch.transpose(lowerLayer.forwardOutput,1,2)),
+                              activationDer)
+        bias_gradients = torch.mul(torch.backwardOutput,activationDer)
+        batchsize = float(weight_gradients.size(0))
+        self.forwardWeightsGrad = torch.mul(torch.sum(weight_gradients,0),1./batchsize)
+        self.forwardBiasGrad = torch.mul(torch.sum(bias_gradients,0),1./batchsize)
+
+
+class Network():
+    def __init__(self, architecture, loss = 'crossEntropy',forwardNonLin = 'relu', backwardNonLin = 'linear',
+                 outputNonLin = 'softmax', learningRate = 0.01):
+        """
+        :param architecture: list containing integers denoting the dimensions of the layers of the network.
+                            The first entry is the input dimension of the network, the last entry the output dimension
+        :param learningRate: learning rate for updating the parameters
+        :type architecture: list
+        """
+        self.layers = []
+        self.layers.append(Layer(architecture[i],architecture[i],architecture[i+1],forwardNonLin=forwardNonLin,
+                                     backwardNonLin=backwardNonLin,learningRate=learningRate))
+        for i in range(len(architecture)-2):
+            self.layers.append(Layer(architecture[i],architecture[i+1],architecture[i+2],forwardNonLin=forwardNonLin,
+                                     backwardNonLin=backwardNonLin,learningRate=learningRate))
+
+        self.layers.append(Layer(architecture[-2],architecture[-1],architecture[-1],forwardNonLin=outputNonLin,
+                                 backwardNonLin='linear',learningRate=learningRate))
+        self.loss = loss
+
+    def propagateForward(self,inputBatch):
+        """
+        
+        :param inputBatch: 3D tensor with size batchdimension x inputdimension x 1
+        :return: 
+        """
+        self.layers[0].forwardOutput = inputBatch
+        for i in range(1,len(self.layers)):
+            self.layers[i].propagateForward(self.layers[i-1])
+
+    def propagateBackward(self,target):
+        """
+        Compute loss and propagate gradients back through the network
+        :param target:
+        :return:
+        """
+        
+
+            
+        
+        
+
+
+
+
+
+
+
+
+class BPNet(nn.Module):
+    def __init__(self, architecture,loss = 'crossEntropy',forwardNonLin = 'relu',outputNonLin = 'softmax'):
+        """
+
+        :param architecture: list containing the dimension of each layer
+        (first entry is the input dimension, last entry the output dimension)
+        :param loss: Output loss function of the network
+        :param forwardNonLin: layer nonlinearity for the forward pass
+        :param outputNonLin: output nonlinearity
+        :type architecture: List
+        """
+        super(BPNet, self).__init__()
+        networkList = []
+        for i in range(len(architecture)-1):
+            networkList.append(nn.Linear(architecture[i],architecture[i+1]))
+        if outputNonLin == 'softmax':
+            networkList.append(nn.Softmax(2))
+        elif outputNonLin == 'linear':
+            networkList.append(hc.IdentityLayer())
+
+        else:
+            print("Error cause: ", str(outputNonLin), ' is not defined as an output nonlinearity')
+            sys.exit("Init error: BPNet class is expecting different output nonlinearity")
+        self.network = nn.ModuleList(networkList)
+
+        self.forwardNonLin = forwardNonLin
+        self.outputNonLin = outputNonLin
+        self.loss = loss
+
+    def forward(self, x):
+        xLayers = []
+        xLayers.append(x)
+        if self.forwardNonLin == 'relu':
+            for i in range(len(self.network)-2):
+                xLayers.append(F.relu(self.network[i](xLayers[-1])))
+            xLayers.append(self.network[-2](xLayers[-1]))
+            xLayers.append(self.network[-1](xLayers[-1]))
+        else:
+            print("Error cause: ", str(self.forwardNonLin), " is not defined as a forward nonlinearity")
+            sys.exit("Forward error: BPNet class is expecting different forward nonlinearity")
+
+        return xLayers
+
+    def backward_custom(self, xLayers):
+        return xLayers
+
+
+
+
+
+
+
