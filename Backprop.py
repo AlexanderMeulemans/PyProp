@@ -68,7 +68,7 @@ class Layer():
         """
         self.backwardInput = upperLayer.backwardOutput
         if upperLayer.forwardNonLin == 'relu':
-            activationDer = torch.tensor([[[1.] if upperLayer.linearActivation[i,j,1]>0 else [0.] for j in
+            activationDer = torch.tensor([[[1.] if upperLayer.linearActivation[i,j,0]>0 else [0.] for j in
                                            range(upperLayer.linearActivation.size(1))] for i in
                                           range(upperLayer.linearActivation.size(0))])
         elif upperLayer.forwardNonLin == 'linear':
@@ -76,7 +76,7 @@ class Layer():
 
         elif upperLayer.forwardNonLin == 'softmax':
             softmaxActivations = upperLayer.forwardOutput
-            activationDer = torch.tensor([[[softmaxActivations[i,j,1]*(hf.kronecker(j,k)- softmaxActivations[i,k,1])
+            activationDer = torch.tensor([[[softmaxActivations[i,j,0]*(hf.kronecker(j,k)- softmaxActivations[i,k,1])
                                             for k in range(softmaxActivations.size(1))]
                                            for j in range(softmaxActivations.size(1))]
                                           for i in range(softmaxActivations.size(0))])
@@ -97,7 +97,7 @@ class Layer():
         self.backwardOutput = torch.matmul(weights_tilde,self.backwardInput)
 
 
-    def updateForwardParameters(self,lowerLayer):
+    def updateForwardParameters(self):
         self.forwardWeights = self.forwardWeights - torch.mul(self.forwardWeightsGrad,self.learningRate)
         self.forwardBias = self.forwardBias - torch.mul(self.forwardBiasGrad, self.learningRate)
 
@@ -109,14 +109,14 @@ class Layer():
         TODO: check gradient update for softmax, not sure if it's completely correct
         """
         if self.forwardNonLin == 'relu':
-            activationDer = torch.tensor([[[1.] if self.linearActivation[i,j,1]>0 else [0.] for j in
+            activationDer = torch.tensor([[[1.] if self.linearActivation[i,j,0]>0 else [0.] for j in
                                            range(self.linearActivation.size(1))] for i in
                                           range(self.linearActivation.size(0))])
         elif self.forwardNonLin == 'linear':
             activationDer = torch.ones(self.linearActivation.size())
         elif self.forwardNonLin == 'softmax':
             softmaxActivations = self.forwardOutput
-            activationDer = torch.tensor([[[softmaxActivations[i,j,1]*(hf.kronecker(j,k)- softmaxActivations[i,k,1])
+            activationDer = torch.tensor([[[softmaxActivations[i,j,0]*(hf.kronecker(j,k)- softmaxActivations[i,k,1])
                                             for k in range(softmaxActivations.size(1))]
                                            for j in range(softmaxActivations.size(1))]
                                           for i in range(softmaxActivations.size(0))])
@@ -149,7 +149,7 @@ class Network():
         :type architecture: list
         """
         self.layers = []
-        self.layers.append(Layer(architecture[i],architecture[i],architecture[i+1],forwardNonLin=forwardNonLin,
+        self.layers.append(Layer(architecture[0],architecture[0],architecture[1],forwardNonLin=forwardNonLin,
                                      backwardNonLin=backwardNonLin,learningRate=learningRate))
         for i in range(len(architecture)-2):
             self.layers.append(Layer(architecture[i],architecture[i+1],architecture[i+2],forwardNonLin=forwardNonLin,
@@ -157,7 +157,9 @@ class Network():
 
         self.layers.append(Layer(architecture[-2],architecture[-1],architecture[-1],forwardNonLin=outputNonLin,
                                  backwardNonLin='linear',learningRate=learningRate))
-        self.loss = loss
+        self.lossFunction = loss
+        self.loss = torch.tensor([])
+        self.accuracyLst = torch.tensor([])
 
     def propagateForward(self,inputBatch):
         """
@@ -175,7 +177,81 @@ class Network():
         :param target:
         :return:
         """
-        
+        self.computeLoss(target)
+        for i in range(len(self.layers)-2,-1,-1):
+            self.layers[i].propagateBackward(self.layers[i+1])
+
+
+    def computeLoss(self,target):
+        """
+        compute and save the loss and the derivative of the loss to the output of the network
+        :param target: 3D tensor of size batchdimension x class dimension x 1
+        :return:
+        """
+        lastLayer = self.layers[-1]
+        target_classes = hf.prob2class(target)
+        self.accuracyLst = torch.cat((self.accuracyLst, torch.tensor([self.training_accuracy(target)])), 0)
+        if self.lossFunction == 'crossEntropy':
+            lossFunction = nn.CrossEntropyLoss()
+            self.loss = torch.cat((self.loss,lossFunction(lastLayer.forwardOutput.squeeze(),target_classes)),0)
+            self.layers[-1].backwardOutput = torch.div(target,lastLayer.forwardOutput)
+        elif self.lossFunction == 'mse':
+            lossFunction = nn.MSELoss()
+            self.loss = torch.cat((self.loss, lossFunction(lastLayer.forwardOutput.squeeze(),target_classes)),0)
+            self.layers[-1].backwardOutput = 2*(lastLayer.forwardOutput - target)
+        else:
+            print("Error cause: ", str(self.lossFunction), ' is not defined as a loss function')
+            sys.exit("Loss error: Network class is expecting different output nonlinearity")
+
+    def computeGradients(self):
+        for i in range(1,len(self.layers)):
+            self.layers[i].computeGradients(self.layers[i-1])
+
+    def updateParameters(self):
+        for i in range(1,len(self.layers)):
+            self.layers[i].updateForwardParameters()
+
+    def batchTraining(self,batchInput,batchTarget):
+        self.propagateForward(batchInput)
+        self.propagateBackward(batchTarget)
+        self.computeGradients()
+        self.updateParameters()
+
+    def zeroGrad(self):
+        for layer in self.layers:
+            layer.zeroGrad()
+
+    def predict(self,inputBatch):
+        self.propagateForward(inputBatch)
+        return self.layers[-1].forwardOutput
+
+    def test_loss(self,inputBatch,targets):
+        predictions = self.predict(inputBatch)
+        if self.lossFunction == 'crossEntropy':
+            lossFunction = nn.CrossEntropyLoss()
+            return lossFunction(predictions.squeeze(), targets.squeeze())
+        elif self.lossFunction == 'mse':
+            lossFunction = nn.MSELoss()
+            return lossFunction(predictions.squeeze(), targets.squeeze())
+        else:
+            print("Error cause: ", str(self.lossFunction), ' is not defined as a loss function')
+            sys.exit("Loss error: Network class is expecting different output nonlinearity")
+
+    def predict_class(self,inputBatch):
+        self.propagateForward(inputBatch)
+        class_probabilities = self.layers[-1].forwardOutput
+        return hf.prob2class(class_probabilities)
+
+    def accuracy(self,inputBatch,targets):
+        predicted_classes = self.predict_class(inputBatch)
+        return hf.accuracy(predicted_classes,hf.prob2class(targets))
+
+    def training_accuracy(self,targets):
+        class_probabilities = self.layers[-1].forwardOutput
+        predicted_classes = hf.prob2class(class_probabilities)
+        return hf.accuracy(predicted_classes,hf.prob2class(targets))
+
+
 
             
         
