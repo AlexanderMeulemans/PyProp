@@ -42,11 +42,15 @@ def plot_epochs(loss,accuracy, gradients = None):
         plt.xlabel('Epoch')
 
 def prob2class(probabilities):
+    """ Convert the class probabilities to one predicted class per batch sample"""
     probabilities = probabilities.squeeze()
     return torch.argmax(probabilities,dim=1)
 
 def accuracy(predictions, targets):
-    assert predictions.size() == targets.size()
+    """ Return the accuracy of the batch"""
+    if not predictions.size() == targets.size():
+        raise ValueError("Expecting equal dimension for predictions and targets")
+
     total_labels = float(predictions.size(0))
     correct_labels = 0.
     for i in range(predictions.size(0)):

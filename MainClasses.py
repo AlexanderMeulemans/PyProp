@@ -1,10 +1,9 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import sys
-import HelperClasses as hc
 import HelperFunctions as hf
 from HelperClasses import NetworkError
+import numpy as np
 
 class Layer(object):
     """ Parent class of all occuring layers in neural networks with only feedforward weights.
@@ -71,18 +70,18 @@ class Layer(object):
     def setForwardOutput(self,forwardOutput):
         if not isinstance(forwardOutput, torch.Tensor):
             raise TypeError("Expecting a tensor object for self.forwardOutput")
-        if not forwardOutput.shape(-2) == self.layerDim:
+        if not forwardOutput.size(-2) == self.layerDim:
             raise ValueError("Expecting same dimension as layerDim")
-        if not forwardOutput.shape(-1) == 1:
+        if not forwardOutput.size(-1) == 1:
             raise ValueError("Expecting same dimension as layerDim")
         self.forwardOutput = forwardOutput
 
     def setBackwardOutput(self,backwardOutput):
         if not isinstance(backwardOutput, torch.Tensor):
             raise TypeError("Expecting a tensor object for self.backwardOutput")
-        if not backwardOutput.shape(-2) == self.layerDim:
+        if not backwardOutput.size(-2) == self.layerDim:
             raise ValueError("Expecting same dimension as layerDim")
-        if not backwardOutput.shape(-1) == 1:
+        if not backwardOutput.size(-1) == 1:
             raise ValueError("Expecting same dimension as layerDim")
         self.backwardOutput = backwardOutput
 
@@ -270,7 +269,7 @@ class OutputLayer(Layer):
             raise NetworkError('Expecting an mse or crossEntropy loss')
         self.lossFunction = lossFunction
 
-    def loss(self,target):
+    def loss(self, target):
         """ Compute the loss with respect to the target
         :param target: 3D tensor of size batchdimension x class dimension x 1
         """
@@ -283,10 +282,12 @@ class OutputLayer(Layer):
             # Convert output 'class probabilities' to one class per batch sample (with highest class probability)
             target_classes = hf.prob2class(target)
             lossFunction = nn.CrossEntropyLoss()
-            return lossFunction(self.forwardOutput.squeeze(), target_classes)
+            loss = lossFunction(self.forwardOutput.squeeze(), target_classes)
+            return torch.mean(loss).numpy()
         elif self.lossFunction == 'mse':
             lossFunction = nn.MSELoss()
-            return lossFunction(self.forwardOutput.squeeze(), target.squeeze())
+            loss = lossFunction(self.forwardOutput.squeeze(), target.squeeze())
+            return torch.mean(loss).numpy()
 
     def propagateBackward(self, upperLayer):
         """ This function should never be called for an output layer, the backwardOutput should be set based on the
@@ -305,7 +306,8 @@ class SoftmaxOutputLayer(OutputLayer):
         return softmax(linearActivation)
 
     def computeBackwardOutput(self,target):
-        """ Compute the backward output based on the derivative of the loss to the linear activation of this layer"""
+        """ Compute the backward output based on the derivative of the loss to the linear activation of this layer
+        :param target: 3D tensor of size batchdimension x class dimension x 1"""
         if not self.lossFunction == 'crossEntropy':
             raise NetworkError("a softmax output layer should always be combined with a cross entropy loss")
         if not isinstance(target,torch.Tensor):
@@ -316,6 +318,23 @@ class SoftmaxOutputLayer(OutputLayer):
         
         backwardOutput = self.forwardOutput - target
         self.setBackwardOutput(backwardOutput)
+
+    def propagateForward(self,lowerLayer):
+        """ Normal forward propagation, but on top of that, save the predicted classes in self."""
+        super().propagateForward(lowerLayer)
+        self.predictedClasses = hf.prob2class(self.forwardOutput)
+
+    def accuracy(self, target):
+        """ Compute the accuracy if the network predictions with respect to the given true targets.
+        :param target: 3D tensor of size batchdimension x class dimension x 1"""
+        if not isinstance(target,torch.Tensor):
+            raise TypeError("Expecting a torch.Tensor object as target")
+        if not self.forwardOutput.shape == target.shape:
+            raise ValueError('Expecting a tensor of dimensions: batchdimension x class dimension x 1. Given target'
+                             'has shape' + str(target.shape))
+        return hf.accuracy(self.predictedClasses, hf.prob2class(target))
+
+
         
 class LinearOutputLayer(OutputLayer):
     """ Output layer with a linear activation function. This layer can so far only be combined with an mse loss
@@ -350,7 +369,7 @@ class Network(object):
         
     def setLayers(self,layers):
         if not isinstance(layers,list):
-            raise TypeError("Expecting a list object containig all the layers of the network")
+            raise TypeError("Expecting a list object containing all the layers of the network")
         if len(layers) < 2:
             raise ValueError("Expecting at least 2 layers (including input and output layer) in a network")
         if not isinstance(layers[0],InputLayer):
@@ -365,11 +384,168 @@ class Network(object):
 
         self.layers = layers
 
+    def propagateForward(self, inputBatch):
+        """ Propagate the inputbatch forward through the network
+        :param inputBatch: Inputbatch of dimension batch dimension x input dimension x 1"""
+        self.layers[0].setForwardOutput(inputBatch)
+        for i in range(1,len(self.layers)):
+            self.layers[i].propagateForward(self.layers[i-1])
 
-    
-    
+    def propagateBackward(self, target):
+        """ Propagate the gradient of the loss function with respect to the linear activation of each layer backward
+        through the network and compute the gradient of the loss function to the parameters of each layers
+        :param target: 3D tensor of size batchdimension x class dimension x 1 """
+        if not isinstance(target,torch.Tensor):
+            raise TypeError("Expecting a torch.Tensor object as target")
+        if not self.layers[-1].forwardOutput.shape == target.shape:
+            raise ValueError('Expecting a tensor of dimensions: batchdimension x class dimension x 1. Given target'
+                             'has shape' + str(target.shape))
+
+        self.layers[-1].computeBackwardOutput(target)
+        self.layers[-1].computeGradients(self.layers[-2])
+        for i in range(len(self.layers)-2,0,-1):
+            self.layers[i].propagateBackward(self.layers[i+1])
+            self.layers[i].computeGradients(self.layers[i-1])
+
+    def updateParameters(self, learningRate):
+        """ Update all the parameters of the network with the computed gradients"""
+        for i in range(1,len(self.layers)):
+            self.layers[i].updateForwardParameters(learningRate)
+
+    def loss(self,target):
+        """ Return the loss of each sample in the batch compared to the provided targets.
+        :param target: 3D tensor of size batchdimension x class dimension x 1"""
+        return self.layers[-1].loss(target)
+
+    def batchTraining(self,batchInput,target,learningRate):
+        """ Perfrom a complete batch training with the given input batch and targets"""
+
+        self.propagateForward(batchInput)
+        self.propagateBackward(target)
+        self.updateParameters(learningRate)
+
+    def zeroGrad(self):
+        """ Set all the gradients of the network to zero"""
+        for layer in self.layers:
+            layer.zeroGrad()
+
+    def predict(self, inputBatch):
+        """ Return the networks predictions on a given input batch"""
+        self.propagateForward(inputBatch)
+        return self.layers[-1].forwardOutput
+
+    def accuracy(self,targets):
+        """ Return the test accuracy of network based on the given input test batch and the true targets
+        IMPORTANT: first you have to run self.predict(inputBatch) in order to save the predictions in the output
+        layer.
+        IMPORTANT: the accuracy can only be computed for classification problems, thus the last layer should be
+        a softmax """
+        return self.layers[-1].accuracy(targets)
 
 
+class Optimizer(object):
+    """" Super class for all the different optimizers (e.g. SGD)"""
+
+    def __init__(self, network, computeAccuracies = False):
+        """
+        :param network: network to train
+        :param computeAccuracies: True if the optimizer should also save the accuracies. Only possible with
+        classification problems
+        :type network: Network
+        """
+        self.epochLosses = np.array([])
+        self.batchLosses = np.array([])
+        self.singleBatchLosses = np.array([])
+        self.setNetwork(network)
+        self.setComputeAccuracies(computeAccuracies)
+        if self.computeAccuracies:
+            self.epochAccuracies = np.array([])
+            self.batchAccuracies = np.array([])
+            self.singleBatchAccuracies = np.array([])
+
+    def setNetwork(self,network):
+        if not isinstance(network, Network):
+            raise TypeError("Expecting Network object, instead got {}".format(type(network)))
+        self.network = network
+
+    def setComputeAccuracies(self,computeAccuracies):
+        if not isinstance(computeAccuracies,bool):
+            raise TypeError("Expecting a bool as computeAccuracies")
+        self.computeAccuracies = computeAccuracies
+
+    def resetSingleBatchLosses(self):
+        self.singleBatchLosses = np.array([])
+
+    def resetSingleBatchAccuracies(self):
+        self.singleBatchAccuracies = np.array([])
+
+    def runMNIST(self,trainLoader):
+        """ Train the network on the total training set of MNIST as long as epoch loss is above the threshold
+        :param trainLoader: a torch.utils.data.DataLoader object which containts the dataset"""
+        if not isinstance(trainLoader, torch.utils.data.DataLoader):
+            raise TypeError("Expecting a DataLoader object, now got a {}".format(type(trainLoader)))
+        epoch = 0
+        epochLoss = float('inf')
+        batchSize = trainLoader.batch_size
+        while epochLoss > self.threshold:
+            for batch_idx, (data, target) in enumerate(trainLoader):
+                if batch_idx % 10 == 0:
+                    print('batch: ' + str(batch_idx))
+                data = data.view(-1, 28*28, 1)
+                target = hf.oneHot(target, 10)
+                self.step(data, target)
+            epochLoss = np.mean(self.singleBatchLosses)
+            self.resetSingleBatchLosses()
+            self.epochLosses = np.append(self.epochLosses, epochLoss)
+            epoch += 1
+            print('Epoch: ' + str(epoch) + ' ------------------------')
+            print('Loss: ' + str(epochLoss))
+            if self.computeAccuracies:
+                epochAccuracy = np.mean(self.singleBatchAccuracies)
+                self.epochAccuracies = np.append(self.epochAccuracies,epochAccuracy)
+                self.resetSingleBatchAccuracies()
+                print('Training Accuracy: ' + str(epochAccuracy))
+
+        print('====== Training finished =======')
+
+
+class SGD(Optimizer):
+    """ Stochastic Gradient Descend optimizer"""
+
+    def __init__(self, network, threshold, learningRate, computeAccuracies = False):
+        """
+        :param threshold: the optimizer will run until the network loss is below this threshold
+        :param learningRate: Learningrate used to update the parameters with their gradients
+        """
+        super().__init__(network, computeAccuracies)
+        self.setThreshold(threshold)
+        self.setLearningRate(learningRate)
+
+    def setLearningRate(self, learningRate):
+        if not isinstance(learningRate,float):
+            raise TypeError("Expecting a float number as learningRate")
+        if learningRate <=0:
+            raise ValueError("Expecting a strictly positive learning rate")
+        self.learningRate = learningRate
+
+    def setThreshold(self, threshold):
+        if not isinstance(threshold, float):
+            raise TypeError("Expecting a float number as threshold")
+        if threshold <=0:
+            raise ValueError("Expecting a strictly positive threshold")
+        self.threshold = threshold
+
+    def step(self, inputBatch, targets):
+        """ Perform one batch optimizing step"""
+        self.network.batchTraining(inputBatch,targets,self.learningRate)
+        self.batchLosses = np.append(self.batchLosses, self.network.loss(targets))
+        self.singleBatchLosses = np.append(self.singleBatchLosses,self.network.loss(targets))
+        if self.computeAccuracies:
+            self.batchAccuracies = np.append(self.batchAccuracies, self.network.accuracy(targets))
+            self.singleBatchAccuracies = np.append(self.singleBatchAccuracies, self.network.accuracy(targets))
+        
+
+        
 
 
 

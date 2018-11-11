@@ -216,7 +216,7 @@ class Network():
         if self.lossFunction == 'crossEntropy':
             targets = hf.prob2class(targets)
             lossFunction = nn.CrossEntropyLoss()
-            return lossFunction(predictions.squeeze(), targetsnetw)
+            return lossFunction(predictions.squeeze(), targets)
         elif self.lossFunction == 'mse':
             lossFunction = nn.MSELoss()
             return lossFunction(predictions.squeeze(), targets.squeeze())
