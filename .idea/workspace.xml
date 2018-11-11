@@ -2,11 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="627a70cb-13ab-4e6b-bda9-3721d10194d6" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/runMNIST.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Backprop.py" beforeDir="false" afterPath="$PROJECT_DIR$/Backprop.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/HelperFunctions.py" beforeDir="false" afterPath="$PROJECT_DIR$/HelperFunctions.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MainClasses.py" beforeDir="false" afterPath="$PROJECT_DIR$/MainClasses.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/runMNIST.py" beforeDir="false" afterPath="$PROJECT_DIR$/runMNIST.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -32,8 +29,8 @@
       <file leaf-file-name="MainClasses.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/MainClasses.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2941">
-              <caret line="482" column="65" selection-start-line="482" selection-start-column="65" selection-end-line="482" selection-end-column="65" />
+            <state relative-caret-position="475">
+              <caret line="613" column="34" selection-start-line="613" selection-start-column="34" selection-end-line="613" selection-end-column="34" />
               <folding>
                 <element signature="e#0#12#0" expanded="true" />
               </folding>
@@ -44,8 +41,8 @@
       <file leaf-file-name="runMNIST.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/runMNIST.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="153">
-              <caret line="45" column="16" lean-forward="true" selection-start-line="45" selection-start-column="16" selection-end-line="45" selection-end-column="16" />
+            <state relative-caret-position="170">
+              <caret line="31" column="16" lean-forward="true" selection-start-line="31" selection-start-column="16" selection-end-line="31" selection-end-column="16" />
             </state>
           </provider>
         </entry>
@@ -53,7 +50,7 @@
       <file leaf-file-name="run_mnist.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/run_mnist.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="221">
+            <state relative-caret-position="1343">
               <caret line="79" column="49" lean-forward="true" selection-start-line="72" selection-end-line="79" selection-end-column="49" />
             </state>
           </provider>
@@ -107,6 +104,9 @@
       <find>updateForwardPar</find>
       <find>zeroGrad</find>
       <find>epoch_error</find>
+      <find>epoch</find>
+      <find>epoch</find>
+      <find>final</find>
     </findStrings>
     <replaceStrings>
       <replace>backwardNonLin</replace>
@@ -117,6 +117,8 @@
       <replace>.layerDim</replace>
       <replace>.inDim</replace>
       <replace>epochLoss</replace>
+      <replace>self.epoch</replace>
+      <replace>init</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -130,12 +132,12 @@
         <option value="$PROJECT_DIR$/HelperClasses.py" />
         <option value="$PROJECT_DIR$/Backprop.py" />
         <option value="$PROJECT_DIR$/HelperFunctions.py" />
-        <option value="$PROJECT_DIR$/MainClasses.py" />
         <option value="$PROJECT_DIR$/runMNIST.py" />
+        <option value="$PROJECT_DIR$/MainClasses.py" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="7">
+  <component name="ProjectFrameBounds" extendedState="6">
     <option name="x" value="-10" />
     <option name="y" value="-10" />
     <option name="width" value="1939" />
@@ -250,7 +252,7 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/runMNIST.py" />
       <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
     </configuration>
@@ -301,25 +303,25 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-7" y="-7" width="1550" height="838" extended-state="7" />
+    <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" weight="0.38020834" />
-      <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" />
-      <window_info anchor="bottom" id="Version Control" order="8" />
-      <window_info id="Python Console" order="3" visible="true" weight="0.38216147" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.4537931" />
+      <window_info anchor="bottom" id="TODO" order="5" />
+      <window_info anchor="bottom" id="Event Log" order="6" side_tool="true" />
+      <window_info anchor="bottom" id="Version Control" order="7" />
+      <window_info id="Python Console" order="3" weight="0.38216147" />
+      <window_info active="true" id="Run" order="4" visible="true" weight="0.3815104" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info anchor="bottom" id="Terminal" order="9" />
+      <window_info anchor="bottom" id="Terminal" order="8" />
       <window_info id="Favorites" order="2" side_tool="true" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="bottom" id="Debug" order="2" weight="0.4" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
-      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="4" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="3" weight="0.25" />
       <window_info anchor="bottom" id="Find" order="1" />
     </layout>
   </component>
@@ -479,22 +481,22 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/run_mnist.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="221">
+        <state relative-caret-position="1343">
           <caret line="79" column="49" lean-forward="true" selection-start-line="72" selection-end-line="79" selection-end-column="49" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/runMNIST.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="153">
-          <caret line="45" column="16" lean-forward="true" selection-start-line="45" selection-start-column="16" selection-end-line="45" selection-end-column="16" />
+        <state relative-caret-position="170">
+          <caret line="31" column="16" lean-forward="true" selection-start-line="31" selection-start-column="16" selection-end-line="31" selection-end-column="16" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/MainClasses.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2941">
-          <caret line="482" column="65" selection-start-line="482" selection-start-column="65" selection-end-line="482" selection-end-column="65" />
+        <state relative-caret-position="475">
+          <caret line="613" column="34" selection-start-line="613" selection-start-column="34" selection-end-line="613" selection-end-column="34" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
           </folding>

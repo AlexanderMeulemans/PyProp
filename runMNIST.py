@@ -41,7 +41,9 @@ test_loader = torch.utils.data.DataLoader(
                 shuffle=False)
 
 # Initializing optimizer
-optimizer = SGD(network,0.1,0.1,computeAccuracies=True)
+optimizer = SGD(network=network,threshold=1.2, initLearningRate=0.5, tau= 100,
+                finalLearningRate=0.005, computeAccuracies= True, maxEpoch=120)
+
 
 # Train on MNIST
 optimizer.runMNIST(train_loader)
