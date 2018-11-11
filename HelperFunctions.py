@@ -53,3 +53,11 @@ def accuracy(predictions, targets):
         if predictions[i] == targets[i]:
             correct_labels += 1.
     return correct_labels/total_labels
+
+def containsNoNaNs(tensor):
+    a = tensor == tensor
+    return a.sum().numpy()==a.view(-1).size(0)
+
+def containsNaNs(tensor):
+    a = tensor == tensor
+    return not a.sum().numpy()==a.view(-1).size(0)

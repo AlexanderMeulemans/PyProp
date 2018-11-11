@@ -2,10 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="627a70cb-13ab-4e6b-bda9-3721d10194d6" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/run_mnist.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/MainClasses.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Backprop.py" beforeDir="false" afterPath="$PROJECT_DIR$/Backprop.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/HelperClasses.py" beforeDir="false" afterPath="$PROJECT_DIR$/HelperClasses.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/HelperFunctions.py" beforeDir="false" afterPath="$PROJECT_DIR$/HelperFunctions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/run_mnist.py" beforeDir="false" afterPath="$PROJECT_DIR$/run_mnist.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -15,12 +17,12 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <leaf>
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file leaf-file-name="Backprop.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Backprop.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="436">
-              <caret line="220" column="33" lean-forward="true" selection-start-line="220" selection-start-column="33" selection-end-line="220" selection-end-column="33" />
+            <state relative-caret-position="-1248">
+              <caret line="141" column="43" lean-forward="true" selection-start-line="121" selection-end-line="141" selection-end-column="43" />
               <folding>
                 <element signature="e#0#12#0" expanded="true" />
               </folding>
@@ -28,11 +30,23 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="run_mnist.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="MainClasses.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/MainClasses.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-3465">
+              <caret line="135" column="54" selection-start-line="135" selection-start-column="54" selection-end-line="135" selection-end-column="54" />
+              <folding>
+                <element signature="e#0#12#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="run_mnist.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/run_mnist.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="578">
-              <caret line="34" column="32" lean-forward="true" selection-start-line="34" selection-start-column="32" selection-end-line="34" selection-end-column="32" />
+            <state relative-caret-position="129">
+              <caret line="74" column="36" selection-start-line="74" selection-start-column="36" selection-end-line="74" selection-end-column="36" />
             </state>
           </provider>
         </entry>
@@ -40,8 +54,8 @@
       <file leaf-file-name="HelperFunctions.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/HelperFunctions.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="816">
-              <caret line="48" column="47" selection-start-line="48" selection-start-column="47" selection-end-line="48" selection-end-column="47" />
+            <state relative-caret-position="592">
+              <caret line="60" column="12" selection-start-line="60" selection-start-column="12" selection-end-line="60" selection-end-column="12" />
               <folding>
                 <element signature="e#0#12#0" expanded="true" />
               </folding>
@@ -52,8 +66,8 @@
       <file leaf-file-name="HelperClasses.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/HelperClasses.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="187">
-              <caret line="11" selection-start-line="11" selection-end-line="11" />
+            <state relative-caret-position="221">
+              <caret line="13" selection-start-line="13" selection-end-line="13" />
               <folding>
                 <element signature="e#0#12#0" expanded="true" />
               </folding>
@@ -75,10 +89,21 @@
       <find>nonLinBackward</find>
       <find>backwardWeights</find>
       <find>learningrate</find>
+      <find>upperLayer</find>
+      <find>print</find>
+      <find>self.inDim</find>
+      <find>forwardOutput</find>
+      <find>._layerDim</find>
+      <find>._inDim</find>
     </findStrings>
     <replaceStrings>
       <replace>backwardNonLin</replace>
       <replace>learningRate</replace>
+      <replace>self</replace>
+      <replace>self._inDim</replace>
+      <replace>backwardOutput</replace>
+      <replace>.layerDim</replace>
+      <replace>.inDim</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -88,18 +113,19 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/helper classes.py" />
-        <option value="$PROJECT_DIR$/HelperClasses.py" />
-        <option value="$PROJECT_DIR$/HelperFunctions.py" />
-        <option value="$PROJECT_DIR$/run_mnist.py" />
         <option value="$PROJECT_DIR$/Backprop.py" />
+        <option value="$PROJECT_DIR$/run_mnist.py" />
+        <option value="$PROJECT_DIR$/HelperFunctions.py" />
+        <option value="$PROJECT_DIR$/HelperClasses.py" />
+        <option value="$PROJECT_DIR$/MainClasses.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-1038" />
-    <option name="y" value="154" />
-    <option name="width" value="554" />
-    <option name="height" value="1038" />
+    <option name="x" value="-10" />
+    <option name="y" value="-10" />
+    <option name="width" value="1939" />
+    <option name="height" value="1099" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
@@ -126,6 +152,7 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RunDashboard">
@@ -140,7 +167,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.run_mnist">
+  <component name="RunManager" selected="Python.MainClasses">
     <configuration name="Backprop" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="Thesis" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -156,6 +183,24 @@
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Backprop.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+    </configuration>
+    <configuration name="MainClasses" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="Thesis" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/MainClasses.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
     </configuration>
@@ -199,9 +244,11 @@
       <item itemvalue="Python.Unnamed" />
       <item itemvalue="Python.run_mnist" />
       <item itemvalue="Python.Backprop" />
+      <item itemvalue="Python.MainClasses" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.MainClasses" />
         <item itemvalue="Python.Backprop" />
       </list>
     </recent_temporary>
@@ -220,38 +267,36 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-1088" y="-221" width="1096" height="1896" extended-state="6" />
+    <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
+    <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.0" />
+      <window_info content_ui="combo" id="Project" order="0" weight="0.38020834" />
       <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Event Log" side_tool="true" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.29477823" />
-      <window_info anchor="bottom" id="Version Control" />
-      <window_info anchor="bottom" id="Python Console" />
+      <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" />
+      <window_info anchor="bottom" id="Version Control" order="8" />
+      <window_info active="true" id="Python Console" order="3" visible="true" weight="0.38216147" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.4537931" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info anchor="bottom" id="Terminal" />
+      <window_info anchor="bottom" id="Terminal" order="9" />
+      <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
-      <window_info id="Favorites" side_tool="true" />
-      <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="right" id="Commander" order="0" weight="0.4" />
-      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info anchor="right" id="Commander" order="0" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Find" order="1" />
     </layout>
   </component>
   <component name="VcsContentAnnotationSettings">
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/helper classes.py">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/HelperClasses.py">
+    <entry file="file://$PROJECT_DIR$/Backprop.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="187">
-          <caret line="11" selection-start-line="11" selection-end-line="11" />
+        <state relative-caret-position="2992">
+          <caret line="181" column="40" selection-start-line="181" selection-start-column="40" selection-end-line="181" selection-end-column="40" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
           </folding>
@@ -260,8 +305,62 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/HelperFunctions.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="816">
-          <caret line="48" column="47" selection-start-line="48" selection-start-column="47" selection-end-line="48" selection-end-column="47" />
+        <state relative-caret-position="969">
+          <caret line="58" column="46" selection-start-line="58" selection-start-column="46" selection-end-line="58" selection-end-column="46" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/HelperClasses.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="153">
+          <caret line="11" selection-start-line="11" selection-end-line="11" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/run_mnist.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1258">
+          <caret line="74" column="36" selection-start-line="74" selection-start-column="36" selection-end-line="74" selection-end-column="36" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Backprop.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2312">
+          <caret line="136" column="8" selection-start-line="136" selection-start-column="8" selection-end-line="136" selection-end-column="8" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/run_mnist.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="595">
+          <caret line="35" column="30" lean-forward="true" selection-start-line="35" selection-start-column="30" selection-end-line="35" selection-end-column="30" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/HelperFunctions.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="969">
+          <caret line="58" column="46" selection-start-line="58" selection-start-column="46" selection-end-line="58" selection-end-column="46" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/HelperClasses.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="153">
+          <caret line="11" selection-start-line="11" selection-end-line="11" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
           </folding>
@@ -270,8 +369,28 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Backprop.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="436">
-          <caret line="220" column="33" lean-forward="true" selection-start-line="220" selection-start-column="33" selection-end-line="220" selection-end-column="33" />
+        <state relative-caret-position="3655">
+          <caret line="220" column="33" selection-start-line="220" selection-start-column="33" selection-end-line="220" selection-end-column="33" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/HelperFunctions.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="799">
+          <caret line="48" column="47" selection-start-line="48" selection-start-column="47" selection-end-line="48" selection-end-column="47" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/HelperClasses.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="153">
+          <caret line="11" selection-start-line="11" selection-end-line="11" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
           </folding>
@@ -281,7 +400,54 @@
     <entry file="file://$PROJECT_DIR$/run_mnist.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="578">
-          <caret line="34" column="32" lean-forward="true" selection-start-line="34" selection-start-column="32" selection-end-line="34" selection-end-column="32" />
+          <caret line="34" column="22" lean-forward="true" selection-start-line="34" selection-start-column="22" selection-end-line="34" selection-end-column="22" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/run_mnist.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="129">
+          <caret line="74" column="36" selection-start-line="74" selection-start-column="36" selection-end-line="74" selection-end-column="36" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/HelperFunctions.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="592">
+          <caret line="60" column="12" selection-start-line="60" selection-start-column="12" selection-end-line="60" selection-end-column="12" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/HelperClasses.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="221">
+          <caret line="13" selection-start-line="13" selection-end-line="13" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Backprop.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1248">
+          <caret line="141" column="43" lean-forward="true" selection-start-line="121" selection-end-line="141" selection-end-column="43" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/MainClasses.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-3465">
+          <caret line="135" column="54" selection-start-line="135" selection-start-column="54" selection-end-line="135" selection-end-column="54" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

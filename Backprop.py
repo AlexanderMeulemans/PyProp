@@ -28,12 +28,17 @@ class Layer():
         self.backwardBiasGrad = torch.zeros(self.layerDim,1)
 
     def setForwardParameters(self, forwardWeights, forwardBias):
+        assert hf.containsNoNaNs(forwardWeights)
+        assert hf.containsNoNaNs(forwardBias)
         self.forwardWeights = forwardWeights
         self.forwardBias = forwardBias
 
     def setBackwardParametres(self, backwardWeights, backwardBias):
+        assert hf.containsNoNaNs(backwardWeights)
+        assert hf.containsNoNaNs(backwardBias)
         self.backwardWeights = backwardWeights
         self.backwardBias = backwardBias
+
 
     def zeroGrad(self):
         self.forwardWeightsGrad = torch.zeros(self.layerDim, self.inDim)
@@ -64,26 +69,26 @@ class Layer():
         :param upperLayer: the layer one step downstream of the layer 'self'
         :type upperLayer: Layer
         :return: saves the backwards output in self. backwardOutput is of size batchDimension x layerdimension  x 1
-        TODO: fix all nonlinearities in same format as softmax
         """
         self.backwardInput = upperLayer.backwardOutput
-        if upperLayer.forwardNonLin == 'relu':
-            activationDer = torch.tensor([[[1.] if upperLayer.linearActivation[i,j,0]>0 else [0.] for j in
-                                           range(upperLayer.linearActivation.size(1))] for i in
-                                          range(upperLayer.linearActivation.size(0))])
-        elif upperLayer.forwardNonLin == 'linear':
-            activationDer = torch.ones(upperLayer.linearActivation.size())
+        if self.forwardNonLin == 'relu':
+            activationDer = torch.tensor([[[1.] if self.linearActivation[i,j,0]>0 else [0.]
+                                for j in range(self.linearActivation.size(1))] for i in
+                                          range(self.linearActivation.size(0))])
+            self.backwardOutput = torch.mul(torch.matmul(torch.transpose(upperLayer.forwardWeights,-1,-2),
+                                                         self.backwardInput),activationDer)
+        elif self.forwardNonLin == 'linear':
+            self.backwardOutput = torch.matmul(torch.transpose(upperLayer.forwardWeights, -1, -2), self.backwardInput)
 
-        elif upperLayer.forwardNonLin == 'softmax':
-            softmaxActivations = upperLayer.forwardOutput
-            activationDer = torch.tensor([[[softmaxActivations[i,j,0]*(hf.kronecker(j,k)- softmaxActivations[i,k,1])
+        elif self.forwardNonLin == 'softmax':
+            softmaxActivations = self.forwardOutput
+            activationDer = torch.tensor([[[softmaxActivations[i,j,0]*(hf.kronecker(j,k)- softmaxActivations[i,k,0])
                                             for k in range(softmaxActivations.size(1))]
                                            for j in range(softmaxActivations.size(1))]
                                           for i in range(softmaxActivations.size(0))])
-            self.backwardOutput = torch.matmul(torch.transpose(upperLayer.forwardWeights,1,2),
-                                                            torch.matmul(torch.transpose(activationDer,1,2)
-                                                            ,self.backwardInput))
-            return
+            self.backwardOutput = torch.matmul(torch.transpose(activationDer, -1, -2),
+                                               torch.matmul(torch.transpose(upperLayer.forwardWeights, -1, -2)
+                                                            , self.backwardInput))
         else:
             print("Error cause: ", str(self.forwardNonLin), ' is not defined as a forward nonlinearity')
             sys.exit("Backward error: BPNet class is expecting different output nonlinearity")
@@ -91,53 +96,28 @@ class Layer():
         # construct 3D tensor with on first dimension the different batch samples, and on the second and third dimension
         # the adjusted weight matrix (element wise multiplication of entire column with the derivative evaluated in the
         # linear activation
-        weights_tilde = torch.empty(self.linearActivation.size(0),self.forwardWeights.size(1),self.forwardWeights.size(0))
-        for i in range(weights_tilde.size(0)):
-            weights_tilde[i,:,:] = torch.mul(self.forwardWeights,activationDer[i,:,:]).t()
-        self.backwardOutput = torch.matmul(weights_tilde,self.backwardInput)
+
+
+        return
 
 
     def updateForwardParameters(self):
-        self.forwardWeights = self.forwardWeights - torch.mul(self.forwardWeightsGrad,self.learningRate)
-        self.forwardBias = self.forwardBias - torch.mul(self.forwardBiasGrad, self.learningRate)
+        forwardWeights = self.forwardWeights - torch.mul(self.forwardWeightsGrad,self.learningRate)
+        forwardBias = self.forwardBias - torch.mul(self.forwardBiasGrad, self.learningRate)
+        self.setForwardParameters(forwardWeights, forwardBias)
 
     def computeGradients(self, lowerLayer):
         """
         :param lowerLayer: first layer upstream of the layer self
         :type lowerLayer: Layer
         :return: saves the gradients of the cost function to the layer parameters for all the batch samples
-        TODO: check gradient update for softmax, not sure if it's completely correct
+
         """
-        if self.forwardNonLin == 'relu':
-            activationDer = torch.tensor([[[1.] if self.linearActivation[i,j,0]>0 else [0.] for j in
-                                           range(self.linearActivation.size(1))] for i in
-                                          range(self.linearActivation.size(0))])
-        elif self.forwardNonLin == 'linear':
-            activationDer = torch.ones(self.linearActivation.size())
-        elif self.forwardNonLin == 'softmax':
-            softmaxActivations = self.forwardOutput
-            activationDer = torch.tensor([[[softmaxActivations[i,j,0]*(hf.kronecker(j,k)- softmaxActivations[i,k,1])
-                                            for k in range(softmaxActivations.size(1))]
-                                           for j in range(softmaxActivations.size(1))]
-                                          for i in range(softmaxActivations.size(0))])
-            weight_gradients = torch.matmul(torch.matmul(torch.transpose(activationDer,1,2) ,self.backwardInput),
-                                               torch.transpose(lowerLayer.forwardOutput,1,2))
-            bias_gradients = torch.matmul(torch.transpose(activationDer,1,2) ,self.backwardInput)
-            batchsize = float(weight_gradients.size(0))
-            self.forwardWeightsGrad = torch.mul(torch.sum(weight_gradients, 0), 1. / batchsize)
-            self.forwardBiasGrad = torch.mul(torch.sum(bias_gradients, 0), 1. / batchsize)
-            return
-        else:
-            print("Error cause: ", str(self.forwardNonLin), ' is not defined as a forward nonlinearity')
-            sys.exit("Backward error: BPNet class is expecting different output nonlinearity")
 
-        weight_gradients = torch.mul(torch.matmul(self.backwardOutput, torch.transpose(lowerLayer.forwardOutput,1,2)),
-                              activationDer)
-        bias_gradients = torch.mul(torch.backwardOutput,activationDer)
-        batchsize = float(weight_gradients.size(0))
-        self.forwardWeightsGrad = torch.mul(torch.sum(weight_gradients,0),1./batchsize)
-        self.forwardBiasGrad = torch.mul(torch.sum(bias_gradients,0),1./batchsize)
-
+        weight_gradients = torch.matmul(self.backwardOutput,torch.transpose(lowerLayer.forwardOutput,-1,-2))
+        bias_gradients = self.backwardOutput
+        self.forwardWeightsGrad = torch.mean(weight_gradients, 0)
+        self.forwardBiasGrad = torch.mean(bias_gradients, 0)
 
 class Network():
     def __init__(self, architecture, loss = 'crossEntropy',forwardNonLin = 'relu', backwardNonLin = 'linear',
@@ -178,7 +158,7 @@ class Network():
         :return:
         """
         self.computeLoss(target)
-        for i in range(len(self.layers)-2,-1,-1):
+        for i in range(len(self.layers)-2,0,-1):
             self.layers[i].propagateBackward(self.layers[i+1])
 
 
@@ -187,17 +167,23 @@ class Network():
         compute and save the loss and the derivative of the loss to the output of the network
         :param target: 3D tensor of size batchdimension x class dimension x 1
         :return:
+        TODO: now it is assumed that cross entropy is always used in combination with a softmax layer and MSE in
+        combination with a linear layer
         """
         lastLayer = self.layers[-1]
         target_classes = hf.prob2class(target)
-        self.accuracyLst = torch.cat((self.accuracyLst, torch.tensor([self.training_accuracy(target)])), 0)
+        self.accuracyLst = torch.cat((self.accuracyLst, torch.tensor([self.training_accuracy(target)])))
         if self.lossFunction == 'crossEntropy':
             lossFunction = nn.CrossEntropyLoss()
-            self.loss = torch.cat((self.loss,lossFunction(lastLayer.forwardOutput.squeeze(),target_classes)),0)
-            self.layers[-1].backwardOutput = torch.div(target,lastLayer.forwardOutput)
+            loss = torch.empty(1)
+            loss[0] = lossFunction(lastLayer.forwardOutput.squeeze(),target_classes)
+            self.loss = torch.cat((self.loss,loss))
+            self.layers[-1].backwardOutput = lastLayer.forwardOutput - target
         elif self.lossFunction == 'mse':
             lossFunction = nn.MSELoss()
-            self.loss = torch.cat((self.loss, lossFunction(lastLayer.forwardOutput.squeeze(),target_classes)),0)
+            loss = torch.empty(1)
+            loss[0] = lossFunction(lastLayer.forwardOutput.squeeze(),target)
+            self.loss = torch.cat((self.loss, loss))
             self.layers[-1].backwardOutput = 2*(lastLayer.forwardOutput - target)
         else:
             print("Error cause: ", str(self.lossFunction), ' is not defined as a loss function')
@@ -228,8 +214,9 @@ class Network():
     def test_loss(self,inputBatch,targets):
         predictions = self.predict(inputBatch)
         if self.lossFunction == 'crossEntropy':
+            targets = hf.prob2class(targets)
             lossFunction = nn.CrossEntropyLoss()
-            return lossFunction(predictions.squeeze(), targets.squeeze())
+            return lossFunction(predictions.squeeze(), targetsnetw)
         elif self.lossFunction == 'mse':
             lossFunction = nn.MSELoss()
             return lossFunction(predictions.squeeze(), targets.squeeze())
@@ -250,6 +237,10 @@ class Network():
         class_probabilities = self.layers[-1].forwardOutput
         predicted_classes = hf.prob2class(class_probabilities)
         return hf.accuracy(predicted_classes,hf.prob2class(targets))
+
+    def resetLoss(self):
+        self.loss = torch.tensor([])
+        self.accuracyLst = torch.tensor([])
 
 
 

@@ -9,3 +9,5 @@ class IdentityLayer(nn.Module):
     def forward(self, x):
         return x
 
+class NetworkError(Exception):
+    pass
