@@ -1,8 +1,8 @@
 import sys
 sys.path.append(r"c:\users\alexander\appdata\local\programs\python\python36\lib\site-packages")
 
-from MainClasses import ReluLayer,InputLayer,SoftmaxOutputLayer, Network, \
-    SGD, SGDMomentum
+from neuralnetwork import ReluLayer, InputLayer, SoftmaxOutputLayer, Network
+from optimizers import SGD, SGDMomentum
 import torch
 import torchvision
 import HelperFunctions as hf

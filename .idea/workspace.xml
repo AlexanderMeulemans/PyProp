@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="627a70cb-13ab-4e6b-bda9-3721d10194d6" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MainClasses.py" beforeDir="false" afterPath="$PROJECT_DIR$/MainClasses.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/neuralnetwork.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/optimizers.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/runMNIST.py" beforeDir="false" afterPath="$PROJECT_DIR$/runMNIST.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -18,8 +18,32 @@
       <file leaf-file-name="MainClasses.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/MainClasses.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-1372">
-              <caret line="696" column="46" selection-start-line="696" selection-start-column="46" selection-end-line="696" selection-end-column="46" />
+            <state>
+              <caret selection-end-line="5" selection-end-column="18" />
+              <folding>
+                <element signature="e#0#12#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="neuralnetwork.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/neuralnetwork.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="9707">
+              <caret line="571" selection-start-line="571" selection-end-line="571" />
+              <folding>
+                <element signature="e#0#12#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="optimizers.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/optimizers.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="68">
+              <caret line="4" column="40" selection-start-line="4" selection-start-column="40" selection-end-line="4" selection-end-column="40" />
               <folding>
                 <element signature="e#0#12#0" expanded="true" />
               </folding>
@@ -30,8 +54,8 @@
       <file leaf-file-name="runMNIST.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/runMNIST.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="119">
-              <caret line="7" column="21" lean-forward="true" selection-start-line="7" selection-start-column="21" selection-end-line="7" selection-end-column="21" />
+            <state relative-caret-position="476">
+              <caret line="28" column="13" lean-forward="true" selection-start-line="28" selection-start-column="13" selection-end-line="28" selection-end-column="13" />
             </state>
           </provider>
         </entry>
@@ -93,8 +117,10 @@
         <option value="$PROJECT_DIR$/HelperClasses.py" />
         <option value="$PROJECT_DIR$/Backprop.py" />
         <option value="$PROJECT_DIR$/HelperFunctions.py" />
-        <option value="$PROJECT_DIR$/runMNIST.py" />
         <option value="$PROJECT_DIR$/MainClasses.py" />
+        <option value="$PROJECT_DIR$/neuralnetwork.py" />
+        <option value="$PROJECT_DIR$/optimizers.py" />
+        <option value="$PROJECT_DIR$/runMNIST.py" />
       </list>
     </option>
   </component>
@@ -247,6 +273,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-1088" y="-221" width="1096" height="1896" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" weight="0.38020834" />
       <window_info anchor="bottom" id="TODO" order="5" />
@@ -484,8 +511,28 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/MainClasses.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1372">
-          <caret line="696" column="46" selection-start-line="696" selection-start-column="46" selection-end-line="696" selection-end-column="46" />
+        <state>
+          <caret selection-end-line="5" selection-end-column="18" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/neuralnetwork.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="9707">
+          <caret line="571" selection-start-line="571" selection-end-line="571" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/optimizers.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="68">
+          <caret line="4" column="40" selection-start-line="4" selection-start-column="40" selection-end-line="4" selection-end-column="40" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
           </folding>
@@ -494,8 +541,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/runMNIST.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="119">
-          <caret line="7" column="21" lean-forward="true" selection-start-line="7" selection-start-column="21" selection-end-line="7" selection-end-column="21" />
+        <state relative-caret-position="476">
+          <caret line="28" column="13" lean-forward="true" selection-start-line="28" selection-start-column="13" selection-end-line="28" selection-end-column="13" />
         </state>
       </provider>
     </entry>
