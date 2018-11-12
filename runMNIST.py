@@ -1,7 +1,8 @@
 import sys
 sys.path.append(r"c:\users\alexander\appdata\local\programs\python\python36\lib\site-packages")
 
-from MainClasses import ReluLayer,InputLayer,SoftmaxOutputLayer, Network, SGD
+from MainClasses import ReluLayer,InputLayer,SoftmaxOutputLayer, Network, \
+    SGD, SGDMomentum
 import torch
 import torchvision
 import HelperFunctions as hf
@@ -14,6 +15,7 @@ hiddenlayer = ReluLayer(28*28,100)
 outputlayer = SoftmaxOutputLayer(100,10,'crossEntropy')
 
 network = Network([inputlayer, hiddenlayer, outputlayer])
+network.cuda(torch.cuda.current_device())
 
 # Loading dataset
 train_set = torchvision.datasets.MNIST(root='./data', train = True, download=True,
@@ -41,12 +43,15 @@ test_loader = torch.utils.data.DataLoader(
                 shuffle=False)
 
 # Initializing optimizer
-optimizer = SGD(network=network,threshold=1.2, initLearningRate=0.5, tau= 100,
+optimizer1 = SGD(network=network,threshold=1.2, initLearningRate=0.1, tau= 100,
                 finalLearningRate=0.005, computeAccuracies= True, maxEpoch=120)
+optimizer2 = SGDMomentum(network=network,threshold=1.2, initLearningRate=0.1,
+                         tau=100, finalLearningRate=0.005,
+                         computeAccuracies=True, maxEpoch=150, momentum=0.5)
 
 
 # Train on MNIST
-optimizer.runMNIST(train_loader)
+optimizer1.runMNIST(train_loader)
 
 # Test network
 for batch_idx, (data,target) in enumerate(test_loader):

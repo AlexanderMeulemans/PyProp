@@ -6,13 +6,15 @@ from HelperClasses import NetworkError
 import numpy as np
 
 class Layer(object):
-    """ Parent class of all occuring layers in neural networks with only feedforward weights.
-    This class should not be used directly, only via its children"""
+    """ Parent class of all occuring layers in neural networks with only
+    feedforward weights. This class should not be used directly,
+    only via its children"""
 
     def __init__(self, inDim, layerDim):
         """
         Initializes the Layer object
-        :param inDim: input dimension of the layer (equal to the layer dimension of the previous layer in the network)
+        :param inDim: input dimension of the layer (equal to the layer dimension
+        of the previous layer in the network)
         :param layerDim: Layer dimension
         """
         self.setLayerDim(layerDim)
@@ -52,9 +54,11 @@ class Layer(object):
 
     def setForwardGradients(self, forwardWeightsGrad, forwardBiasGrad):
         if not isinstance(forwardWeightsGrad, torch.Tensor):
-            raise TypeError("Expecting a tensor object for self.forwardWeightsGrad")
+            raise TypeError("Expecting a tensor object "
+                            "for self.forwardWeightsGrad")
         if not isinstance(forwardBiasGrad, torch.Tensor):
-            raise TypeError("Expecting a tensor object for self.forwardBiasGrad")
+            raise TypeError("Expecting a tensor object for "
+                            "self.forwardBiasGrad")
         if hf.containsNaNs(forwardWeightsGrad):
             raise ValueError("forwardWeightsGrad contains NaNs")
         if hf.containsNaNs(forwardBiasGrad):
@@ -86,12 +90,39 @@ class Layer(object):
         self.backwardOutput = backwardOutput
 
     def initParameters(self):
-        """ Initializes the layer parameters when the layer is created. This method should only be used when creating
-        a new layer. Use setForwardParameters to update the parameters and computeGradient to update the gradients"""
+        """ Initializes the layer parameters when the layer is created.
+        This method should only be used when creating
+        a new layer. Use setForwardParameters to update the parameters and
+        computeGradient to update the gradients"""
         self.forwardWeights = torch.rand(self.layerDim, self.inDim)
         self.forwardBias = torch.zeros(self.layerDim, 1)
         self.forwardWeightsGrad = torch.zeros(self.layerDim, self.inDim)
         self.forwardBiasGrad = torch.zeros(self.layerDim, 1)
+
+    def initVelocities(self):
+        """ Initializes the velocities of the gradients. This should only be
+        called when an optimizer with momentum
+        is used, otherwise these attributes will not be used"""
+        self.forwardWeightsVel = torch.zeros(self.layerDim, self.inDim)
+        self.forwardBiasVel = torch.zeros(self.layerDim, 1)
+
+    def setForwardVelocities(self, forwardWeightsVel, forwardBiasVel):
+        if not isinstance(forwardWeightsVel, torch.Tensor):
+            raise TypeError("Expecting a tensor object for "
+                            "self.forwardWeightsVel")
+        if not isinstance(forwardBiasVel, torch.Tensor):
+            raise TypeError("Expecting a tensor object for self.forwardBiasVel")
+        if hf.containsNaNs(forwardWeightsVel):
+            raise ValueError("forwardWeightsVel contains NaNs")
+        if hf.containsNaNs(forwardBiasVel):
+            raise ValueError("forwardBiasVel contains NaNs")
+        if not forwardWeightsVel.shape == self.forwardWeightsVel.shape:
+            raise ValueError("forwardWeightsVel has not the correct shape")
+        if not forwardBiasVel.shape == self.forwardBiasVel.shape:
+            raise ValueError("forwardBiasVel has not the correct shape")
+
+        self.forwardWeightsVel = forwardWeightsVel
+        self.forwardBiasVel = forwardBiasVel
 
 
     def zeroGrad(self):
@@ -101,16 +132,19 @@ class Layer(object):
 
     def updateForwardParameters(self, learningRate):
         """
-        Update the forward weights and bias of the layer using the computed gradients
+        Update the forward weights and bias of the layer
+        using the computed gradients.
         :param learningRate: Learning rate of the layer
         """
-        if not isinstance(learningRate,float):
+        if not isinstance(learningRate, float):
             raise TypeError("Expecting a float number as learningRate")
         if learningRate <= 0.:
             raise ValueError("Expecting a strictly positive learningRate")
 
-        forwardWeights = self.forwardWeights - torch.mul(self.forwardWeightsGrad, learningRate)
-        forwardBias = self.forwardBias - torch.mul(self.forwardBiasGrad, learningRate)
+        forwardWeights = self.forwardWeights \
+                         - torch.mul(self.forwardWeightsGrad, learningRate)
+        forwardBias = self.forwardBias \
+                      - torch.mul(self.forwardBiasGrad, learningRate)
         self.setForwardParameters(forwardWeights, forwardBias)
 
     def propagateForward(self,lowerLayer):
@@ -118,33 +152,70 @@ class Layer(object):
         :param lowerLayer: The first layer upstream of the layer 'self'
         :type lowerLayer: Layer
         :return saves the computed output of the layer to self.forwardOutput.
-                forwardOutput is a 3D tensor of size batchDimension x layerDimension x 1
+                forwardOutput is a 3D tensor of size
+                batchDimension x layerDimension x 1
         """
         if not isinstance(lowerLayer,Layer):
-            raise TypeError("Expecting a Layer object as argument for propagateForward")
+            raise TypeError("Expecting a Layer object as "
+                            "argument for propagateForward")
         if not lowerLayer.layerDim == self.inDim:
-            raise ValueError("Layer sizes are not compatible for propagating forward")
+            raise ValueError("Layer sizes are not compatible for "
+                             "propagating forward")
 
         self.forwardInput = lowerLayer.forwardOutput
-        self.linearActivation = torch.matmul(self.forwardWeights,self.forwardInput) + self.forwardBias
+        self.linearActivation = torch.matmul(self.forwardWeights,
+                                             self.forwardInput) +  \
+                                             self.forwardBias
         self.forwardOutput = self.nonlinearity(self.linearActivation)
 
     def nonlinearity(self,linearActivation):
         """ This method should be always overwritten by the children"""
-        raise NetworkError("The method nonlinearity should always be overwritten by children of Layer. Layer on itself "
-                        "cannot be used in a network")
+        raise NetworkError("The method nonlinearity should always be "
+                           "overwritten by children of Layer. Layer on itself "
+                           "cannot be used in a network")
 
     def computeGradients(self, lowerLayer):
         """
         :param lowerLayer: first layer upstream of the layer self
         :type lowerLayer: Layer
-        :return: saves the gradients of the cost function to the layer parameters for all the batch samples
+        :return: saves the gradients of the cost function to the layer
+        parameters for all the batch samples
 
         """
 
-        weight_gradients = torch.matmul(self.backwardOutput,torch.transpose(lowerLayer.forwardOutput,-1,-2))
+        weight_gradients = torch.matmul(self.backwardOutput, torch.transpose(
+            lowerLayer.forwardOutput,-1,-2))
         bias_gradients = self.backwardOutput
-        self.setForwardGradients(torch.mean(weight_gradients, 0),torch.mean(bias_gradients, 0))
+        self.setForwardGradients(torch.mean(weight_gradients, 0) ,torch.mean(
+            bias_gradients, 0))
+
+    def computeGradientVelocities(self, lowerLayer, momentum, learningRate):
+        """ Used for optimizers with momentum. """
+        if not isinstance(momentum, float):
+            raise TypeError("Expecting float number for momentum, "
+                            "got {}".format(type(momentum)))
+        if not (momentum>=0. and momentum < 1.):
+            raise ValueError("Expecting momentum in [0;1), got {}".format(
+                momentum))
+
+        weight_gradients = torch.mean(torch.matmul(self.backwardOutput,
+                                            torch.transpose(
+            lowerLayer.forwardOutput, -1, -2)),0)
+        bias_gradients = torch.mean(self.backwardOutput, 0)
+        weight_velocities = torch.mul(self.forwardWeightsVel, momentum) + \
+                            torch.mul(weight_gradients, learningRate)
+        bias_velocities = torch.mul(self.forwardBiasVel, momentum) + \
+                          torch.mul(bias_gradients, learningRate)
+        self.setForwardVelocities(weight_velocities, bias_velocities)
+
+    def updateForwardParametersWithVelocity(self):
+        """ Update the forward parameters with the gradient velocities
+        computed in computeGradientVelocities"""
+        forwardWeights = self.forwardWeights \
+                         - self.forwardWeightsVel
+        forwardBias = self.forwardBias \
+                      - self.forwardBiasVel
+        self.setForwardParameters(forwardWeights, forwardBias)
 
 
 class ReluLayer(Layer):
@@ -158,20 +229,25 @@ class ReluLayer(Layer):
         """
         :param upperLayer: the layer one step downstream of the layer 'self'
         :type upperLayer: Layer
-        :return: saves the backwards output in self. backwardOutput is of size batchDimension x layerdimension  x 1
+        :return: saves the backwards output in self. backwardOutput is of
+        size batchDimension x layerdimension  x 1
         """
         if not isinstance(upperLayer,Layer):
-            raise TypeError("Expecting a Layer object as argument for propagateBackward")
+            raise TypeError("Expecting a Layer object as argument for "
+                            "propagateBackward")
         if not upperLayer.inDim == self.layerDim:
-            raise ValueError("Layer sizes are not compatible for propagating backwards")
+            raise ValueError("Layer sizes are not compatible for propagating "
+                             "backwards")
 
         self.backwardInput = upperLayer.backwardOutput
         # Construct vectorized Jacobian for all batch samples.
-        activationDer = torch.tensor([[[1.] if self.linearActivation[i,j,0]>0 else [0.]
+        activationDer = torch.tensor([[[1.] if self.linearActivation[i,j,0]>0
+                                       else [0.]
                             for j in range(self.linearActivation.size(1))]
                             for i in range(self.linearActivation.size(0))])
-        backwardOutput = torch.mul(torch.matmul(torch.transpose(upperLayer.forwardWeights,-1,-2),
-                                                     self.backwardInput),activationDer)
+        backwardOutput = torch.mul(torch.matmul(torch.transpose(
+            upperLayer.forwardWeights,-1,-2),self.backwardInput),
+            activationDer)
         self.setBackwardOutput(backwardOutput)
 
 
@@ -187,22 +263,27 @@ class SoftmaxLayer(Layer):
         """
         :param upperLayer: the layer one step downstream of the layer 'self'
         :type upperLayer: Layer
-        :return: saves the backwards output in self. backwardOutput is of size batchDimension x layerdimension  x 1
+        :return: saves the backwards output in self. backwardOutput is of
+        size batchDimension x layerdimension  x 1
         """
         if not isinstance(upperLayer,Layer):
-            raise TypeError("Expecting a Layer object as argument for propagateBackward")
+            raise TypeError("Expecting a Layer object as argument for  "
+                            "propagateBackward")
         if not upperLayer.inDim == self.layerDim:
-            raise ValueError("Layer sizes are not compatible for propagating backwards")
+            raise ValueError("Layer sizes are not compatible for "
+                             "propagating backwards")
 
         self.backwardInput = upperLayer.backwardOutput
         # Construct Jacobian for all batch samples.
         softmaxActivations = self.forwardOutput
-        jacobian = torch.tensor([[[softmaxActivations[i, j, 0] * (hf.kronecker(j, k) - softmaxActivations[i, k, 0])
-                                        for k in range(softmaxActivations.size(1))]
-                                       for j in range(softmaxActivations.size(1))]
-                                      for i in range(softmaxActivations.size(0))])
+        jacobian = torch.tensor([[[softmaxActivations[i, j, 0] *
+                           (hf.kronecker(j, k) - softmaxActivations[i, k, 0])
+                                for k in range(softmaxActivations.size(1))]
+                               for j in range(softmaxActivations.size(1))]
+                              for i in range(softmaxActivations.size(0))])
         backwardOutput = torch.matmul(torch.transpose(jacobian, -1, -2),
-                                           torch.matmul(torch.transpose(upperLayer.forwardWeights, -1, -2)
+                                           torch.matmul(torch.transpose(
+                                            upperLayer.forwardWeights, -1, -2)
                                                         , self.backwardInput))
         self.setBackwardOutput(backwardOutput)
 
@@ -217,54 +298,70 @@ class LinearLayer(Layer):
         """
         :param upperLayer: the layer one step downstream of the layer 'self'
         :type upperLayer: Layer
-        :return: saves the backwards output in self. backwardOutput is of size batchDimension x layerdimension  x 1
+        :return: saves the backwards output in self. backwardOutput is of
+        size batchDimension x layerdimension  x 1
         """
         if not isinstance(upperLayer,Layer):
-            raise TypeError("Expecting a Layer object as argument for propagateBackward")
+            raise TypeError("Expecting a Layer object as "
+                            "argument for propagateBackward")
         if not upperLayer.inDim == self.layerDim:
-            raise ValueError("Layer sizes are not compatible for propagating backwards")
+            raise ValueError("Layer sizes are not compatible "
+                             "for propagating backwards")
 
         self.backwardInput = upperLayer.backwardOutput
-        backwardOutput = torch.matmul(torch.transpose(upperLayer.forwardWeights, -1, -2), self.backwardInput)
+        backwardOutput = torch.matmul(torch.transpose(
+            upperLayer.forwardWeights, -1, -2), self.backwardInput)
         self.setBackwardOutput(backwardOutput)
 
 class InputLayer(Layer):
-    """ Input layer of the neural network, e.g. the pixelvalues of a picture. """
+    """ Input layer of the neural network,
+    e.g. the pixelvalues of a picture. """
 
     def __init__(self,layerDim):
-        """ InputLayer has only a layerDim and a forward activation that can be set,
+        """ InputLayer has only a layerDim and a
+        forward activation that can be set,
          no input dimension nor parameters"""
         self.setLayerDim(layerDim)
 
 
     def propagateForward(self, lowerLayer):
-        """ This function should never be called for an input layer, the forwardOutput should be directly set
-        to the input values of the network (e.g. the pixel values of a picture) """
-        raise NetworkError("The forwardOutput should be directly set to the input values of the network for "
+        """ This function should never be called for an input layer,
+        the forwardOutput should be directly set
+        to the input values of the network (e.g. the pixel values of a picture)
+        """
+        raise NetworkError("The forwardOutput should be directly set "
+                           "to the input values of the network for "
                            "an InputLayer")
 
     def propagateBackward(self, upperLayer):
-        """ This function should never be called for an input layer, there is no point in having a backward output
+        """ This function should never be called for an input layer,
+        there is no point in having a backward output
          here, as this layer has no parameters to update"""
-        raise NetworkError("Propagate Backward should never be called for an input layer, there is no point in having "
-                           "a backward output here, as this layer has no parameters to update")
+        raise NetworkError("Propagate Backward should never be called for "
+                           "an input layer, there is no point in having "
+                           "a backward output here, as this layer has no "
+                           "parameters to update")
 
 class OutputLayer(Layer):
-    """" Super class for the last layer of a network. This layer has a loss as extra attribute and some extra
+    """" Super class for the last layer of a network.
+    This layer has a loss as extra attribute and some extra
     methods as explained below. """
 
     def __init__(self,inDim, layerDim, lossFunction):
         """
-        :param inDim: input dimension of the layer, equal to the layer dimension of the second last layer in the network
+        :param inDim: input dimension of the layer,
+        equal to the layer dimension of the second last layer in the network
         :param layerDim: Layer dimension
-        :param loss: string indicating which loss function is used to compute the network loss
+        :param loss: string indicating which loss function is used to
+        compute the network loss
         """
         super().__init__(inDim, layerDim)
         self.setLossFunction(lossFunction)
 
     def setLossFunction(self,lossFunction):
         if not isinstance(lossFunction, str):
-            raise TypeError('Expecting a string as indicator for the loss function')
+            raise TypeError('Expecting a string as indicator'
+                            ' for the loss function')
         if not (lossFunction == 'mse' or lossFunction == 'crossEntropy'):
             raise NetworkError('Expecting an mse or crossEntropy loss')
         self.lossFunction = lossFunction
@@ -276,10 +373,12 @@ class OutputLayer(Layer):
         if not isinstance(target,torch.Tensor):
             raise TypeError("Expecting a torch.Tensor object as target")
         if not self.forwardOutput.shape == target.shape:
-            raise ValueError('Expecting a tensor of dimensions: batchdimension x class dimension x 1. Given target'
+            raise ValueError('Expecting a tensor of dimensions: batchdimension'
+                             ' x class dimension x 1. Given target'
                              'has shape' + str(target.shape))
         if self.lossFunction == 'crossEntropy':
-            # Convert output 'class probabilities' to one class per batch sample (with highest class probability)
+            # Convert output 'class probabilities' to one class per batch sample
+            #  (with highest class probability)
             target_classes = hf.prob2class(target)
             lossFunction = nn.CrossEntropyLoss()
             loss = lossFunction(self.forwardOutput.squeeze(), target_classes)
@@ -290,14 +389,17 @@ class OutputLayer(Layer):
             return torch.mean(loss).numpy()
 
     def propagateBackward(self, upperLayer):
-        """ This function should never be called for an output layer, the backwardOutput should be set based on the
+        """ This function should never be called for an output layer,
+        the backwardOutput should be set based on the
         loss of the layer with computeBackwardOutput"""
-        raise NetworkError("Propagate Backward should never be called for an output layer, use computeBackwardOutput "
+        raise NetworkError("Propagate Backward should never be called for an "
+                           "output layer, use computeBackwardOutput "
                            "instead")
 
 
 class SoftmaxOutputLayer(OutputLayer):
-    """ Output layer with a softmax activation function. This layer should always be combined with a crossEntropy
+    """ Output layer with a softmax activation function. This layer
+    should always be combined with a crossEntropy
     loss."""
 
     def nonlinearity(self,linearActivation):
@@ -306,38 +408,46 @@ class SoftmaxOutputLayer(OutputLayer):
         return softmax(linearActivation)
 
     def computeBackwardOutput(self,target):
-        """ Compute the backward output based on the derivative of the loss to the linear activation of this layer
+        """ Compute the backward output based on the derivative of the loss
+        to the linear activation of this layer
         :param target: 3D tensor of size batchdimension x class dimension x 1"""
         if not self.lossFunction == 'crossEntropy':
-            raise NetworkError("a softmax output layer should always be combined with a cross entropy loss")
+            raise NetworkError("a softmax output layer should always be "
+                               "combined with a cross entropy loss")
         if not isinstance(target,torch.Tensor):
             raise TypeError("Expecting a torch.Tensor object as target")
         if not self.forwardOutput.shape == target.shape:
-            raise ValueError('Expecting a tensor of dimensions: batchdimension x class dimension x 1. Given target'
+            raise ValueError('Expecting a tensor of dimensions: '
+                             'batchdimension x class dimension x 1.'
+                             ' Given target'
                              'has shape' + str(target.shape))
         
         backwardOutput = self.forwardOutput - target
         self.setBackwardOutput(backwardOutput)
 
     def propagateForward(self,lowerLayer):
-        """ Normal forward propagation, but on top of that, save the predicted classes in self."""
+        """ Normal forward propagation, but on top of that, save the predicted
+        classes in self."""
         super().propagateForward(lowerLayer)
         self.predictedClasses = hf.prob2class(self.forwardOutput)
 
     def accuracy(self, target):
-        """ Compute the accuracy if the network predictions with respect to the given true targets.
+        """ Compute the accuracy if the network predictions with respect to
+        the given true targets.
         :param target: 3D tensor of size batchdimension x class dimension x 1"""
         if not isinstance(target,torch.Tensor):
             raise TypeError("Expecting a torch.Tensor object as target")
         if not self.forwardOutput.shape == target.shape:
-            raise ValueError('Expecting a tensor of dimensions: batchdimension x class dimension x 1. Given target'
+            raise ValueError('Expecting a tensor of dimensions: batchdimension'
+                             ' x class dimension x 1. Given target'
                              'has shape' + str(target.shape))
         return hf.accuracy(self.predictedClasses, hf.prob2class(target))
 
 
         
 class LinearOutputLayer(OutputLayer):
-    """ Output layer with a linear activation function. This layer can so far only be combined with an mse loss
+    """ Output layer with a linear activation function. This layer can so far
+    only be combined with an mse loss
     function."""
     
     def nonlinearity(self,linearActivation):
@@ -345,84 +455,125 @@ class LinearOutputLayer(OutputLayer):
         return linearActivation
     
     def computeBackwardOutput(self,target):
-        """ Compute the backward output based on the derivative of the loss to the linear activation of this layer"""
+        """ Compute the backward output based on the derivative of the loss to
+        the linear activation of this layer"""
         if not self.lossFunction == 'mse':
-            raise NetworkError("a linear output layer can only be combined with a mse loss")
+            raise NetworkError("a linear output layer can only be combined "
+                               "with a mse loss")
         if not isinstance(target,torch.Tensor):
             raise TypeError("Expecting a torch.Tensor object as target")
         if not self.forwardOutput.shape == target.shape:
-            raise ValueError('Expecting a tensor of dimensions: batchdimension x class dimension x 1. Given target'
+            raise ValueError('Expecting a tensor of dimensions: batchdimension '
+                             'x class dimension x 1. Given target'
                              'has shape' + str(target.shape))
         backwardOutput = 2*(self.forwardOutput - target)
         self.setBackwardOutput(backwardOutput)
         
 
-class Network(object):
-    """ Network consisting of multiple layers. This class provides a range of methods to facilitate training of the
+class Network(nn.Module):
+    """ Network consisting of multiple layers. This class provides a range of
+    methods to facilitate training of the
     networks """
     
     def __init__(self, layers):
         """
         :param layers: list of all the layers in the network
         """
+        super(Network, self).__init__()
         self.setLayers(layers)
         
     def setLayers(self,layers):
         if not isinstance(layers,list):
-            raise TypeError("Expecting a list object containing all the layers of the network")
+            raise TypeError("Expecting a list object containing all the "
+                            "layers of the network")
         if len(layers) < 2:
-            raise ValueError("Expecting at least 2 layers (including input and output layer) in a network")
+            raise ValueError("Expecting at least 2 layers (including input "
+                             "and output layer) in a network")
         if not isinstance(layers[0],InputLayer):
-            raise TypeError("First layer of the network should be of type InputLayer")
+            raise TypeError("First layer of the network should be of type"
+                            " InputLayer")
         if not isinstance(layers[-1],OutputLayer):
-            raise TypeError("Last layer of the network should be of type OutputLayer")
+            raise TypeError("Last layer of the network should be of "
+                            "type OutputLayer")
         for i in range(1,len(layers)):
             if not isinstance(layers[i],Layer):
                 TypeError("All layers of the network should be of type Layer")
             if not layers[i-1].layerDim == layers[i].inDim:
-                raise ValueError("layerDim should match with inDim of next layer")
+                raise ValueError("layerDim should match with inDim of "
+                                 "next layer")
 
         self.layers = layers
 
+    def initVelocities(self):
+        """ Initialize the gradient velocities in all the layers. Only called
+        when an optimizer with momentum is used."""
+        for i in range(1,len(self.layers)):
+            self.layers[i].initVelocities()
+
     def propagateForward(self, inputBatch):
         """ Propagate the inputbatch forward through the network
-        :param inputBatch: Inputbatch of dimension batch dimension x input dimension x 1"""
+        :param inputBatch: Inputbatch of dimension
+        batch dimension x input dimension x 1"""
         self.layers[0].setForwardOutput(inputBatch)
         for i in range(1,len(self.layers)):
             self.layers[i].propagateForward(self.layers[i-1])
 
     def propagateBackward(self, target):
-        """ Propagate the gradient of the loss function with respect to the linear activation of each layer backward
-        through the network and compute the gradient of the loss function to the parameters of each layers
-        :param target: 3D tensor of size batchdimension x class dimension x 1 """
+        """ Propagate the gradient of the loss function with respect to the
+        linear activation of each layer backward
+        through the network
+        :param target: 3D tensor of size batchdimension x class dimension x 1
+        """
         if not isinstance(target,torch.Tensor):
             raise TypeError("Expecting a torch.Tensor object as target")
         if not self.layers[-1].forwardOutput.shape == target.shape:
-            raise ValueError('Expecting a tensor of dimensions: batchdimension x class dimension x 1. Given target'
+            raise ValueError('Expecting a tensor of dimensions: '
+                             'batchdimension x class dimension x 1.'
+                             ' Given target'
                              'has shape' + str(target.shape))
 
         self.layers[-1].computeBackwardOutput(target)
-        self.layers[-1].computeGradients(self.layers[-2])
         for i in range(len(self.layers)-2,0,-1):
             self.layers[i].propagateBackward(self.layers[i+1])
+
+    def computeGradients(self):
+        """compute the gradient of the loss function to the
+        parameters of each layer"""
+        for i in range(1,len(self.layers)):
             self.layers[i].computeGradients(self.layers[i-1])
 
-    def updateParameters(self, learningRate):
-        """ Update all the parameters of the network with the computed gradients"""
+    def computeGradientVelocities(self, momentum, learningRate):
+        """Compute the gradient velocities for each layer"""
+        for i in range(1,len(self.layers)):
+            self.layers[i].computeGradientVelocities(self.layers[i-1],
+                                                     momentum, learningRate)
+
+    def updateForwardParametersWithVelocity(self):
+        """ Update all the parameters of the network with the
+                computed gradients velocities"""
+        for i in range(1,len(self.layers)):
+            self.layers[i].updateForwardParametersWithVelocity()
+
+    def updateForwardParameters(self, learningRate):
+        """ Update all the parameters of the network with the
+        computed gradients"""
         for i in range(1,len(self.layers)):
             self.layers[i].updateForwardParameters(learningRate)
 
     def loss(self,target):
-        """ Return the loss of each sample in the batch compared to the provided targets.
+        """ Return the loss of each sample in the batch compared to
+        the provided targets.
         :param target: 3D tensor of size batchdimension x class dimension x 1"""
         return self.layers[-1].loss(target)
 
-    def batchTraining(self,batchInput,target,learningRate):
-        """ Perfrom a complete batch training with the given input batch and targets"""
-
-        self.propagateForward(batchInput)
-        self.propagateBackward(target)
-        self.updateParameters(learningRate)
+    # def batchTraining(self,batchInput, target, learningRate):
+    #     """ Perfrom a complete batch training with the given input
+    #     batch and targets"""
+    #
+    #     self.propagateForward(batchInput)
+    #     self.propagateBackward(target)
+    #     self.computeGradients()
+    #     self.updateForwardParameters(learningRate)
 
     def zeroGrad(self):
         """ Set all the gradients of the network to zero"""
@@ -435,12 +586,16 @@ class Network(object):
         return self.layers[-1].forwardOutput
 
     def accuracy(self,targets):
-        """ Return the test accuracy of network based on the given input test batch and the true targets
-        IMPORTANT: first you have to run self.predict(inputBatch) in order to save the predictions in the output
+        """ Return the test accuracy of network based on the given input
+        test batch and the true targets
+        IMPORTANT: first you have to run self.predict(inputBatch) in order
+        to save the predictions in the output
         layer.
-        IMPORTANT: the accuracy can only be computed for classification problems, thus the last layer should be
+        IMPORTANT: the accuracy can only be computed for classification
+        problems, thus the last layer should be
         a softmax """
         return self.layers[-1].accuracy(targets)
+
 
 
 class Optimizer(object):
@@ -449,7 +604,8 @@ class Optimizer(object):
     def __init__(self, network, maxEpoch = 150, computeAccuracies = False):
         """
         :param network: network to train
-        :param computeAccuracies: True if the optimizer should also save the accuracies. Only possible with
+        :param computeAccuracies: True if the optimizer should also save
+        the accuracies. Only possible with
         classification problems
         :type network: Network
         """
@@ -467,7 +623,8 @@ class Optimizer(object):
 
     def setNetwork(self,network):
         if not isinstance(network, Network):
-            raise TypeError("Expecting Network object, instead got {}".format(type(network)))
+            raise TypeError("Expecting Network object, instead got "
+                            "{}".format(type(network)))
         self.network = network
 
     def setLearningRate(self, learningRate):
@@ -491,9 +648,11 @@ class Optimizer(object):
 
     def setMaxEpoch(self,maxEpoch):
         if not isinstance(maxEpoch,int):
-            raise TypeError('Expecting integer for maxEpoch, got {}'.format(type(maxEpoch)))
+            raise TypeError('Expecting integer for maxEpoch, got '
+                            '{}'.format(type(maxEpoch)))
         if maxEpoch <= 0:
-            raise ValueError('Expecting strictly positive integer for maxEpoch, got {}'.format(maxEpoch))
+            raise ValueError('Expecting strictly positive integer for '
+                             'maxEpoch, got {}'.format(maxEpoch))
         self.maxEpoch = maxEpoch
 
 
@@ -503,11 +662,31 @@ class Optimizer(object):
     def resetSingleBatchAccuracies(self):
         self.singleBatchAccuracies = np.array([])
 
+    def updateLearningRate(self):
+        """ If the optimizer should do a specific update of the learningrate,
+        this method should be overwritten in the subclass"""
+        pass
+
+    def saveResults(self, targets):
+        """ Save the results of the optimizing step in the optimizer object."""
+        self.batchLosses = np.append(self.batchLosses, self.network.loss(
+            targets))
+        self.singleBatchLosses = np.append(self.singleBatchLosses,
+                                           self.network.loss(targets))
+        if self.computeAccuracies:
+            self.batchAccuracies = np.append(self.batchAccuracies,
+                                             self.network.accuracy(targets))
+            self.singleBatchAccuracies = np.append(
+                self.singleBatchAccuracies, self.network.accuracy(targets))
+
     def runMNIST(self,trainLoader):
-        """ Train the network on the total training set of MNIST as long as epoch loss is above the threshold
-        :param trainLoader: a torch.utils.data.DataLoader object which containts the dataset"""
+        """ Train the network on the total training set of MNIST as
+        long as epoch loss is above the threshold
+        :param trainLoader: a torch.utils.data.DataLoader object
+        which containts the dataset"""
         if not isinstance(trainLoader, torch.utils.data.DataLoader):
-            raise TypeError("Expecting a DataLoader object, now got a {}".format(type(trainLoader)))
+            raise TypeError("Expecting a DataLoader object, now got a "
+                            "{}".format(type(trainLoader)))
         epochLoss = float('inf')
         print('====== Training started =======')
         print('Epoch: ' + str(self.epoch) + ' ------------------------')
@@ -526,7 +705,8 @@ class Optimizer(object):
             print('Loss: ' + str(epochLoss))
             if self.computeAccuracies:
                 epochAccuracy = np.mean(self.singleBatchAccuracies)
-                self.epochAccuracies = np.append(self.epochAccuracies,epochAccuracy)
+                self.epochAccuracies = np.append(self.epochAccuracies,
+                                                 epochAccuracy)
                 self.resetSingleBatchAccuracies()
                 print('Training Accuracy: ' + str(epochAccuracy))
             if self.epoch == self.maxEpoch:
@@ -539,20 +719,25 @@ class Optimizer(object):
 class SGD(Optimizer):
     """ Stochastic Gradient Descend optimizer"""
 
-    def __init__(self, network, threshold, initLearningRate, tau=100, finalLearningRate = None,
+    def __init__(self, network, threshold, initLearningRate, tau=100,
+                 finalLearningRate = None,
                  computeAccuracies = False, maxEpoch = 150):
         """
-        :param threshold: the optimizer will run until the network loss is below this threshold
+        :param threshold: the optimizer will run until the network loss is
+        below this threshold
         :param initLearningRate: initial learning rate
         :param network: network to train
-        :param computeAccuracies: True if the optimizer should also save the accuracies. Only possible with
+        :param computeAccuracies: True if the optimizer should also save the
+        accuracies. Only possible with
         classification problems
-        :param tau: used to update the learningrate according to learningrate = (1-epoch/tau)*initLearningRate +
+        :param tau: used to update the learningrate according to
+        learningrate = (1-epoch/tau)*initLearningRate +
                     epoch/tau* finalLearningRate
         :param finalLearningRate: see tau
         :type network: Network
         """
-        super().__init__(network=network, maxEpoch=maxEpoch, computeAccuracies=computeAccuracies)
+        super().__init__(network=network, maxEpoch=maxEpoch,
+                         computeAccuracies=computeAccuracies)
         self.setThreshold(threshold)
         self.setLearningRate(initLearningRate)
         self.setInitLearningRate(initLearningRate)
@@ -564,61 +749,87 @@ class SGD(Optimizer):
 
     def setInitLearningRate(self,initLearningRate):
         if not isinstance(initLearningRate,float):
-            raise TypeError("Expecting float number for initLearningRate, got {}".format(type(initLearningRate)))
+            raise TypeError("Expecting float number for initLearningRate, got "
+                            "{}".format(type(initLearningRate)))
         if initLearningRate <= 0:
-            raise ValueError("Expecting strictly positive float, got {}".format(initLearningRate))
+            raise ValueError("Expecting strictly positive float, got "
+                             "{}".format(initLearningRate))
         self.initLearningRate = initLearningRate
 
     def setTau(self,tau):
         if not isinstance(tau,int):
-            raise TypeError("Expecting int number for tau, got {}".format(type(tau)))
+            raise TypeError("Expecting int number for tau, got"
+                            " {}".format(type(tau)))
         if tau <= 0:
-            raise ValueError("Expecting strictly positive integer, got {}".format(tau))
+            raise ValueError("Expecting strictly positive integer, got "
+                             "{}".format(tau))
         self.tau = tau
 
     def setFinalLearningRate(self,finalLearningRate):
         if not isinstance(finalLearningRate,float):
-            raise TypeError("Expecting float number for finalLearningRate, got {}".format(type(finalLearningRate)))
+            raise TypeError("Expecting float number for finalLearningRate,"
+                            " got {}".format(type(finalLearningRate)))
         if finalLearningRate <= 0:
-            raise ValueError("Expecting strictly positive float, got {}".format(finalLearningRate))
+            raise ValueError("Expecting strictly positive float, got "
+                             "{}".format(finalLearningRate))
         self.finalLearningRate = finalLearningRate
 
     def updateLearningRate(self):
         if self.epoch <= self.tau:
             alpha = float(self.epoch)/float(self.tau)
-            learningRate = (1. - alpha)*self.initLearningRate + alpha*self.finalLearningRate
+            learningRate = (1. - alpha)*self.initLearningRate + \
+                           alpha*self.finalLearningRate
             self.setLearningRate(learningRate)
         else:
             pass
 
     def step(self, inputBatch, targets):
         """ Perform one batch optimizing step"""
-        self.network.batchTraining(inputBatch,targets,self.learningRate)
-        self.batchLosses = np.append(self.batchLosses, self.network.loss(targets))
-        self.singleBatchLosses = np.append(self.singleBatchLosses,self.network.loss(targets))
-        if self.computeAccuracies:
-            self.batchAccuracies = np.append(self.batchAccuracies, self.network.accuracy(targets))
-            self.singleBatchAccuracies = np.append(self.singleBatchAccuracies, self.network.accuracy(targets))
+        self.network.propagateForward(inputBatch)
+        self.network.propagateBackward(targets)
+        self.network.computeGradients()
+        self.network.updateForwardParameters(self.learningRate)
+
+        self.saveResults(targets)
+
 
 class SGDMomentum(SGD):
     """ Stochastic Gradient Descend with momentum"""
 
-    def __init__(self, network, threshold, initLearningRate, tau=100, finalLearningRate=None,
+    def __init__(self, network, threshold, initLearningRate, tau=100,
+                 finalLearningRate=None,
                  computeAccuracies=False, maxEpoch=150, momentum = 0.5):
         """
-        :param momentum: Momentum value that characterizes how much of the previous gradients is incorporated in the
+        :param momentum: Momentum value that characterizes how much of the
+        previous gradients is incorporated in the
                         update.
         """
-        super().__init__(network=network, threshold=threshold, initLearningRate=initLearningRate, tau=tau,
-                         finalLearningRate=finalLearningRate, computeAccuracies=computeAccuracies, maxEpoch=maxEpoch)
+        super().__init__(network=network, threshold=threshold,
+                         initLearningRate=initLearningRate, tau=tau,
+                         finalLearningRate=finalLearningRate,
+                         computeAccuracies=computeAccuracies, maxEpoch=maxEpoch)
         self.setMomentum(momentum)
+        self.network.initVelocities()
 
     def setMomentum(self, momentum):
         if not isinstance(momentum, float):
-            raise TypeError("Expecting float number for momentum, got {}".format(type(momentum)))
+            raise TypeError("Expecting float number for momentum, "
+                            "got {}".format(type(momentum)))
         if not (momentum>=0. and momentum < 1.):
-            raise ValueError("Expecting momentum in [0;1), got {}".format(momentum))
+            raise ValueError("Expecting momentum in [0;1), got {}".format(
+                momentum))
         self.momentum = momentum
+
+    def step(self, inputBatch, targets):
+        """ Perform one batch optimizing step"""
+        self.network.propagateForward(inputBatch)
+        self.network.propagateBackward(targets)
+        self.network.computeGradientVelocities(self.momentum, self.learningRate)
+        self.network.updateForwardParametersWithVelocity()
+
+        self.saveResults(targets)
+
+
 
 
 
