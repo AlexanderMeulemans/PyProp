@@ -19,8 +19,9 @@ class Layer(object):
         :param layerDim: Layer dimension
         """
         self.setLayerDim(layerDim)
-        self.setInDim(inDim)
-        self.initParameters()
+        if inDim is not None: # inDim is None when layer is inputlayer
+            self.setInDim(inDim)
+        self.initForwardParameters()
 
     def setLayerDim(self, layerDim):
         if not isinstance(layerDim, int):
@@ -81,6 +82,16 @@ class Layer(object):
             raise ValueError("Expecting same dimension as layerDim")
         self.forwardOutput = forwardOutput
 
+    def setForwardLinearActivation(self, forwardLinearActivation):
+        if not isinstance(forwardLinearActivation, torch.Tensor):
+            raise TypeError("Expecting a tensor object for "
+                            "self.forwardLinearActivation")
+        if not forwardLinearActivation.size(-2) == self.layerDim:
+            raise ValueError("Expecting same dimension as layerDim")
+        if not forwardLinearActivation.size(-1) == 1:
+            raise ValueError("Expecting same dimension as layerDim")
+        self.forwardLinearActivation = forwardLinearActivation
+
     def setBackwardOutput(self, backwardOutput):
         if not isinstance(backwardOutput, torch.Tensor):
             raise TypeError("Expecting a tensor object for self.backwardOutput")
@@ -90,7 +101,7 @@ class Layer(object):
             raise ValueError("Expecting same dimension as layerDim")
         self.backwardOutput = backwardOutput
 
-    def initParameters(self):
+    def initForwardParameters(self):
         """ Initializes the layer parameters when the layer is created.
         This method should only be used when creating
         a new layer. Use setForwardParameters to update the parameters and
@@ -163,18 +174,20 @@ class Layer(object):
                              "propagating forward")
 
         self.forwardInput = lowerLayer.forwardOutput
-        self.linearActivation = torch.matmul(self.forwardWeights,
+        forwardLinearActivation = torch.matmul(self.forwardWeights,
                                              self.forwardInput) + \
                                 self.forwardBias
-        self.forwardOutput = self.nonlinearity(self.linearActivation)
+        self.setForwardLinearActivation(forwardLinearActivation)
+        forwardOutput = self.forwardNonlinearity(self.forwardLinearActivation)
+        self.setForwardOutput(forwardOutput)
 
-    def nonlinearity(self, linearActivation):
+    def forwardNonlinearity(self, linearActivation):
         """ This method should be always overwritten by the children"""
-        raise NetworkError("The method nonlinearity should always be "
+        raise NetworkError("The method forwardNonlinearity should always be "
                            "overwritten by children of Layer. Layer on itself "
                            "cannot be used in a network")
 
-    def computeGradients(self, lowerLayer):
+    def computeForwardGradients(self, lowerLayer):
         """
         :param lowerLayer: first layer upstream of the layer self
         :type lowerLayer: Layer
@@ -189,7 +202,8 @@ class Layer(object):
         self.setForwardGradients(torch.mean(weight_gradients, 0), torch.mean(
             bias_gradients, 0))
 
-    def computeGradientVelocities(self, lowerLayer, momentum, learningRate):
+    def computeForwardGradientVelocities(self, lowerLayer, momentum,
+                                       learningRate):
         """ Used for optimizers with momentum. """
         if not isinstance(momentum, float):
             raise TypeError("Expecting float number for momentum, "
@@ -198,11 +212,13 @@ class Layer(object):
             raise ValueError("Expecting momentum in [0;1), got {}".format(
                 momentum))
 
-        weight_gradients = torch.mean(torch.matmul(self.backwardOutput,
-                                                   torch.transpose(
-                                                       lowerLayer.forwardOutput,
-                                                       -1, -2)), 0)
-        bias_gradients = torch.mean(self.backwardOutput, 0)
+        # weight_gradients = torch.mean(torch.matmul(self.backwardOutput,
+        #                                            torch.transpose(
+        #                                                lowerLayer.forwardOutput,
+        #                                                -1, -2)), 0)
+        # bias_gradients = torch.mean(self.backwardOutput, 0)
+        weight_gradients = self.forwardWeightsGrad
+        bias_gradients = self.forwardBiasGrad
         weight_velocities = torch.mul(self.forwardWeightsVel, momentum) + \
                             torch.mul(weight_gradients, learningRate)
         bias_velocities = torch.mul(self.forwardBiasVel, momentum) + \
@@ -211,7 +227,7 @@ class Layer(object):
 
     def updateForwardParametersWithVelocity(self):
         """ Update the forward parameters with the gradient velocities
-        computed in computeGradientVelocities"""
+        computed in computeForwardGradientVelocities"""
         forwardWeights = self.forwardWeights \
                          - self.forwardWeightsVel
         forwardBias = self.forwardBias \
@@ -222,7 +238,7 @@ class Layer(object):
 class ReluLayer(Layer):
     """ Layer of a neural network with a RELU activation function"""
 
-    def nonlinearity(self, linearActivation):
+    def forwardNonlinearity(self, linearActivation):
         """ Returns the nonlinear activation of the layer"""
         return F.relu(linearActivation)
 
@@ -243,10 +259,10 @@ class ReluLayer(Layer):
         self.backwardInput = upperLayer.backwardOutput
         # Construct vectorized Jacobian for all batch samples.
         activationDer = torch.tensor(
-            [[[1.] if self.linearActivation[i, j, 0] > 0
+            [[[1.] if self.forwardLinearActivation[i, j, 0] > 0
               else [0.]
-              for j in range(self.linearActivation.size(1))]
-             for i in range(self.linearActivation.size(0))])
+              for j in range(self.forwardLinearActivation.size(1))]
+             for i in range(self.forwardLinearActivation.size(0))])
         backwardOutput = torch.mul(torch.matmul(torch.transpose(
             upperLayer.forwardWeights, -1, -2), self.backwardInput),
             activationDer)
@@ -256,7 +272,7 @@ class ReluLayer(Layer):
 class SoftmaxLayer(Layer):
     """ Layer of a neural network with a Softmax activation function"""
 
-    def nonlinearity(self, linearActivation):
+    def forwardNonlinearity(self, linearActivation):
         """ Returns the nonlinear activation of the layer"""
         softmax = torch.nn.Softmax(1)
         return softmax(linearActivation)
@@ -294,7 +310,7 @@ class SoftmaxLayer(Layer):
 class LinearLayer(Layer):
     """ Layer of a neural network with a linear activation function"""
 
-    def nonlinearity(self, linearActivation):
+    def forwardNonlinearity(self, linearActivation):
         """ Returns the nonlinear activation of the layer"""
         return linearActivation
 
@@ -326,7 +342,7 @@ class InputLayer(Layer):
         """ InputLayer has only a layerDim and a
         forward activation that can be set,
          no input dimension nor parameters"""
-        self.setLayerDim(layerDim)
+        super().__init__(inDim = None, layerDim=layerDim)
 
     def propagateForward(self, lowerLayer):
         """ This function should never be called for an input layer,
@@ -345,7 +361,14 @@ class InputLayer(Layer):
                            "an input layer, there is no point in having "
                            "a backward output here, as this layer has no "
                            "parameters to update")
+    def initForwardParameters(self):
+        """ InputLayer has no forward parameters"""
+        pass
 
+    def initVelocities(self):
+        """ InputLayer has no forward parameters"""
+        raise RuntimeWarning("InputLayer has no forward parameters, so cannot "
+                             "initialize velocities")
 
 class OutputLayer(Layer):
     """" Super class for the last layer of a network.
@@ -407,7 +430,7 @@ class SoftmaxOutputLayer(OutputLayer):
     should always be combined with a crossEntropy
     loss."""
 
-    def nonlinearity(self, linearActivation):
+    def forwardNonlinearity(self, linearActivation):
         """ Returns the nonlinear activation of the layer"""
         softmax = torch.nn.Softmax(1)
         return softmax(linearActivation)
@@ -454,7 +477,7 @@ class LinearOutputLayer(OutputLayer):
     only be combined with an mse loss
     function."""
 
-    def nonlinearity(self, linearActivation):
+    def forwardNonlinearity(self, linearActivation):
         """ Returns the nonlinear activation of the layer"""
         return linearActivation
 
@@ -540,16 +563,16 @@ class Network(nn.Module):
         for i in range(len(self.layers) - 2, 0, -1):
             self.layers[i].propagateBackward(self.layers[i + 1])
 
-    def computeGradients(self):
+    def computeForwardGradients(self):
         """compute the gradient of the loss function to the
         parameters of each layer"""
         for i in range(1, len(self.layers)):
-            self.layers[i].computeGradients(self.layers[i - 1])
+            self.layers[i].computeForwardGradients(self.layers[i - 1])
 
-    def computeGradientVelocities(self, momentum, learningRate):
+    def computeForwardGradientVelocities(self, momentum, learningRate):
         """Compute the gradient velocities for each layer"""
         for i in range(1, len(self.layers)):
-            self.layers[i].computeGradientVelocities(self.layers[i - 1],
+            self.layers[i].computeForwardGradientVelocities(self.layers[i - 1],
                                                      momentum, learningRate)
 
     def updateForwardParametersWithVelocity(self):

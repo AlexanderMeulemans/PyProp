@@ -193,7 +193,7 @@ class SGD(Optimizer):
         """ Perform one batch optimizing step"""
         self.network.propagateForward(inputBatch)
         self.network.propagateBackward(targets)
-        self.network.computeGradients()
+        self.network.computeForwardGradients()
         self.network.updateForwardParameters(self.learningRate)
 
         self.saveResults(targets)
@@ -230,7 +230,9 @@ class SGDMomentum(SGD):
         """ Perform one batch optimizing step"""
         self.network.propagateForward(inputBatch)
         self.network.propagateBackward(targets)
-        self.network.computeGradientVelocities(self.momentum, self.learningRate)
+        self.network.computeForwardGradients()
+        self.network.computeForwardGradientVelocities(self.momentum,
+                                                      self.learningRate)
         self.network.updateForwardParametersWithVelocity()
 
         self.saveResults(targets)

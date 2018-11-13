@@ -2,9 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="627a70cb-13ab-4e6b-bda9-3721d10194d6" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/neuralnetwork.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/optimizers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/runMNIST.py" beforeDir="false" afterPath="$PROJECT_DIR$/runMNIST.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/targetprop_network.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/neuralnetwork.py" beforeDir="false" afterPath="$PROJECT_DIR$/neuralnetwork.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimizers.py" beforeDir="false" afterPath="$PROJECT_DIR$/optimizers.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -14,53 +15,61 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="MainClasses.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/MainClasses.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state>
-              <caret selection-end-line="5" selection-end-column="18" />
-              <folding>
-                <element signature="e#0#12#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="neuralnetwork.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/neuralnetwork.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="9707">
-              <caret line="571" selection-start-line="571" selection-end-line="571" />
-              <folding>
-                <element signature="e#0#12#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="optimizers.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/optimizers.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="68">
-              <caret line="4" column="40" selection-start-line="4" selection-start-column="40" selection-end-line="4" selection-end-column="40" />
-              <folding>
-                <element signature="e#0#12#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="runMNIST.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/runMNIST.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="476">
-              <caret line="28" column="13" lean-forward="true" selection-start-line="28" selection-start-column="13" selection-end-line="28" selection-end-column="13" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-    </leaf>
+    <splitter split-orientation="horizontal" split-proportion="0.5">
+      <split-first>
+        <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+          <file leaf-file-name="targetprop_network.py" pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/targetprop_network.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="399">
+                  <caret line="470" column="47" selection-start-line="470" selection-start-column="47" selection-end-line="470" selection-end-column="47" />
+                  <folding>
+                    <element signature="e#0#12#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="optimizers.py" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/optimizers.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="3856">
+                  <caret line="232" column="46" selection-start-line="232" selection-start-column="46" selection-end-line="232" selection-end-column="46" />
+                  <folding>
+                    <element signature="e#0#12#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="runMNIST.py" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/runMNIST.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="476">
+                  <caret line="43" lean-forward="true" selection-start-line="43" selection-end-line="43" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+        </leaf>
+      </split-first>
+      <split-second>
+        <leaf>
+          <file leaf-file-name="neuralnetwork.py" pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/neuralnetwork.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="-309">
+                  <caret line="563" column="64" lean-forward="true" selection-start-line="547" selection-start-column="4" selection-end-line="563" selection-end-column="64" />
+                  <folding>
+                    <element signature="e#0#12#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+        </leaf>
+      </split-second>
+    </splitter>
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -77,7 +86,6 @@
       <find>upperLayer</find>
       <find>print</find>
       <find>self.inDim</find>
-      <find>forwardOutput</find>
       <find>._layerDim</find>
       <find>._inDim</find>
       <find>propag</find>
@@ -89,13 +97,22 @@
       <find>Grad</find>
       <find>momentum</find>
       <find>updateParameters</find>
+      <find>inDim</find>
+      <find>initParameters</find>
+      <find>forward</find>
+      <find>nonlinearity</find>
+      <find>.linearActivation</find>
+      <find>forwardOutput</find>
+      <find>computeGradients</find>
+      <find>computeGradientVelocities</find>
+      <find>forwardOutputTilde</find>
+      <find>.loss</find>
     </findStrings>
     <replaceStrings>
       <replace>backwardNonLin</replace>
       <replace>learningRate</replace>
       <replace>self</replace>
       <replace>self._inDim</replace>
-      <replace>backwardOutput</replace>
       <replace>.layerDim</replace>
       <replace>.inDim</replace>
       <replace>epochLoss</replace>
@@ -104,6 +121,17 @@
       <replace>Vel</replace>
       <replace>moment</replace>
       <replace>updateForwardParameters</replace>
+      <replace>outDim</replace>
+      <replace>initForwardParameters</replace>
+      <replace>backward</replace>
+      <replace>forwardNonlinearity</replace>
+      <replace>.forwardLinearActivation</replace>
+      <replace>forwardOutputTilde</replace>
+      <replace>forwardLinearActivation</replace>
+      <replace>computeForwardGradients</replace>
+      <replace>computeForwardGradientVelocities</replace>
+      <replace>backwardOutput</replace>
+      <replace>.lossFunction</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -118,17 +146,18 @@
         <option value="$PROJECT_DIR$/Backprop.py" />
         <option value="$PROJECT_DIR$/HelperFunctions.py" />
         <option value="$PROJECT_DIR$/MainClasses.py" />
-        <option value="$PROJECT_DIR$/neuralnetwork.py" />
         <option value="$PROJECT_DIR$/optimizers.py" />
+        <option value="$PROJECT_DIR$/neuralnetwork.py" />
         <option value="$PROJECT_DIR$/runMNIST.py" />
+        <option value="$PROJECT_DIR$/targetprop_network.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-1087" />
-    <option name="y" value="-213" />
-    <option name="width" value="554" />
-    <option name="height" value="1887" />
+    <option name="x" value="-9" />
+    <option name="y" value="-9" />
+    <option name="width" value="1938" />
+    <option name="height" value="1098" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
@@ -137,8 +166,9 @@
     <panes />
   </component>
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/neuralnetwork.py" />
     <property name="settings.editor.selected.configurable" value="preferences.sourceCode" />
+    <property name="two.files.diff.last.used.file" value="$PROJECT_DIR$/neuralnetwork.py" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -243,16 +273,36 @@
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
     </configuration>
+    <configuration name="targetprop_network" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="Thesis" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/targetprop_network.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+    </configuration>
     <list>
       <item itemvalue="Python.Unnamed" />
       <item itemvalue="Python.run_mnist" />
       <item itemvalue="Python.Backprop" />
       <item itemvalue="Python.MainClasses" />
       <item itemvalue="Python.runMNIST" />
+      <item itemvalue="Python.targetprop_network" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.runMNIST" />
+        <item itemvalue="Python.targetprop_network" />
         <item itemvalue="Python.MainClasses" />
         <item itemvalue="Python.Backprop" />
       </list>
@@ -272,15 +322,15 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-1088" y="-221" width="1096" height="1896" extended-state="6" />
+    <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" weight="0.38020834" />
       <window_info anchor="bottom" id="TODO" order="5" />
       <window_info anchor="bottom" id="Event Log" order="6" side_tool="true" />
       <window_info anchor="bottom" id="Version Control" order="7" />
-      <window_info id="Python Console" order="3" weight="0.38216147" />
-      <window_info active="true" anchor="bottom" id="Run" order="9" visible="true" weight="0.38517687" />
+      <window_info anchor="bottom" id="Python Console" order="9" weight="0.35710275" />
+      <window_info id="Run" order="3" weight="0.17057292" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Terminal" order="8" />
       <window_info id="Favorites" order="2" side_tool="true" />
@@ -519,10 +569,17 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/runMNIST.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="476">
+          <caret line="43" lean-forward="true" selection-start-line="43" selection-end-line="43" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/neuralnetwork.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="9707">
-          <caret line="571" selection-start-line="571" selection-end-line="571" />
+        <state relative-caret-position="-309">
+          <caret line="563" column="64" lean-forward="true" selection-start-line="547" selection-start-column="4" selection-end-line="563" selection-end-column="64" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
           </folding>
@@ -531,18 +588,21 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/optimizers.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="68">
-          <caret line="4" column="40" selection-start-line="4" selection-start-column="40" selection-end-line="4" selection-end-column="40" />
+        <state relative-caret-position="3856">
+          <caret line="232" column="46" selection-start-line="232" selection-start-column="46" selection-end-line="232" selection-end-column="46" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/runMNIST.py">
+    <entry file="file://$PROJECT_DIR$/targetprop_network.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="476">
-          <caret line="28" column="13" lean-forward="true" selection-start-line="28" selection-start-column="13" selection-end-line="28" selection-end-column="13" />
+        <state relative-caret-position="399">
+          <caret line="470" column="47" selection-start-line="470" selection-start-column="47" selection-end-line="470" selection-end-column="47" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
