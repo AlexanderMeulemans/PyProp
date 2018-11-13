@@ -101,15 +101,18 @@ class InvertibleLayer(BidirectionalLayer):
     """ Layer that is invertible to make it able to propagate exact targets."""
 
     def __init__(self,inDim, layerDim, outDim, lossFunction = 'mse'):
-        if inDim < layerDim:
-            raise ValueError("Expecting an input size bigger or equal to the "
-                             "layer size")
-        if layerDim < outDim:
-            raise ValueError("Expecting a layer size bigger or equal to the "
-                             "output size")
+        if inDim is not None:
+            if inDim < layerDim:
+                raise ValueError("Expecting an input size bigger or equal to the "
+                                 "layer size")
+        if outDim is not None:
+            if layerDim < outDim:
+                raise ValueError("Expecting a layer size bigger or equal to the "
+                                 "output size")
         super().__init__(inDim, layerDim, outDim, lossFunction)
         self.initForwardParametersTilde()
-        self.initForwardParametersBar()
+
+
 
 
     def initForwardParametersTilde(self):
@@ -143,11 +146,14 @@ class InvertibleLayer(BidirectionalLayer):
         if not isinstance(forwardOutputTilde, torch.Tensor):
             raise TypeError("Expecting a tensor object for "
                             "self.forwardOutputTilde")
-        if not forwardOutputTilde.size(-2) == self.inDim - self.layerDim:
-            raise ValueError("Expecting same dimension as inDim - layerDim")
-        if not forwardOutputTilde.size(-1) == 1:
-            raise ValueError("Expecting same dimension as layerDim")
-        self.forwardOutputTilde = forwardOutputTilde
+        if forwardOutputTilde.size(0) == 0:
+            self.forwardOutputTilde = forwardOutputTilde
+        else:
+            if not forwardOutputTilde.size(-2) == self.inDim - self.layerDim:
+                raise ValueError("Expecting same dimension as inDim - layerDim")
+            if not forwardOutputTilde.size(-1) == 1:
+                raise ValueError("Expecting same dimension as layerDim")
+            self.forwardOutputTilde = forwardOutputTilde
 
     def propagateForwardTilde(self, lowerLayer):
         """ Compute random features of the last layer activation in this
@@ -162,10 +168,13 @@ class InvertibleLayer(BidirectionalLayer):
                              "propagating forward")
 
         forwardInput = lowerLayer.forwardOutput
-        linearActivationTilde = torch.matmul(self.forwardWeightsTilde,
-                                             forwardInput) + \
-                                self.forwardBiasTilde
-        forwardOutputTilde = self.forwardNonlinearity(linearActivationTilde)
+        if self.forwardWeightsTilde.size(0)>0:
+            linearActivationTilde = torch.matmul(self.forwardWeightsTilde,
+                                                 forwardInput) + \
+                                    self.forwardBiasTilde
+            forwardOutputTilde = self.forwardNonlinearity(linearActivationTilde)
+        else:
+            forwardOutputTilde = torch.empty(0)
         self.setForwardOutputTilde(forwardOutputTilde)
 
     def propagateForward(self, lowerLayer):
@@ -264,7 +273,7 @@ class InvertibleLeakyReluLayer(InvertibleLayer):
         self.negativeSlope = negativeSlope
 
     def forwardNonlinearity(self, linearActivation):
-        activationFunction = nn.leakyReLU(self.negativeSlope)
+        activationFunction = nn.LeakyReLU(self.negativeSlope)
         return activationFunction(linearActivation)
 
     def inverseNonlinearity(self,input):
@@ -283,13 +292,14 @@ class InvertibleLeakyReluLayer(InvertibleLayer):
     def computeVectorizedJacobian(self):
         """ Compute the vectorized jacobian. The jacobian is a diagonal
         matrix, so can be represented by a vector instead of a matrix. """
+
         output = torch.empty(self.forwardOutput.shape)
-        for i in range(input.size(0)):
-            for j in range(input.size(1)):
-                if input[i,j,1] >= 0:
-                    output[i,j,1] = 1
+        for i in range(self.forwardLinearActivation.size(0)):
+            for j in range(self.forwardLinearActivation.size(1)):
+                if self.forwardLinearActivation[i,j,0] >= 0:
+                    output[i,j,0] = 1
                 else:
-                    output[i,j,1] = self.negativeSlope
+                    output[i,j,0] = self.negativeSlope
         return output
 
 
@@ -314,6 +324,7 @@ class InvertibleOutputLayer(InvertibleLayer):
         super().__init__(inDim, layerDim, outDim=None, lossFunction =
         lossFunction)
         self.setStepsize(stepsize)
+
 
     def setStepsize(self, stepsize):
         if not isinstance(stepsize, float):
@@ -377,6 +388,12 @@ class InvertibleLinearOutputLayer(InvertibleOutputLayer):
     def forwardNonlinearity(self, linearActivation):
         return linearActivation
 
+    def inverseNonlinearity(self,input):
+        return input
+
+    def computeVectorizedJacobian(self):
+        return torch.ones(self.forwardOutput.shape)
+
     def computeBackwardOutput(self, target):
         """ Compute the backward output based on a small move from the
         forward output in the direction of the negative gradient of the loss
@@ -404,6 +421,10 @@ class InvertibleInputLayer(InvertibleLayer):
                          lossFunction=lossFunction)
 
     def initForwardParameters(self):
+        """ InputLayer has no forward parameters"""
+        pass
+
+    def initForwardParametersTilde(self):
         """ InputLayer has no forward parameters"""
         pass
 

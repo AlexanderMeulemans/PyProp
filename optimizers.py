@@ -121,6 +121,40 @@ class Optimizer(object):
 
         print('====== Training finished =======')
 
+    def runDataset(self, inputData, targets):
+        """ Train the network on a given dataset of size
+         number of batches x batch size x input/target size x 1"""
+        if not (inputData.size(0) == targets.size(0) and inputData.size(1) ==
+                targets.size(1)):
+            raise ValueError("InputData and Targets have not the same size")
+        epochLoss = float('inf')
+        print('====== Training started =======')
+        print('Epoch: ' + str(self.epoch) + ' ------------------------')
+        while epochLoss > self.threshold and self.epoch < self.maxEpoch:
+            for i in range(inputData.size(0)):
+                data = inputData[i,:,:,:]
+                target = targets[i,:,:,:]
+                if i % 50 == 0:
+                    print('batch: ' + str(i))
+                self.step(data, target)
+            epochLoss = np.mean(self.singleBatchLosses)
+            self.resetSingleBatchLosses()
+            self.epochLosses = np.append(self.epochLosses, epochLoss)
+            self.epoch += 1
+            self.updateLearningRate()
+            print('Loss: ' + str(epochLoss))
+            if self.computeAccuracies:
+                epochAccuracy = np.mean(self.singleBatchAccuracies)
+                self.epochAccuracies = np.append(self.epochAccuracies,
+                                                 epochAccuracy)
+                self.resetSingleBatchAccuracies()
+                print('Training Accuracy: ' + str(epochAccuracy))
+            if self.epoch == self.maxEpoch:
+                print('Training terminated, maximum epoch reached')
+            print('Epoch: ' + str(self.epoch) + ' ------------------------')
+
+        print('====== Training finished =======')
+
 
 class SGD(Optimizer):
     """ Stochastic Gradient Descend optimizer"""

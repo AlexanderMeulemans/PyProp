@@ -613,3 +613,6 @@ class Network(nn.Module):
         problems, thus the last layer should be
         a softmax """
         return self.layers[-1].accuracy(targets)
+
+    def getOutput(self):
+        return self.layers[-1].forwardOutput
