@@ -578,6 +578,12 @@ class Network(nn.Module):
             self.layers[i].computeForwardGradientVelocities(self.layers[i - 1],
                                                      momentum, learningRate)
 
+    def computeGradients(self):
+        self.computeForwardGradients()
+
+    def computeGradientVelocities(self, momentum, learningRate):
+        self.computeForwardGradientVelocities(momentum, learningRate)
+
     def updateForwardParametersWithVelocity(self):
         """ Update all the parameters of the network with the
                 computed gradients velocities"""
@@ -589,6 +595,12 @@ class Network(nn.Module):
         computed gradients"""
         for i in range(1, len(self.layers)):
             self.layers[i].updateForwardParameters(learningRate)
+
+    def updateParameters(self, learningRate):
+        self.updateForwardParameters(learningRate)
+
+    def updateParametersWithVelocity(self):
+        self.updateForwardParametersWithVelocity()
 
     def loss(self, target):
         """ Return the loss of each sample in the batch compared to

@@ -136,7 +136,7 @@ class Optimizer(object):
             for i in range(inputData.size(0)):
                 data = inputData[i,:,:,:]
                 target = targets[i,:,:,:]
-                if i % 50 == 0:
+                if i % 500 == 0:
                     print('batch: ' + str(i))
                 self.step(data, target)
             epochLoss = np.mean(self.singleBatchLosses)
@@ -229,8 +229,8 @@ class SGD(Optimizer):
         """ Perform one batch optimizing step"""
         self.network.propagateForward(inputBatch)
         self.network.propagateBackward(targets)
-        self.network.computeForwardGradients()
-        self.network.updateForwardParameters(self.learningRate)
+        self.network.computeGradients()
+        self.network.updateParameters(self.learningRate)
 
         self.saveResults(targets)
 
@@ -266,9 +266,9 @@ class SGDMomentum(SGD):
         """ Perform one batch optimizing step"""
         self.network.propagateForward(inputBatch)
         self.network.propagateBackward(targets)
-        self.network.computeForwardGradients()
-        self.network.computeForwardGradientVelocities(self.momentum,
+        self.network.computeGradients()
+        self.network.computeGradientVelocities(self.momentum,
                                                       self.learningRate)
-        self.network.updateForwardParametersWithVelocity()
+        self.network.updateParametersWithVelocity()
 
         self.saveResults(targets)

@@ -5,7 +5,7 @@ import HelperFunctions as hf
 from HelperClasses import NetworkError
 import numpy as np
 from neuralnetwork import Layer, Network
-from bidirectional_layer import BidirectionalLayer
+from bidirectional_network import BidirectionalLayer, BidirectionalNetwork
 
 
 class InvertibleLayer(BidirectionalLayer):
@@ -39,7 +39,14 @@ class InvertibleLayer(BidirectionalLayer):
         a new layer. Use setbackwardParameters to update the parameters and
         computeGradient to update the gradients"""
         self.backwardWeights = torch.empty(self.layerDim, self.layerDim)
-        self.backwardBias = torch.empty(self.layerDim, 1)\
+        self.backwardBias = torch.empty(self.layerDim, 1)
+
+    def initInverse(self, upperLayer):
+        """ Initializes the backward weights to the inverse of the forward weights. After this
+        initial inverse is computed, the sherman-morrison formula can be used to compute the
+        inverses later in training"""
+        self.backwardWeights = torch.inverse(torch.cat((upperLayer.forwardWeights,
+                                            upperLayer.forwardWeightsTilde), 0))
 
     # def initForwardParametersBar(self):
     #     """ Concatenates the forwardWeights with the forwardWeightsTilde to
@@ -62,6 +69,29 @@ class InvertibleLayer(BidirectionalLayer):
             if not forwardOutputTilde.size(-1) == 1:
                 raise ValueError("Expecting same dimension as layerDim")
             self.forwardOutputTilde = forwardOutputTilde
+
+
+    def setWeightUpdateU(self, u):
+        """
+        Save the u vector of the forward weight update to
+         be able to use the Sherman-morrison formula
+        ( https://en.wikipedia.org/wiki/Sherman%E2%80%93Morrison_formula )
+        """
+        if not isinstance(u, torch.Tensor):
+            raise TypeError("Expecting a tensor object for "
+                            "self.u")
+        self.u = u
+
+    def setWeightUpdateV(self, v):
+        """
+        Save the v vector of the forward weight update to
+         be able to use the Sherman-morrison formula
+        ( https://en.wikipedia.org/wiki/Sherman%E2%80%93Morrison_formula )
+        """
+        if not isinstance(v, torch.Tensor):
+            raise TypeError("Expecting a tensor object for "
+                            "self.u")
+        self.v = v
 
     def propagateForwardTilde(self, lowerLayer):
         """ Compute random features of the last layer activation in this
@@ -99,6 +129,34 @@ class InvertibleLayer(BidirectionalLayer):
         raise NetworkError("inverseNonlinearity should be overwritten by a "
                            "child of InvertibleLayer")
 
+    def updateBackwardParameters(self, learningRate, upperLayer):
+        """
+        Update the backward weights and bias of the layer to resp.
+        the inverse of the forward weights of the upperLayer and
+        the negative bias of the upperLayer using the sherman-morrison
+        formula
+        """
+        # take learning rate into u to apply Sherman-morrison formula later on
+        u = torch.mul(upperLayer.u, learningRate)
+        v = upperLayer.v
+        if u.shape[0] < v.shape[0]:
+            u = torch.cat((u, torch.zeros((v.shape[0]-u.shape[0],
+                                           u.shape[1]))), 0)
+        # apply Sherman-morrison formula to compute inverse
+
+        denominator = 1 - torch.matmul(torch.transpose(v, -1, -2),
+                                       torch.matmul(self.backwardWeights, u))
+        numerator = torch.matmul(torch.matmul(self.backwardWeights, u),
+                                 torch.matmul(torch.transpose(v, -1, -2),
+                                              self.backwardWeights))
+        backwardWeights = self.backwardWeights + torch.div(numerator,
+                                                           denominator)
+        backwardBias = - torch.cat((upperLayer.forwardBias,
+                                    upperLayer.forwardBiasTilde), 0)
+        self.setBackwardParameters(backwardWeights, backwardBias)
+
+
+
     def propagateBackward(self, upperLayer):
         """Propagate the target signal from the upper layer to the current
         layer (self)
@@ -112,12 +170,6 @@ class InvertibleLayer(BidirectionalLayer):
         if not upperLayer.inDim == self.layerDim:
             raise ValueError("Layer sizes are not compatible for propagating "
                              "backwards")
-
-        backwardWeights = torch.inverse(torch.cat((upperLayer.forwardWeights,
-                                            upperLayer.forwardWeightsTilde), 0))
-        backwardBias = - torch.cat((upperLayer.forwardBias,
-                                         upperLayer.forwardBiasTilde), 0)
-        self.setBackwardParameters(backwardWeights, backwardBias)
 
         targetBar = torch.cat((upperLayer.backwardOutput,
                                upperLayer.forwardOutputTilde), -2)
@@ -135,6 +187,11 @@ class InvertibleLayer(BidirectionalLayer):
         parameters for all the batch samples
 
         """
+        if lowerLayer.forwardOutput.shape[0]>1:
+            raise NetworkError('only batch sizes of size 1 are allowed,'
+                               ' as otherwise the '
+                               'inverse computation with sherman-morrisson'
+                               ' is not possible')
         if self.lossFunction == 'mse':
             localLossDer = torch.mul(self.forwardOutput -
                                      self.backwardOutput, 2.)
@@ -142,12 +199,14 @@ class InvertibleLayer(BidirectionalLayer):
             raise NetworkError("Expecting a mse local loss function")
 
         vectorizedJacobian = self.computeVectorizedJacobian()
+        u = torch.mul(vectorizedJacobian, localLossDer)
+        v = lowerLayer.forwardOutput
 
-        weight_gradients = torch.matmul(torch.mul(vectorizedJacobian,
-                                                  localLossDer),
-                                        torch.transpose(
-                                            lowerLayer.forwardOutput, -1, -2))
+        weight_gradients = torch.matmul(u, torch.transpose(v, -1, -2))
+
         bias_gradients = torch.mul(vectorizedJacobian, localLossDer)
+        self.setWeightUpdateU(torch.reshape(u,(u.shape[-2],u.shape[-1])))
+        self.setWeightUpdateV(torch.reshape(v,(v.shape[-2],v.shape[-1])))
         self.setForwardGradients(torch.mean(weight_gradients, 0), torch.mean(
             bias_gradients, 0))
 
@@ -352,9 +411,12 @@ class InvertibleInputLayer(InvertibleLayer):
                            "an InputLayer")
 
 
-class InvertibleNetwork(Network):
+class InvertibleNetwork(BidirectionalNetwork):
     """ Invertible Network consisting of multiple invertible layers. This class
         provides a range of methods to facilitate training of the networks """
+    def __init__(self, layers):
+        super().__init__(layers)
+        self.initInverses()
 
     def setLayers(self, layers):
         if not isinstance(layers, list):
@@ -382,19 +444,10 @@ class InvertibleNetwork(Network):
 
         self.layers = layers
 
-    def propagateBackward(self, target):
-        """ Propagate the layer targets backward
-        through the network
-        :param target: 3D tensor of size batchdimension x class dimension x 1
-        """
-        if not isinstance(target, torch.Tensor):
-            raise TypeError("Expecting a torch.Tensor object as target")
-        if not self.layers[-1].forwardOutput.shape == target.shape:
-            raise ValueError('Expecting a tensor of dimensions: '
-                             'batchdimension x class dimension x 1.'
-                             ' Given target'
-                             'has shape' + str(target.shape))
+    def initInverses(self):
+        """ Initialize the backward weights of all layers to the inverse of the forward weights of
+        the layer on top."""
+        for i in range(0, len(self.layers)-1):
+            self.layers[i].initInverse(self.layers[i+1])
 
-        self.layers[-1].computeBackwardOutput(target)
-        for i in range(len(self.layers) - 2, -1, -1):
-            self.layers[i].propagateBackward(self.layers[i + 1])
+

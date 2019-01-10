@@ -26,7 +26,7 @@ true_network = InvertibleNetwork([input_layer_true,hidden_layer_true,
 
 generator = GenerateDatasetFromModel(true_network)
 
-input_dataset, output_dataset = generator.generate(700, 128)
+input_dataset, output_dataset = generator.generate(7000, 1)
 input_dataset_test, output_dataset_test = generator.generate(1, 1000)
 
 

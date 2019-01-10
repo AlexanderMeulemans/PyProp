@@ -2,15 +2,15 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="627a70cb-13ab-4e6b-bda9-3721d10194d6" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/invertible_network.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/run_mnist_invertible_layers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Thesis.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Thesis.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/HelperFunctions.py" beforeDir="false" afterPath="$PROJECT_DIR$/HelperFunctions.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/create_datasets.py" beforeDir="false" afterPath="$PROJECT_DIR$/create_datasets.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bidirectional_layer.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/invertible_network.py" beforeDir="false" afterPath="$PROJECT_DIR$/invertible_network.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/neuralnetwork.py" beforeDir="false" afterPath="$PROJECT_DIR$/neuralnetwork.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/optimizers.py" beforeDir="false" afterPath="$PROJECT_DIR$/optimizers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/runMNIST.py" beforeDir="false" afterPath="$PROJECT_DIR$/runMNIST.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/run_toyexample2.py" beforeDir="false" afterPath="$PROJECT_DIR$/run_toyexample2.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/targetprop_network.py" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -22,29 +22,30 @@
     <session id="-1643136631">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
+          <entry key="project.closed" value="1" />
           <entry key="project.open.time.6" value="1" />
           <entry key="project.opened" value="1" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="py" value="577" />
+          <entry key="py" value="3488" />
           <entry key="test" value="39" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="Python" value="616" />
+          <entry key="Python" value="3527" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
         <counts>
-          <entry key="py" value="8" />
+          <entry key="py" value="13" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.open">
         <counts>
-          <entry key="Python" value="8" />
+          <entry key="Python" value="13" />
         </counts>
       </usages-collector>
     </session>
@@ -54,8 +55,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/optimizers.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="864">
-              <caret line="105" column="65" selection-start-line="105" selection-start-column="65" selection-end-line="105" selection-end-column="65" />
+            <state relative-caret-position="1629">
+              <caret line="138" column="26" selection-start-line="138" selection-start-column="26" selection-end-line="138" selection-end-column="26" />
               <folding>
                 <element signature="e#0#12#0" expanded="true" />
               </folding>
@@ -64,34 +65,10 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/run_toyexample.py">
+        <entry file="file://$PROJECT_DIR$/run_mnist_invertible_layers.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="731">
-              <caret line="43" column="18" selection-start-line="43" selection-start-column="18" selection-end-line="43" selection-end-column="18" />
-              <folding>
-                <element signature="e#0#52#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/run_toyexample2.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="102">
-              <caret line="6" column="68" lean-forward="true" selection-start-line="6" selection-start-column="68" selection-end-line="6" selection-end-column="68" />
-              <folding>
-                <element signature="e#0#52#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/create_datasets.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="17">
-              <caret line="1" column="23" selection-start-line="1" selection-start-column="23" selection-end-line="1" selection-end-column="23" />
+            <state relative-caret-position="51">
+              <caret line="3" column="81" selection-start-line="3" selection-start-column="31" selection-end-line="3" selection-end-column="81" />
             </state>
           </provider>
         </entry>
@@ -99,19 +76,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/invertible_network.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="216">
-              <caret line="101" column="32" selection-start-line="101" selection-start-column="32" selection-end-line="101" selection-end-column="32" />
-              <folding>
-                <element signature="e#0#12#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/bidirectional_layer.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state>
+            <state relative-caret-position="-743">
+              <caret line="88" column="74" selection-start-line="88" selection-start-column="74" selection-end-line="88" selection-end-column="74" />
               <folding>
                 <element signature="e#0#12#0" expanded="true" />
               </folding>
@@ -122,28 +88,40 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/runMNIST.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="204">
-              <caret line="12" lean-forward="true" selection-start-line="12" selection-end-line="17" selection-end-column="22" />
+            <state>
+              <caret selection-end-line="70" selection-end-column="49" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/HelperFunctions.py">
+        <entry file="file://$PROJECT_DIR$/run_toyexample2.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="956">
-              <caret line="66" column="18" selection-start-line="66" selection-start-column="18" selection-end-line="66" selection-end-column="18" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="170">
-              <caret line="10" column="7" selection-start-line="10" selection-start-column="7" selection-end-line="10" selection-end-column="7" />
+            <state relative-caret-position="221">
+              <caret line="13" column="26" lean-forward="true" selection-start-line="13" selection-start-column="26" selection-end-line="13" selection-end-column="26" />
               <folding>
-                <element signature="e#0#40#0" expanded="true" />
+                <element signature="e#0#52#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/bidirectional_network.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="173">
+              <caret line="45" column="67" selection-start-line="45" selection-start-column="67" selection-end-line="45" selection-end-column="67" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/neuralnetwork.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="8019">
+              <caret line="599" column="50" selection-start-line="598" selection-start-column="4" selection-end-line="599" selection-end-column="50" />
+              <folding>
+                <element signature="e#0#12#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -160,9 +138,7 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>learningrate</find>
       <find>upperLayer</find>
-      <find>print</find>
       <find>self.inDim</find>
       <find>._layerDim</find>
       <find>._inDim</find>
@@ -190,6 +166,8 @@
       <find>.numpy()</find>
       <find>loss</find>
       <find>propagateBa</find>
+      <find>inputLayer</find>
+      <find>print</find>
     </findStrings>
     <replaceStrings>
       <replace>backwardNonLin</replace>
@@ -231,13 +209,15 @@
         <option value="$PROJECT_DIR$/targetprop_network.py" />
         <option value="$PROJECT_DIR$/run_toyexample.py" />
         <option value="$PROJECT_DIR$/runMNIST.py" />
-        <option value="$PROJECT_DIR$/optimizers.py" />
         <option value="$PROJECT_DIR$/HelperFunctions.py" />
         <option value="$PROJECT_DIR$/test.py" />
-        <option value="$PROJECT_DIR$/neuralnetwork.py" />
-        <option value="$PROJECT_DIR$/bidirectional_network.py" />
         <option value="$PROJECT_DIR$/create_datasets.py" />
+        <option value="$PROJECT_DIR$/bidirectional_layer.py" />
+        <option value="$PROJECT_DIR$/neuralnetwork.py" />
         <option value="$PROJECT_DIR$/run_toyexample2.py" />
+        <option value="$PROJECT_DIR$/bidirectional_network.py" />
+        <option value="$PROJECT_DIR$/optimizers.py" />
+        <option value="$PROJECT_DIR$/run_mnist_invertible_layers.py" />
         <option value="$PROJECT_DIR$/invertible_network.py" />
       </list>
     </option>
@@ -460,8 +440,26 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="1912" y="-8" width="1096" height="1896" extended-state="6" />
-    <editor active="true" />
     <layout>
+      <window_info content_ui="combo" id="Project" order="0" weight="0.24007562" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info anchor="bottom" id="Debug" order="2" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="3" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="4" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="5" />
+      <window_info anchor="bottom" id="Event Log" order="6" side_tool="true" />
+      <window_info anchor="bottom" id="Version Control" order="7" />
+      <window_info anchor="bottom" id="Terminal" order="8" />
+      <window_info anchor="bottom" id="Python Console" order="9" weight="0.3569807" />
+      <window_info anchor="bottom" id="Run" order="10" weight="0.30874008" />
+      <window_info anchor="right" id="Commander" order="0" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+    </layout>
+    <layout-to-restore>
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.24007562" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
@@ -475,11 +473,11 @@
       <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info anchor="bottom" id="Terminal" order="8" />
       <window_info anchor="bottom" id="Python Console" order="9" weight="0.3569807" />
-      <window_info anchor="bottom" id="Run" order="10" visible="true" weight="0.41884223" />
+      <window_info anchor="bottom" id="Run" order="10" visible="true" weight="0.30874008" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
-    </layout>
+    </layout-to-restore>
   </component>
   <component name="VcsContentAnnotationSettings">
     <option name="myLimit" value="2678400000" />
@@ -496,23 +494,6 @@
     <entry file="file://$PROJECT_DIR$/run_mnist.py" />
     <entry file="file://$PROJECT_DIR$/Backprop.py" />
     <entry file="file://$PROJECT_DIR$/MainClasses.py" />
-    <entry file="file://$PROJECT_DIR$/optimizers.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="864">
-          <caret line="105" column="65" selection-start-line="105" selection-start-column="65" selection-end-line="105" selection-end-column="65" />
-          <folding>
-            <element signature="e#0#12#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/HelperFunctions.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="956">
-          <caret line="66" column="18" selection-start-line="66" selection-start-column="18" selection-end-line="66" selection-end-column="18" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/test.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="170">
@@ -533,58 +514,12 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/bidirectional_network.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret selection-end-line="6" selection-end-column="40" />
-          <folding>
-            <element signature="e#0#12#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/bidirectional_layer.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <folding>
-            <element signature="e#0#12#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/run_toyexample.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="731">
           <caret line="43" column="18" selection-start-line="43" selection-start-column="18" selection-end-line="43" selection-end-column="18" />
           <folding>
             <element signature="e#0#52#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/runMNIST.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="204">
-          <caret line="12" lean-forward="true" selection-start-line="12" selection-end-line="17" selection-end-column="22" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/run_toyexample2.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="102">
-          <caret line="6" column="68" lean-forward="true" selection-start-line="6" selection-start-column="68" selection-end-line="6" selection-end-column="68" />
-          <folding>
-            <element signature="e#0#52#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/neuralnetwork.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3349">
-          <caret line="230" column="17" selection-start-line="230" selection-start-column="17" selection-end-line="230" selection-end-column="17" />
-          <folding>
-            <element signature="e#0#12#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -596,10 +531,78 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/bidirectional_layer.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="789">
+          <caret line="132" selection-start-line="132" selection-end-line="132" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/HelperFunctions.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="956">
+          <caret line="66" column="18" selection-start-line="66" selection-start-column="18" selection-end-line="66" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/neuralnetwork.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="8019">
+          <caret line="599" column="50" selection-start-line="598" selection-start-column="4" selection-end-line="599" selection-end-column="50" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bidirectional_network.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="173">
+          <caret line="45" column="67" selection-start-line="45" selection-start-column="67" selection-end-line="45" selection-end-column="67" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/run_toyexample2.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="221">
+          <caret line="13" column="26" lean-forward="true" selection-start-line="13" selection-start-column="26" selection-end-line="13" selection-end-column="26" />
+          <folding>
+            <element signature="e#0#52#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/optimizers.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1629">
+          <caret line="138" column="26" selection-start-line="138" selection-start-column="26" selection-end-line="138" selection-end-column="26" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/runMNIST.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret selection-end-line="70" selection-end-column="49" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/run_mnist_invertible_layers.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="51">
+          <caret line="3" column="81" selection-start-line="3" selection-start-column="31" selection-end-line="3" selection-end-column="81" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/invertible_network.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="216">
-          <caret line="101" column="32" selection-start-line="101" selection-start-column="32" selection-end-line="101" selection-end-column="32" />
+        <state relative-caret-position="-743">
+          <caret line="88" column="74" selection-start-line="88" selection-start-column="74" selection-end-line="88" selection-end-column="74" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
           </folding>
