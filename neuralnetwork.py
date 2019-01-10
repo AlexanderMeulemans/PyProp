@@ -234,6 +234,9 @@ class Layer(object):
                       - self.forwardBiasVel
         self.setForwardParameters(forwardWeights, forwardBias)
 
+    def propagateBackward(self, upperLayer):
+        raise NetworkError('This method has to be overwritten by child classes')
+
 
 class ReluLayer(Layer):
     """ Layer of a neural network with a RELU activation function"""
@@ -410,11 +413,11 @@ class OutputLayer(Layer):
             target_classes = hf.prob2class(target)
             lossFunction = nn.CrossEntropyLoss()
             loss = lossFunction(self.forwardOutput.squeeze(), target_classes)
-            return torch.mean(loss).numpy()
+            return torch.mean(loss)#.numpy()
         elif self.lossFunction == 'mse':
             lossFunction = nn.MSELoss()
             loss = lossFunction(self.forwardOutput.squeeze(), target.squeeze())
-            return torch.mean(loss).numpy()
+            return torch.mean(loss)#.numpy()
 
     def propagateBackward(self, upperLayer):
         """ This function should never be called for an output layer,

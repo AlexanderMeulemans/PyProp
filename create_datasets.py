@@ -1,5 +1,5 @@
 import torch
-from targetprop_network import InvertibleInputLayer, \
+from invertible_network import InvertibleInputLayer, \
     InvertibleLeakyReluLayer, InvertibleLinearOutputLayer, InvertibleNetwork,\
     Network
 

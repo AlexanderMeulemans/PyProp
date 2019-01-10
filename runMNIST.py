@@ -10,6 +10,12 @@ import numpy as np
 
 # Initializing network
 
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+if torch.cuda.is_available():
+    torch.set_default_tensor_type('torch.cuda.FloatTensor')
+    print('using GPU')
+else:
+    print('using CPU')
 inputlayer = InputLayer(28*28)
 hiddenlayer = ReluLayer(28*28,100)
 outputlayer = SoftmaxOutputLayer(100,10,'crossEntropy')
@@ -51,12 +57,13 @@ optimizer2 = SGDMomentum(network=network,threshold=1.2, initLearningRate=0.1,
 
 
 # Train on MNIST
-optimizer1.runMNIST(train_loader)
+optimizer1.runMNIST(train_loader, device)
 
 # Test network
 for batch_idx, (data,target) in enumerate(test_loader):
     data = data.view(-1, 28 * 28, 1)
     target = hf.oneHot(target, 10)
+    data, target = data.to(device), target.to(device)
     predicted_classes = network.predict(data)
     test_loss = network.loss(target)
     test_accuracy = network.accuracy(target)

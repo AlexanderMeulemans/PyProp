@@ -85,7 +85,7 @@ class Optimizer(object):
             self.singleBatchAccuracies = np.append(
                 self.singleBatchAccuracies, self.network.accuracy(targets))
 
-    def runMNIST(self,trainLoader):
+    def runMNIST(self, trainLoader, device):
         """ Train the network on the total training set of MNIST as
         long as epoch loss is above the threshold
         :param trainLoader: a torch.utils.data.DataLoader object
@@ -93,6 +93,7 @@ class Optimizer(object):
         if not isinstance(trainLoader, torch.utils.data.DataLoader):
             raise TypeError("Expecting a DataLoader object, now got a "
                             "{}".format(type(trainLoader)))
+
         epochLoss = float('inf')
         print('====== Training started =======')
         print('Epoch: ' + str(self.epoch) + ' ------------------------')
@@ -102,6 +103,7 @@ class Optimizer(object):
                     print('batch: ' + str(batch_idx))
                 data = data.view(-1, 28*28, 1)
                 target = hf.oneHot(target, 10)
+                data, target = data.to(device), target.to(device)
                 self.step(data, target)
             epochLoss = np.mean(self.singleBatchLosses)
             self.resetSingleBatchLosses()

@@ -1,7 +1,15 @@
 from create_datasets import GenerateDatasetFromModel
 from optimizers import SGD, SGDMomentum
-from targetprop_network import InvertibleInputLayer, \
+from invertible_network import InvertibleInputLayer, \
     InvertibleLeakyReluLayer, InvertibleLinearOutputLayer, InvertibleNetwork
+import torch
+
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+if torch.cuda.is_available():
+    torch.set_default_tensor_type('torch.cuda.FloatTensor')
+    print('using GPU')
+else:
+    print('using CPU')
 
 # Create toy model dataset
 
