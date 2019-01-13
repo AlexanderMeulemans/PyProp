@@ -136,7 +136,7 @@ class Optimizer(object):
             for i in range(inputData.size(0)):
                 data = inputData[i,:,:,:]
                 target = targets[i,:,:,:]
-                if i % 500 == 0:
+                if i % 100 == 0:
                     print('batch: ' + str(i))
                 self.step(data, target)
             epochLoss = np.mean(self.singleBatchLosses)

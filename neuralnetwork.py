@@ -412,11 +412,20 @@ class OutputLayer(Layer):
             #  (with highest class probability)
             target_classes = hf.prob2class(target)
             lossFunction = nn.CrossEntropyLoss()
-            loss = lossFunction(self.forwardOutput.squeeze(), target_classes)
+            forwardOutputSqueezed = torch.reshape(self.forwardOutput,
+                                                  (self.forwardOutput.shape[0],
+                                                   self.forwardOutput.shape[1]))
+            loss = lossFunction(forwardOutputSqueezed, target_classes)
             return torch.mean(loss)#.numpy()
         elif self.lossFunction == 'mse':
             lossFunction = nn.MSELoss()
-            loss = lossFunction(self.forwardOutput.squeeze(), target.squeeze())
+            forwardOutputSqueezed = torch.reshape(self.forwardOutput,
+                                                  (self.forwardOutput.shape[0],
+                                                   self.forwardOutput.shape[1]))
+            targetSqueezed = torch.reshape(target,
+                                            (target.shape[0],
+                                             target.shape[1]))
+            loss = lossFunction(forwardOutputSqueezed, targetSqueezed)
             return torch.mean(loss)#.numpy()
 
     def propagateBackward(self, upperLayer):

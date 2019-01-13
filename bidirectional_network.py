@@ -28,8 +28,9 @@ class BidirectionalLayer(Layer):
         if not isinstance(lossFunction, str):
             raise TypeError("Expecting a string to indicate loss function, "
                             "got {}".format(type(lossFunction)))
-        if not (lossFunction == 'mse'):
-            raise ValueError("Only the mse local loss function is defined "
+        if not ((lossFunction == 'mse') or (lossFunction == 'crossEntropy')):
+            raise ValueError("Only the mse or cross entropy"
+                             " local loss function is defined "
                              "yet, got {}".format(lossFunction))
         self.lossFunction= lossFunction
 
@@ -98,7 +99,8 @@ class BidirectionalLayer(Layer):
 
     def updateBackwardParameters(self, learningRate, upperLayer):
         """ Should be implemented by the child classes"""
-        raise NetworkError('This method should be overwritten by the child classes')
+        raise NetworkError('This method should be overwritten by the '
+                           'child classes')
 
 
 class BidirectionalNetwork(Network):
@@ -128,7 +130,8 @@ class BidirectionalNetwork(Network):
         """ Update all the parameters of the network with the
         computed gradients"""
         for i in range(0, len(self.layers)-1):
-            self.layers[i].updateBackwardParameters(learningRate, self.layers[i+1])
+            self.layers[i].updateBackwardParameters(learningRate,
+                                                    self.layers[i+1])
 
     def updateParameters(self, learningRate):
         self.updateForwardParameters(learningRate)

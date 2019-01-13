@@ -11,3 +11,6 @@ class IdentityLayer(nn.Module):
 
 class NetworkError(Exception):
     pass
+
+class NotImplementedError(Exception):
+    pass

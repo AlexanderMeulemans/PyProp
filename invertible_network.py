@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import HelperFunctions as hf
-from HelperClasses import NetworkError
+from HelperClasses import NetworkError, NotImplementedError
 import numpy as np
 from neuralnetwork import Layer, Network
 from bidirectional_network import BidirectionalLayer, BidirectionalNetwork
@@ -110,7 +110,9 @@ class InvertibleLayer(BidirectionalLayer):
             linearActivationTilde = torch.matmul(self.forwardWeightsTilde,
                                                  forwardInput) + \
                                     self.forwardBiasTilde
-            forwardOutputTilde = self.forwardNonlinearity(linearActivationTilde)
+            forwardOutputTilde = linearActivationTilde # no need to put through
+            # nonlinearity, as in the backward pass, the inverse non-linearity
+            # would be applied. Now we skip both to save computation
         else:
             forwardOutputTilde = torch.empty(0)
         self.setForwardOutputTilde(forwardOutputTilde)
@@ -171,12 +173,14 @@ class InvertibleLayer(BidirectionalLayer):
             raise ValueError("Layer sizes are not compatible for propagating "
                              "backwards")
 
-        targetBar = torch.cat((upperLayer.backwardOutput,
+        target_inverse = upperLayer.inverseNonlinearity(
+            upperLayer.backwardOutput)
+
+        targetBar_inverse = torch.cat((target_inverse,
                                upperLayer.forwardOutputTilde), -2)
 
         backwardOutput = torch.matmul(self.backwardWeights,
-                                      (upperLayer.inverseNonlinearity(
-                                          targetBar) + self.backwardBias))
+                                      targetBar_inverse + self.backwardBias)
         self.setBackwardOutput(backwardOutput)
 
     def computeForwardGradients(self, lowerLayer):
@@ -204,7 +208,7 @@ class InvertibleLayer(BidirectionalLayer):
 
         weight_gradients = torch.matmul(u, torch.transpose(v, -1, -2))
 
-        bias_gradients = torch.mul(vectorizedJacobian, localLossDer)
+        bias_gradients = u
         self.setWeightUpdateU(torch.reshape(u,(u.shape[-2],u.shape[-1])))
         self.setWeightUpdateV(torch.reshape(v,(v.shape[-2],v.shape[-1])))
         self.setForwardGradients(torch.mean(weight_gradients, 0), torch.mean(
@@ -320,11 +324,20 @@ class InvertibleOutputLayer(InvertibleLayer):
             #  (with highest class probability)
             target_classes = hf.prob2class(target)
             lossFunction = nn.CrossEntropyLoss()
-            loss = lossFunction(self.forwardOutput.squeeze(), target_classes)
+            forwardOutputSqueezed = torch.reshape(self.forwardOutput,
+                                                  (self.forwardOutput.shape[0],
+                                                   self.forwardOutput.shape[1]))
+            loss = lossFunction(forwardOutputSqueezed, target_classes)
             return torch.mean(loss)#.numpy()
         elif self.lossFunction == 'mse':
             lossFunction = nn.MSELoss()
-            loss = lossFunction(self.forwardOutput.squeeze(), target.squeeze())
+            forwardOutputSqueezed = torch.reshape(self.forwardOutput,
+                                                  (self.forwardOutput.shape[0],
+                                                   self.forwardOutput.shape[1]))
+            targetSqueezed = torch.reshape(target,
+                                            (target.shape[0],
+                                             target.shape[1]))
+            loss = lossFunction(forwardOutputSqueezed, targetSqueezed)
             return torch.mean(loss)#.numpy()
 
     def propagateBackward(self, upperLayer):
@@ -378,6 +391,96 @@ class InvertibleLinearOutputLayer(InvertibleOutputLayer):
         self.backwardOutput = self.forwardOutput - torch.mul(gradient,
                                                          self.stepsize)
 
+class InvertibleSoftmaxOutputLayer(InvertibleOutputLayer):
+    """ Invertible output layer with a linear activation function. This layer
+    can so far only be combined with an mse loss
+    function."""
+    def __init__(self, inDim, layerDim, stepsize, lossFunction =
+                 'crossEntropy'):
+        super().__init__(inDim, layerDim, stepsize=stepsize, lossFunction =
+        lossFunction)
+        self.normalization_constant = None
+
+    def forwardNonlinearity(self, linearActivation):
+        self.normalization_constant = torch.logsumexp(linearActivation,1)
+        softmax = nn.Softmax(dim=1)
+        print('original linear activation: {}'.format(linearActivation))
+        return softmax(linearActivation)
+
+    def inverseNonlinearity(self, input):
+        print('computed linear activation: {}'.format(
+            torch.log(input) + self.normalization_constant))
+        return torch.log(input) + self.normalization_constant
+
+    def computeVectorizedJacobian(self):
+        raise NotImplementedError('Softmax outputlayer has a custom '
+                                  'implementation of computeForwardGradients'
+                                  'without the usage of '
+                                  'computeVectorizedJacobian')
+
+    def computeBackwardOutput(self, target):
+        """ Compute the backward output based on a small move from the
+        forward output in the direction of the negative gradient of the loss
+        function."""
+        if not self.lossFunction == 'crossEntropy':
+            raise NetworkError("a softmax output layer can only be combined "
+                               "with a crossEntropy loss")
+        if not isinstance(target, torch.Tensor):
+            raise TypeError("Expecting a torch.Tensor object as target")
+        if not self.forwardOutput.shape == target.shape:
+            raise ValueError('Expecting a tensor of dimensions: batchdimension '
+                             'x class dimension x 1. Given target'
+                             'has shape' + str(target.shape))
+        gradient = self.forwardOutput - target
+        self.backwardOutput = self.forwardOutput - torch.mul(gradient,
+                                                         self.stepsize)
+
+    def propagateForward(self, lowerLayer):
+        """ Normal forward propagation, but on top of that, save the predicted
+        classes in self."""
+        super().propagateForward(lowerLayer)
+        self.predictedClasses = hf.prob2class(self.forwardOutput)
+
+    def accuracy(self, target):
+        """ Compute the accuracy if the network predictions with respect to
+        the given true targets.
+        :param target: 3D tensor of size batchdimension x class dimension x 1"""
+        if not isinstance(target, torch.Tensor):
+            raise TypeError("Expecting a torch.Tensor object as target")
+        if not self.forwardOutput.shape == target.shape:
+            raise ValueError('Expecting a tensor of dimensions: batchdimension'
+                             ' x class dimension x 1. Given target'
+                             'has shape' + str(target.shape))
+        return hf.accuracy(self.predictedClasses, hf.prob2class(target))
+
+    def computeForwardGradients(self, lowerLayer):
+        """
+        :param lowerLayer: first layer upstream of the layer self
+        :type lowerLayer: Layer
+        :return: saves the gradients of the local cost function to the layer
+        parameters for all the batch samples
+
+        """
+        if lowerLayer.forwardOutput.shape[0]>1:
+            raise NetworkError('only batch sizes of size 1 are allowed,'
+                               ' as otherwise the '
+                               'inverse computation with sherman-morrisson'
+                               ' is not possible')
+        if not self.lossFunction == 'crossEntropy':
+            raise NetworkError('softmax ouptput layer should always be'
+                               'combined with crossEntropy loss, now got {}'
+                               'instead'.format(self.lossFunction))
+
+        u = self.forwardOutput - self.backwardOutput
+        v = lowerLayer.forwardOutput
+
+        weight_gradients = torch.matmul(u, torch.transpose(v, -1, -2))
+
+        bias_gradients = u
+        self.setWeightUpdateU(torch.reshape(u,(u.shape[-2],u.shape[-1])))
+        self.setWeightUpdateV(torch.reshape(v,(v.shape[-2],v.shape[-1])))
+        self.setForwardGradients(torch.mean(weight_gradients, 0), torch.mean(
+            bias_gradients, 0))
 
 class InvertibleInputLayer(InvertibleLayer):
     """ Input layer of the invertible neural network,
@@ -445,7 +548,8 @@ class InvertibleNetwork(BidirectionalNetwork):
         self.layers = layers
 
     def initInverses(self):
-        """ Initialize the backward weights of all layers to the inverse of the forward weights of
+        """ Initialize the backward weights of all layers to the inverse of
+        the forward weights of
         the layer on top."""
         for i in range(0, len(self.layers)-1):
             self.layers[i].initInverse(self.layers[i+1])

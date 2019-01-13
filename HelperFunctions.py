@@ -43,8 +43,9 @@ def plot_epochs(loss,accuracy, gradients = None):
 
 def prob2class(probabilities):
     """ Convert the class probabilities to one predicted class per batch sample"""
-    probabilities = probabilities.squeeze()
-    return torch.argmax(probabilities,dim=1)
+    probabilities = torch.reshape(probabilities, (probabilities.shape[0],
+                                                  probabilities.shape[1]))
+    return torch.argmax(probabilities, dim=1)
 
 def accuracy(predictions, targets):
     """ Return the accuracy of the batch"""
