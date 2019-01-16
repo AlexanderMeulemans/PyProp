@@ -24,7 +24,8 @@ hiddenlayer = ReluLayer(28*28,100)
 outputlayer = SoftmaxOutputLayer(100,10,'crossEntropy')
 
 network = Network([inputlayer, hiddenlayer, outputlayer])
-network.cuda(torch.cuda.current_device())
+if torch.cuda.is_available():
+    network.cuda(torch.cuda.current_device())
 
 # Loading dataset
 train_set = torchvision.datasets.MNIST(root='./data', train = True, download=True,
