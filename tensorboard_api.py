@@ -3,7 +3,7 @@
 
 import io
 import numpy as np
-from PIL import Image
+# from PIL import Image
 import tensorflow as tf
 import torch
 
@@ -54,60 +54,60 @@ class Tensorboard:
         self.writer.add_summary(summary, global_step=global_step)
         self.writer.flush()
 
-    def log_image(self, tag, img, global_step):
-        s = io.BytesIO()
-        Image.fromarray(img).save(s, format='png')
-
-        img_summary = tf.Summary.Image(encoded_image_string=s.getvalue(),
-                                       height=img.shape[0],
-                                       width=img.shape[1])
-
-        summary = tf.Summary()
-        summary.value.add(tag=tag, image=img_summary)
-        self.writer.add_summary(summary, global_step=global_step)
-        self.writer.flush()
-
-    def log_plot(self, tag, figure, global_step):
-        plot_buf = io.BytesIO()
-        figure.savefig(plot_buf, format='png')
-        plot_buf.seek(0)
-        img = Image.open(plot_buf)
-        img_ar = np.array(img)
-
-        img_summary = tf.Summary.Image(encoded_image_string=plot_buf.getvalue(),
-                                       height=img_ar.shape[0],
-                                       width=img_ar.shape[1])
-
-        summary = tf.Summary()
-        summary.value.add(tag=tag, image=img_summary)
-        self.writer.add_summary(summary, global_step=global_step)
-        self.writer.flush()
-
-
-if __name__ == '__main__':
-    tensorboard = Tensorboard('logs')
-    x = np.arange(1, 101)
-    y = 20 + 3 * x + np.random.random(100) * 100
-
-    # Log simple values
-    for i in range(0, 100):
-        tensorboard.log_scalar('value', y[i], i)
-
-    # # Log images
-    # img = skimage.io.imread(r'C:\Users\212551241\Downloads\example_img.jpg')
-    # tensorboard.log_image('example_image', img, 0)
+    # def log_image(self, tag, img, global_step):
+    #     s = io.BytesIO()
+    #     Image.fromarray(img).save(s, format='png')
     #
-    # # Log plots
-    # fig = plt.figure()
-    # plt.plot(x, y, 'o')
-    # plt.close()
-    # tensorboard.log_plot('example_plot', fig, 0)
+    #     img_summary = tf.Summary.Image(encoded_image_string=s.getvalue(),
+    #                                    height=img.shape[0],
+    #                                    width=img.shape[1])
+    #
+    #     summary = tf.Summary()
+    #     summary.value.add(tag=tag, image=img_summary)
+    #     self.writer.add_summary(summary, global_step=global_step)
+    #     self.writer.flush()
 
-    # Log histograms
-    rng = np.random.RandomState(10)
-    # a = np.hstack(
-    #     (rng.normal(size=1000), rng.normal(loc=5, scale=2, size=1000)))
-    a = np.random.rand(5,6)
-    tensorboard.log_histogram('example_hist', a, 10, 0)
+    # def log_plot(self, tag, figure, global_step):
+    #     plot_buf = io.BytesIO()
+    #     figure.savefig(plot_buf, format='png')
+    #     plot_buf.seek(0)
+    #     img = Image.open(plot_buf)
+    #     img_ar = np.array(img)
+    #
+    #     img_summary = tf.Summary.Image(encoded_image_string=plot_buf.getvalue(),
+    #                                    height=img_ar.shape[0],
+    #                                    width=img_ar.shape[1])
+    #
+    #     summary = tf.Summary()
+    #     summary.value.add(tag=tag, image=img_summary)
+    #     self.writer.add_summary(summary, global_step=global_step)
+    #     self.writer.flush()
 
-    tensorboard.close()
+
+# if __name__ == '__main__':
+#     tensorboard = Tensorboard('logs')
+#     x = np.arange(1, 101)
+#     y = 20 + 3 * x + np.random.random(100) * 100
+#
+#     # Log simple values
+#     for i in range(0, 100):
+#         tensorboard.log_scalar('value', y[i], i)
+#
+#     # # Log images
+#     # img = skimage.io.imread(r'C:\Users\212551241\Downloads\example_img.jpg')
+#     # tensorboard.log_image('example_image', img, 0)
+#     #
+#     # # Log plots
+#     # fig = plt.figure()
+#     # plt.plot(x, y, 'o')
+#     # plt.close()
+#     # tensorboard.log_plot('example_plot', fig, 0)
+#
+#     # Log histograms
+#     rng = np.random.RandomState(10)
+#     # a = np.hstack(
+#     #     (rng.normal(size=1000), rng.normal(loc=5, scale=2, size=1000)))
+#     a = np.random.rand(5,6)
+#     tensorboard.log_histogram('example_hist', a, 10, 0)
+#
+#     tensorboard.close()
