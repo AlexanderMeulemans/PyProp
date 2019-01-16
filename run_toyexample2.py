@@ -4,11 +4,14 @@ from invertible_network import InvertibleInputLayer, \
     InvertibleLeakyReluLayer, InvertibleLinearOutputLayer, InvertibleNetwork
 import torch
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 if torch.cuda.is_available():
+    nb_gpus = torch.cuda.device_count()
+    gpu_idx = nb_gpus - 1
+    device = torch.device("cuda:{}".format(gpu_idx))
     torch.set_default_tensor_type('torch.cuda.FloatTensor')
     print('using GPU')
 else:
+    device = torch.device("cpu")
     print('using CPU')
 
 # Create toy model dataset

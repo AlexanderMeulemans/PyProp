@@ -2,7 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="627a70cb-13ab-4e6b-bda9-3721d10194d6" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/logs/events.out.tfevents.1547631870.ALEXANDER-PC" beforeDir="false" afterPath="$PROJECT_DIR$/logs/events.out.tfevents.1547631870.ALEXANDER-PC" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/events.out.tfevents.1547631870.ALEXANDER-PC" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/runMNIST.py" beforeDir="false" afterPath="$PROJECT_DIR$/runMNIST.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/run_toyexample2.py" beforeDir="false" afterPath="$PROJECT_DIR$/run_toyexample2.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -22,30 +25,30 @@
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="py" value="7424" />
+          <entry key="py" value="7564" />
           <entry key="test" value="141" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="Python" value="7565" />
+          <entry key="Python" value="7705" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
         <counts>
-          <entry key="py" value="20" />
+          <entry key="py" value="22" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.open">
         <counts>
-          <entry key="Python" value="20" />
+          <entry key="Python" value="22" />
         </counts>
       </usages-collector>
     </session>
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/optimizers.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="425">
@@ -72,7 +75,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/toy_example3.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="646">
+            <state relative-caret-position="714">
               <caret line="42" selection-start-line="42" selection-end-line="42" />
               <folding>
                 <element signature="e#0#52#0" expanded="true" />
@@ -105,11 +108,20 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/run_toyexample2.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="238">
-              <caret line="14" selection-start-line="7" selection-end-line="7" selection-end-column="29" />
+            <state relative-caret-position="102">
+              <caret line="6" selection-start-line="6" selection-end-line="14" selection-end-column="22" />
               <folding>
                 <element signature="e#0#52#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/runMNIST.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="153">
+              <caret line="9" lean-forward="true" selection-start-line="9" selection-end-line="9" />
             </state>
           </provider>
         </entry>
@@ -129,7 +141,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/neuralnetwork.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="258">
+            <state relative-caret-position="360">
               <caret line="567" column="63" selection-start-line="567" selection-start-column="63" selection-end-line="567" selection-end-column="63" />
               <folding>
                 <element signature="e#0#12#0" expanded="true" />
@@ -220,11 +232,9 @@
         <option value="$PROJECT_DIR$/MainClasses.py" />
         <option value="$PROJECT_DIR$/targetprop_network.py" />
         <option value="$PROJECT_DIR$/run_toyexample.py" />
-        <option value="$PROJECT_DIR$/runMNIST.py" />
         <option value="$PROJECT_DIR$/test.py" />
         <option value="$PROJECT_DIR$/create_datasets.py" />
         <option value="$PROJECT_DIR$/bidirectional_layer.py" />
-        <option value="$PROJECT_DIR$/run_toyexample2.py" />
         <option value="$PROJECT_DIR$/run_mnist_invertible_layers.py" />
         <option value="$PROJECT_DIR$/HelperClasses.py" />
         <option value="$PROJECT_DIR$/HelperFunctions.py" />
@@ -234,6 +244,8 @@
         <option value="$PROJECT_DIR$/neuralnetwork.py" />
         <option value="$PROJECT_DIR$/optimizers.py" />
         <option value="$PROJECT_DIR$/tensorboard_api.py" />
+        <option value="$PROJECT_DIR$/run_toyexample2.py" />
+        <option value="$PROJECT_DIR$/runMNIST.py" />
       </list>
     </option>
   </component>
@@ -250,7 +262,7 @@
     <panes />
   </component>
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="D:/DeepLearningETHZ/DAGAN-interpolation" />
+    <property name="last_opened_file_path" value="$USER_HOME$/Downloads/Thesis-f250e836609dd0af21722eada4124fabe610666b" />
     <property name="settings.editor.selected.configurable" value="preferences.sourceCode" />
     <property name="two.files.diff.last.used.file" value="$PROJECT_DIR$/neuralnetwork.py" />
   </component>
@@ -266,7 +278,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.run_toyexample2">
+  <component name="RunManager" selected="Python.runMNIST">
     <configuration name="Unnamed" type="PythonConfigurationType" factoryName="Python">
       <module name="Thesis" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -292,9 +304,6 @@
       <module name="Thesis" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
       <option name="SDK_HOME" value="C:\Users\Alexander\Anaconda3\envs\complete_environment\python.exe" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="false" />
@@ -422,11 +431,11 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.runMNIST" />
         <item itemvalue="Python.run_toyexample2" />
         <item itemvalue="Python.test" />
         <item itemvalue="Python.tensorboard_api" />
         <item itemvalue="Python.toy_example3" />
-        <item itemvalue="Python.runMNIST" />
       </list>
     </recent_temporary>
   </component>
@@ -459,8 +468,8 @@
       <window_info anchor="bottom" id="Event Log" order="6" side_tool="true" />
       <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info anchor="bottom" id="Terminal" order="8" />
-      <window_info anchor="bottom" id="Python Console" order="9" weight="0.3569807" />
-      <window_info active="true" anchor="bottom" id="Run" order="10" visible="true" weight="0.36719638" />
+      <window_info anchor="bottom" id="Python Console" order="9" visible="true" weight="0.3569807" />
+      <window_info anchor="bottom" id="Run" order="10" weight="0.36719638" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -520,13 +529,6 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/bidirectional_layer.py" />
-    <entry file="file://$PROJECT_DIR$/runMNIST.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret selection-end-line="70" selection-end-column="49" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/HelperClasses.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="221">
@@ -548,49 +550,31 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/toy_example3.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="646">
-          <caret line="42" selection-start-line="42" selection-end-line="42" />
-          <folding>
-            <element signature="e#0#52#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/invertible_network.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="7882">
-          <caret line="491" column="45" selection-start-line="491" selection-start-column="45" selection-end-line="491" selection-end-column="45" />
-          <folding>
-            <element signature="e#0#12#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/neuralnetwork.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="258">
-          <caret line="567" column="63" selection-start-line="567" selection-start-column="63" selection-end-line="567" selection-end-column="63" />
-          <folding>
-            <element signature="e#0#12#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/bidirectional_network.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="119">
-          <caret line="13" column="51" selection-start-line="13" selection-start-column="51" selection-end-line="13" selection-end-column="51" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/test.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="170">
           <caret line="10" column="8" selection-start-line="10" selection-start-column="8" selection-end-line="10" selection-end-column="8" />
           <folding>
             <element signature="e#0#40#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../thesis_backup/Thesis/optimizers.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/optimizers.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="425">
+          <caret line="25" column="51" selection-start-line="25" selection-start-column="51" selection-end-line="25" selection-end-column="51" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -605,23 +589,57 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/run_toyexample2.py">
+    <entry file="file://$PROJECT_DIR$/bidirectional_network.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="238">
-          <caret line="14" selection-start-line="7" selection-end-line="7" selection-end-column="29" />
+        <state relative-caret-position="119">
+          <caret line="13" column="51" selection-start-line="13" selection-start-column="51" selection-end-line="13" selection-end-column="51" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/toy_example3.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="714">
+          <caret line="42" selection-start-line="42" selection-end-line="42" />
           <folding>
             <element signature="e#0#52#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/optimizers.py">
+    <entry file="file://$PROJECT_DIR$/neuralnetwork.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="425">
-          <caret line="25" column="51" selection-start-line="25" selection-start-column="51" selection-end-line="25" selection-end-column="51" />
+        <state relative-caret-position="360">
+          <caret line="567" column="63" selection-start-line="567" selection-start-column="63" selection-end-line="567" selection-end-column="63" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/invertible_network.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="7882">
+          <caret line="491" column="45" selection-start-line="491" selection-start-column="45" selection-end-line="491" selection-end-column="45" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/run_toyexample2.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="102">
+          <caret line="6" selection-start-line="6" selection-end-line="14" selection-end-column="22" />
+          <folding>
+            <element signature="e#0#52#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/runMNIST.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="153">
+          <caret line="9" lean-forward="true" selection-start-line="9" selection-end-line="9" />
         </state>
       </provider>
     </entry>
