@@ -5,6 +5,7 @@ import io
 import numpy as np
 from PIL import Image
 import tensorflow as tf
+import torch
 
 
 class Tensorboard:
@@ -15,17 +16,28 @@ class Tensorboard:
         self.writer.close()
 
     def log_scalar(self, tag, value, global_step):
+        if isinstance(value, torch.Tensor):
+            if torch.cuda.is_available():
+                value = value.cpu().numpy()
+            else:
+                value = value.numpy()
+            value = np.asscalar(value)
         summary = tf.Summary()
         summary.value.add(tag=tag, simple_value=value)
         self.writer.add_summary(summary, global_step=global_step)
         self.writer.flush()
 
-    def log_histogram(self, tag, values, global_step, bins):
+    def log_histogram(self, tag, values, bins, global_step):
+        if isinstance(values, torch.Tensor):
+            if torch.cuda.is_available():
+                values = values.cpu().numpy()
+            else:
+                values = values.numpy()
         counts, bin_edges = np.histogram(values, bins=bins)
 
         hist = tf.HistogramProto()
-        hist.min = float(np.min(values))
-        hist.max = float(np.max(values))
+        hist.min = float(np.amin(values))
+        hist.max = float(np.amax(values))
         hist.num = int(np.prod(values.shape))
         hist.sum = float(np.sum(values))
         hist.sum_squares = float(np.sum(values ** 2))
@@ -81,20 +93,21 @@ if __name__ == '__main__':
     for i in range(0, 100):
         tensorboard.log_scalar('value', y[i], i)
 
-    # Log images
-    img = skimage.io.imread(r'C:\Users\212551241\Downloads\example_img.jpg')
-    tensorboard.log_image('example_image', img, 0)
-
-    # Log plots
-    fig = plt.figure()
-    plt.plot(x, y, 'o')
-    plt.close()
-    tensorboard.log_plot('example_plot', fig, 0)
+    # # Log images
+    # img = skimage.io.imread(r'C:\Users\212551241\Downloads\example_img.jpg')
+    # tensorboard.log_image('example_image', img, 0)
+    #
+    # # Log plots
+    # fig = plt.figure()
+    # plt.plot(x, y, 'o')
+    # plt.close()
+    # tensorboard.log_plot('example_plot', fig, 0)
 
     # Log histograms
     rng = np.random.RandomState(10)
-    a = np.hstack(
-        (rng.normal(size=1000), rng.normal(loc=5, scale=2, size=1000)))
-    tensorboard.log_histogram('example_hist', a, 0, 'auto')
+    # a = np.hstack(
+    #     (rng.normal(size=1000), rng.normal(loc=5, scale=2, size=1000)))
+    a = np.random.rand(5,6)
+    tensorboard.log_histogram('example_hist', a, 10, 0)
 
     tensorboard.close()

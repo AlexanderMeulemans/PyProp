@@ -11,7 +11,8 @@ from bidirectional_network import BidirectionalLayer, BidirectionalNetwork
 class InvertibleLayer(BidirectionalLayer):
     """ Layer that is invertible to make it able to propagate exact targets."""
 
-    def __init__(self,inDim, layerDim, outDim, lossFunction = 'mse'):
+    def __init__(self,inDim, layerDim, outDim, lossFunction = 'mse',
+                 name='invertible_layer'):
         if inDim is not None:
             if inDim < layerDim:
                 raise ValueError("Expecting an input size bigger or equal to the "
@@ -20,7 +21,7 @@ class InvertibleLayer(BidirectionalLayer):
             if layerDim < outDim:
                 raise ValueError("Expecting a layer size bigger or equal to the "
                                  "output size")
-        super().__init__(inDim, layerDim, outDim, lossFunction)
+        super().__init__(inDim, layerDim, outDim, lossFunction, name=name)
         self.initForwardParametersTilde()
 
     def initForwardParametersTilde(self):
@@ -228,8 +229,8 @@ class InvertibleLeakyReluLayer(InvertibleLayer):
     fucntion. """
 
     def __init__(self,negativeSlope, inDim, layerDim, outDim, lossFunction =
-        'mse'):
-        super().__init__(inDim, layerDim, outDim, lossFunction)
+        'mse', name='invertible_leaky_ReLU_layer'):
+        super().__init__(inDim, layerDim, outDim, lossFunction, name=name)
         self.setNegativeSlope(negativeSlope)
 
     def setNegativeSlope(self, negativeSlope):
@@ -291,9 +292,10 @@ class InvertibleOutputLayer(InvertibleLayer):
     """ Super class for the last layer of an invertible network, that will be
     trained using target propagation"""
 
-    def __init__(self, inDim, layerDim, stepsize, lossFunction = 'mse'):
+    def __init__(self, inDim, layerDim, stepsize, lossFunction = 'mse',
+                 name='invertible_output_layer'):
         super().__init__(inDim, layerDim, outDim=None, lossFunction =
-        lossFunction)
+        lossFunction, name=name)
         self.setStepsize(stepsize)
 
 
@@ -396,9 +398,9 @@ class InvertibleSoftmaxOutputLayer(InvertibleOutputLayer):
     can so far only be combined with an mse loss
     function."""
     def __init__(self, inDim, layerDim, stepsize, lossFunction =
-                 'crossEntropy'):
+                 'crossEntropy', name='invertible_softmax_output_layer'):
         super().__init__(inDim, layerDim, stepsize=stepsize, lossFunction =
-        lossFunction)
+        lossFunction, name=name)
         self.normalization_constant = None
 
     def forwardNonlinearity(self, linearActivation):
@@ -486,9 +488,11 @@ class InvertibleInputLayer(InvertibleLayer):
     """ Input layer of the invertible neural network,
         e.g. the pixelvalues of a picture. """
 
-    def __init__(self, layerDim, outDim, lossFunction = 'mse'):
+    def __init__(self, layerDim, outDim, lossFunction = 'mse',
+                 name='invertible_input_layer'):
         super().__init__(inDim=None, layerDim=layerDim, outDim=outDim,
-                         lossFunction=lossFunction)
+                         lossFunction=lossFunction,
+                         name=name)
 
     def initForwardParameters(self):
         """ InputLayer has no forward parameters"""

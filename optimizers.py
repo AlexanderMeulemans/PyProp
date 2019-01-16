@@ -3,6 +3,7 @@ import HelperFunctions as hf
 from HelperClasses import NetworkError
 import numpy as np
 from neuralnetwork import Layer, Network
+from tensorboard_api import Tensorboard
 
 class Optimizer(object):
     """" Super class for all the different optimizers (e.g. SGD)"""
@@ -22,6 +23,8 @@ class Optimizer(object):
         self.setNetwork(network)
         self.setComputeAccuracies(computeAccuracies)
         self.setMaxEpoch(maxEpoch)
+        self.tensorboard = self.network.tensorboard
+        self.global_step = 0
         if self.computeAccuracies:
             self.epochAccuracies = np.array([])
             self.batchAccuracies = np.array([])
@@ -75,15 +78,16 @@ class Optimizer(object):
 
     def saveResults(self, targets):
         """ Save the results of the optimizing step in the optimizer object."""
-        self.batchLosses = np.append(self.batchLosses, self.network.loss(
-            targets))
-        self.singleBatchLosses = np.append(self.singleBatchLosses,
-                                           self.network.loss(targets))
+        loss = self.network.loss(targets)
+        self.tensorboard.log_scalar('loss', loss, self.global_step)
+        self.batchLosses = np.append(self.batchLosses, loss)
+        self.singleBatchLosses = np.append(self.singleBatchLosses, loss)
         if self.computeAccuracies:
-            self.batchAccuracies = np.append(self.batchAccuracies,
-                                             self.network.accuracy(targets))
+            accuracy = self.network.accuracy(targets)
+            self.tensorboard.log_scalar('accuracy', accuracy, self.global_step)
+            self.batchAccuracies = np.append(self.batchAccuracies, accuracy)
             self.singleBatchAccuracies = np.append(
-                self.singleBatchAccuracies, self.network.accuracy(targets))
+                self.singleBatchAccuracies, accuracy)
 
     def runMNIST(self, trainLoader, device):
         """ Train the network on the total training set of MNIST as
@@ -120,7 +124,8 @@ class Optimizer(object):
             if self.epoch == self.maxEpoch:
                 print('Training terminated, maximum epoch reached')
             print('Epoch: ' + str(self.epoch) + ' ------------------------')
-
+        self.global_step = 0
+        self.tensorboard.close()
         print('====== Training finished =======')
 
     def runDataset(self, inputData, targets):
@@ -155,7 +160,12 @@ class Optimizer(object):
                 print('Training terminated, maximum epoch reached')
             print('Epoch: ' + str(self.epoch) + ' ------------------------')
 
+        self.global_step = 0
+        self.tensorboard.close()
         print('====== Training finished =======')
+
+    def step(self, inputBatch, targets):
+        raise NotImplementedError
 
 
 class SGD(Optimizer):
@@ -231,8 +241,9 @@ class SGD(Optimizer):
         self.network.propagateBackward(targets)
         self.network.computeGradients()
         self.network.updateParameters(self.learningRate)
-
         self.saveResults(targets)
+        self.global_step += 1
+        self.network.setGlobalStep(self.global_step)
 
 
 class SGDMomentum(SGD):
@@ -270,5 +281,6 @@ class SGDMomentum(SGD):
         self.network.computeGradientVelocities(self.momentum,
                                                       self.learningRate)
         self.network.updateParametersWithVelocity()
-
         self.saveResults(targets)
+        self.global_step += 1
+        self.network.setGlobalStep(self.global_step)

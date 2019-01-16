@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import HelperFunctions as hf
 from HelperClasses import NetworkError
+from tensorboard_api import Tensorboard
 import numpy as np
 
 
@@ -10,8 +11,12 @@ class Layer(object):
     """ Parent class of all occuring layers in neural networks with only
     feedforward weights. This class should not be used directly,
     only via its children"""
+    # create class variable of existing layer names
+    allLayerNames = []
+    # create tensorboard writer
+    tensorboard = Tensorboard('logs')
 
-    def __init__(self, inDim, layerDim):
+    def __init__(self, inDim, layerDim, name='layer'):
         """
         Initializes the Layer object
         :param inDim: input dimension of the layer (equal to the layer dimension
@@ -22,6 +27,8 @@ class Layer(object):
         if inDim is not None: # inDim is None when layer is inputlayer
             self.setInDim(inDim)
         self.initForwardParameters()
+        self.setName(name)
+        self.global_step = 0 # needed for making plots with tensorboard
 
     def setLayerDim(self, layerDim):
         if not isinstance(layerDim, int):
@@ -36,6 +43,21 @@ class Layer(object):
         if inDim <= 0:
             raise ValueError("Expecting strictly positive layer dimension")
         self.inDim = inDim
+
+    def setName(self, name):
+        if not isinstance(name, str):
+            raise TypeError("Expecting a string as name for the layer")
+        if not name in self.__class__.allLayerNames:
+            self.name = name
+            self.__class__.allLayerNames.append(name)
+        else:
+            newName = name
+            i=1
+            while newName in self.__class__.allLayerNames:
+                newName = name + '_' + str(i)
+                i += 1
+            self.name = newName
+            self.__class__.allLayerNames.append(name)
 
     def setForwardParameters(self, forwardWeights, forwardBias):
         if not isinstance(forwardWeights, torch.Tensor):
@@ -157,6 +179,15 @@ class Layer(object):
         forwardBias = self.forwardBias \
                       - torch.mul(self.forwardBiasGrad, learningRate)
         self.setForwardParameters(forwardWeights, forwardBias)
+        # save histograms
+        self.__class__.tensorboard.log_histogram(tag='{}/forwardWeights'.format(
+                                       self.name),
+                                       values=forwardWeights,
+                                       bins=20, global_step=self.global_step)
+        self.__class__.tensorboard.log_histogram(tag='{}/forwardBiases'.format(
+                                       self.name),
+                                       values=forwardBias,
+                                       bins=20, global_step=self.global_step)
 
     def propagateForward(self, lowerLayer):
         """
@@ -180,6 +211,11 @@ class Layer(object):
         self.setForwardLinearActivation(forwardLinearActivation)
         forwardOutput = self.forwardNonlinearity(self.forwardLinearActivation)
         self.setForwardOutput(forwardOutput)
+        # save histograms
+        self.__class__.tensorboard.log_histogram(tag=
+            '{}/forwardActivations'.format(
+            self.name), values=forwardOutput, bins=20,
+            global_step=self.global_step)
 
     def forwardNonlinearity(self, linearActivation):
         """ This method should be always overwritten by the children"""
@@ -201,6 +237,15 @@ class Layer(object):
         bias_gradients = self.backwardOutput
         self.setForwardGradients(torch.mean(weight_gradients, 0), torch.mean(
             bias_gradients, 0))
+        # save histograms
+        self.__class__.tensorboard.log_histogram(tag='{}/forward'
+                                                     'WeightsGradients'.format(
+            self.name), values=torch.mean(weight_gradients, 0), bins=20,
+            global_step=self.global_step)
+        self.__class__.tensorboard.log_histogram(tag='{}/forward'
+                                                     'BiasGradients'.format(
+            self.name), values=torch.mean(bias_gradients, 0), bins=20,
+            global_step=self.global_step)
 
     def computeForwardGradientVelocities(self, lowerLayer, momentum,
                                        learningRate):
@@ -214,7 +259,7 @@ class Layer(object):
 
         # weight_gradients = torch.mean(torch.matmul(self.backwardOutput,
         #                                            torch.transpose(
-        #                                                lowerLayer.forwardOutput,
+        #                                              lowerLayer.forwardOutput,
         #                                                -1, -2)), 0)
         # bias_gradients = torch.mean(self.backwardOutput, 0)
         weight_gradients = self.forwardWeightsGrad
@@ -341,11 +386,11 @@ class InputLayer(Layer):
     """ Input layer of the neural network,
     e.g. the pixelvalues of a picture. """
 
-    def __init__(self, layerDim):
+    def __init__(self, layerDim, name='input_layer'):
         """ InputLayer has only a layerDim and a
         forward activation that can be set,
          no input dimension nor parameters"""
-        super().__init__(inDim = None, layerDim=layerDim)
+        super().__init__(inDim = None, layerDim=layerDim, name=name)
 
     def propagateForward(self, lowerLayer):
         """ This function should never be called for an input layer,
@@ -378,7 +423,7 @@ class OutputLayer(Layer):
     This layer has a loss as extra attribute and some extra
     methods as explained below. """
 
-    def __init__(self, inDim, layerDim, lossFunction):
+    def __init__(self, inDim, layerDim, lossFunction, name='output_layer'):
         """
         :param inDim: input dimension of the layer,
         equal to the layer dimension of the second last layer in the network
@@ -386,7 +431,7 @@ class OutputLayer(Layer):
         :param loss: string indicating which loss function is used to
         compute the network loss
         """
-        super().__init__(inDim, layerDim)
+        super().__init__(inDim, layerDim, name=name)
         self.setLossFunction(lossFunction)
 
     def setLossFunction(self, lossFunction):
@@ -520,6 +565,7 @@ class Network(nn.Module):
         """
         super(Network, self).__init__()
         self.setLayers(layers)
+        self.tensorboard = self.layers[0].__class__.tensorboard
 
     def setLayers(self, layers):
         if not isinstance(layers, list):
@@ -640,3 +686,7 @@ class Network(nn.Module):
 
     def getOutput(self):
         return self.layers[-1].forwardOutput
+
+    def setGlobalStep(self,global_step):
+        for layer in self.layers:
+            layer.global_step = global_step
