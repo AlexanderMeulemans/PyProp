@@ -37,7 +37,7 @@ class BidirectionalLayer(Layer):
         This method should only be used when creating
         a new layer. Use setbackwardParameters to update the parameters and
         computeGradient to update the gradients"""
-        self.backwardWeights = torch.rand(self.layerDim, self.outDim)
+        self.backwardWeights = torch.randn(self.layerDim, self.outDim)
         self.backwardBias = torch.zeros(self.layerDim, 1)
         self.backwardWeightsGrad = torch.zeros(self.layerDim, self.outDim)
         self.backwardBiasGrad = torch.zeros(self.layerDim, 1)

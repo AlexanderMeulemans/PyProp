@@ -6,6 +6,8 @@ from invertible_network import InvertibleInputLayer, \
 import torch
 from tensorboard_api import Tensorboard
 import utils.HelperFunctions as hf
+import numpy as np
+torch.manual_seed(42)
 
 # ======== set log directory ==========
 log_dir = 'logs_hiddenlayer'
@@ -44,7 +46,37 @@ generator = GenerateDatasetFromModel(true_network)
 input_dataset, output_dataset = generator.generate(7000, 1)
 input_dataset_test, output_dataset_test = generator.generate(1, 1000)
 
+# compute least squares solution as control
+print('computing LS solution ...')
+input_dataset_np = input_dataset.cpu().numpy()
+output_dataset_np = output_dataset.cpu().numpy()
+input_dataset_test_np = input_dataset_test.cpu().numpy()
+output_dataset_test_np = output_dataset_test.cpu().numpy()
 
+input_dataset_np = np.reshape(input_dataset_np, (input_dataset_np.shape[0]*\
+                                                  input_dataset_np.shape[1],
+                                                  input_dataset_np.shape[2]))
+output_dataset_np = np.reshape(output_dataset_np, (output_dataset_np.shape[0]*\
+                                                  output_dataset_np.shape[1],
+                                                  output_dataset_np.shape[2]))
+input_dataset_test_np = np.reshape(input_dataset_test_np,
+                                   (input_dataset_test_np.shape[0]*\
+                                    input_dataset_test_np.shape[1],
+                                    input_dataset_test_np.shape[2]))
+output_dataset_test_np = np.reshape(output_dataset_test_np,
+                                    (output_dataset_test_np.shape[0]*\
+                                     output_dataset_test_np.shape[1],
+                                     output_dataset_test_np.shape[2]))
+
+weights = np.linalg.lstsq(input_dataset_np, output_dataset_np)
+print('mean residuals: '+str(np.mean(weights[1])))
+weights = weights[0]
+train_loss = np.mean(np.sum(np.square(np.matmul(input_dataset_np,weights)\
+                               - output_dataset_np), axis=1))
+test_loss = np.mean(np.sum(np.square(np.matmul(input_dataset_test_np,weights)\
+                               - output_dataset_test_np), axis=1))
+print('LS train loss: '+str(train_loss))
+print('LS test loss: '+str(test_loss))
 
 # Creating training network
 inputlayer = InvertibleInputLayer(layerDim=6,outDim=5, lossFunction='mse',
@@ -96,4 +128,7 @@ optimizer3 = SGD(network=network_shallow, threshold=0.0001,
                 finalLearningRate=0.005, computeAccuracies= False, maxEpoch=120)
 optimizer3.runDataset(input_dataset, output_dataset, input_dataset_test,
                       output_dataset_test)
+
+
+
 

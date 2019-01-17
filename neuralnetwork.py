@@ -127,7 +127,7 @@ class Layer(object):
         This method should only be used when creating
         a new layer. Use setForwardParameters to update the parameters and
         computeGradient to update the gradients"""
-        self.forwardWeights = torch.rand(self.layerDim, self.inDim)
+        self.forwardWeights = torch.randn(self.layerDim, self.inDim)
         self.forwardBias = torch.zeros(self.layerDim, 1)
         self.forwardWeightsGrad = torch.zeros(self.layerDim, self.inDim)
         self.forwardBiasGrad = torch.zeros(self.layerDim, 1)

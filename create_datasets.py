@@ -13,7 +13,7 @@ class GenerateDatasetFromModel(object):
 
     def generate(self, nb_batches, batch_sizes):
         """ Generate dataset of given batch size and number of batches"""
-        input_dataset = torch.rand(nb_batches, batch_sizes, self.input_size, 1)
+        input_dataset = torch.randn(nb_batches, batch_sizes, self.input_size, 1)
         output_dataset = torch.empty(nb_batches, batch_sizes,
                                      self.output_size, 1)
         for i in range(nb_batches):

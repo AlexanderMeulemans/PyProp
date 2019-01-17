@@ -28,7 +28,7 @@ class InvertibleLayer(BidirectionalLayer):
         when the layer is created.
         This method should only be used when creating
         a new layer. These parameters should remain fixed"""
-        self.forwardWeightsTilde = torch.rand(self.inDim - self.layerDim,
+        self.forwardWeightsTilde = torch.randn(self.inDim - self.layerDim,
                                               self.inDim)
         self.forwardBiasTilde = torch.zeros(self.inDim - self.layerDim, 1)
 
