@@ -33,7 +33,7 @@ class Tensorboard:
                 values = values.cpu().numpy()
             else:
                 values = values.numpy()
-        # print('values: '+str(values))
+        print('values: '+str(values))
         counts, bin_edges = np.histogram(values, bins=bins)
 
         hist = tf.HistogramProto()
