@@ -7,7 +7,7 @@ import torch
 from tensorboard_api import Tensorboard
 import utils.HelperFunctions as hf
 import numpy as np
-# torch.manual_seed(42)
+torch.manual_seed(42)
 
 # ======== set log directory ==========
 log_dir = 'logs_hiddenlayer'
