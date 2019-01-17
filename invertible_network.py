@@ -147,6 +147,9 @@ class InvertibleLayer(BidirectionalLayer):
 
         denominator = 1 - torch.matmul(torch.transpose(v, -1, -2),
                                        torch.matmul(self.backwardWeights, u))
+        if torch.abs(denominator) < 1e-3:
+            denominator = 1e-3*torch.sign(denominator)
+        
         numerator = torch.matmul(torch.matmul(self.backwardWeights, u),
                                  torch.matmul(torch.transpose(v, -1, -2),
                                               self.backwardWeights))
