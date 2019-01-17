@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="627a70cb-13ab-4e6b-bda9-3721d10194d6" name="Default" comment="" />
+    <list default="true" id="627a70cb-13ab-4e6b-bda9-3721d10194d6" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/tensorboard_api.py" beforeDir="false" afterPath="$PROJECT_DIR$/tensorboard_api.py" afterDir="false" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -21,13 +23,13 @@
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="py" value="10452" />
+          <entry key="py" value="10485" />
           <entry key="test" value="141" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="Python" value="10593" />
+          <entry key="Python" value="10626" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
@@ -83,8 +85,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/tensorboard_api.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1033">
-              <caret line="69" column="4" selection-start-line="69" selection-start-column="6" selection-end-line="83" selection-end-column="29" />
+            <state relative-caret-position="472">
+              <caret line="36" column="8" lean-forward="true" selection-start-line="36" selection-start-column="8" selection-end-line="36" selection-end-column="8" />
               <folding>
                 <element signature="e#112#121#0" expanded="true" />
               </folding>
@@ -237,12 +239,12 @@
         <option value="$PROJECT_DIR$/bidirectional_network.py" />
         <option value="$PROJECT_DIR$/invertible_network.py" />
         <option value="$PROJECT_DIR$/neuralnetwork.py" />
-        <option value="$PROJECT_DIR$/tensorboard_api.py" />
         <option value="$PROJECT_DIR$/utils/HelperFunctions.py" />
         <option value="$PROJECT_DIR$/runMNIST.py" />
         <option value="$PROJECT_DIR$/create_datasets.py" />
         <option value="$PROJECT_DIR$/optimizers.py" />
         <option value="$PROJECT_DIR$/run_toyexample2.py" />
+        <option value="$PROJECT_DIR$/tensorboard_api.py" />
       </list>
     </option>
   </component>
@@ -647,8 +649,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/tensorboard_api.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1033">
-          <caret line="69" column="4" selection-start-line="69" selection-start-column="6" selection-end-line="83" selection-end-column="29" />
+        <state relative-caret-position="472">
+          <caret line="36" column="8" lean-forward="true" selection-start-line="36" selection-start-column="8" selection-end-line="36" selection-end-column="8" />
           <folding>
             <element signature="e#112#121#0" expanded="true" />
           </folding>
