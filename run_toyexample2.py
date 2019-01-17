@@ -69,8 +69,8 @@ optimizer2 = SGDMomentum(network=network,threshold=1.2, initLearningRate=0.1,
 
 
 # Train on dataset
-# optimizer1.runDataset(input_dataset, output_dataset, input_dataset_test,
-#                       output_dataset_test)
+optimizer1.runDataset(input_dataset, output_dataset, input_dataset_test,
+                      output_dataset_test)
 
 
 # ======== Run same experiment on shallow network ======

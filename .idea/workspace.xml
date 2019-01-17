@@ -2,22 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="627a70cb-13ab-4e6b-bda9-3721d10194d6" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/utils/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/HelperClasses.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/HelperClasses.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/HelperFunctions.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/HelperFunctions.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bidirectional_network.py" beforeDir="false" afterPath="$PROJECT_DIR$/bidirectional_network.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/create_datasets.py" beforeDir="false" afterPath="$PROJECT_DIR$/create_datasets.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/depreciated/Backprop.py" beforeDir="false" afterPath="$PROJECT_DIR$/depreciated/Backprop.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/depreciated/MainClasses.py" beforeDir="false" afterPath="$PROJECT_DIR$/depreciated/MainClasses.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/depreciated/run_mnist.py" beforeDir="false" afterPath="$PROJECT_DIR$/depreciated/run_mnist.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/invertible_network.py" beforeDir="false" afterPath="$PROJECT_DIR$/invertible_network.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/neuralnetwork.py" beforeDir="false" afterPath="$PROJECT_DIR$/neuralnetwork.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimizers.py" beforeDir="false" afterPath="$PROJECT_DIR$/optimizers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/runMNIST.py" beforeDir="false" afterPath="$PROJECT_DIR$/runMNIST.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run_mnist_invertible_layers.py" beforeDir="false" afterPath="$PROJECT_DIR$/run_mnist_invertible_layers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/run_toyexample2.py" beforeDir="false" afterPath="$PROJECT_DIR$/run_toyexample2.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/test.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -88,8 +74,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/run_toyexample2.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="557">
-              <caret line="70" column="18" selection-start-line="70" selection-start-column="18" selection-end-line="70" selection-end-column="18" />
+            <state relative-caret-position="591">
+              <caret line="72" column="11" lean-forward="true" selection-start-line="71" selection-end-line="72" selection-end-column="11" />
               <folding>
                 <element signature="e#0#52#0" expanded="true" />
               </folding>
@@ -485,6 +471,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-1088" y="-221" width="1096" height="1896" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" weight="0.24007562" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -651,8 +638,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/run_toyexample2.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="557">
-          <caret line="70" column="18" selection-start-line="70" selection-start-column="18" selection-end-line="70" selection-end-column="18" />
+        <state relative-caret-position="591">
+          <caret line="72" column="11" lean-forward="true" selection-start-line="71" selection-end-line="72" selection-end-column="11" />
           <folding>
             <element signature="e#0#52#0" expanded="true" />
           </folding>
