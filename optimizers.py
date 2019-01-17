@@ -1,9 +1,8 @@
 import torch
-import HelperFunctions as hf
-from HelperClasses import NetworkError
+from utils import HelperFunctions as hf
 import numpy as np
-from neuralnetwork import Layer, Network
-from tensorboard_api import Tensorboard
+from neuralnetwork import Network
+
 
 class Optimizer(object):
     """" Super class for all the different optimizers (e.g. SGD)"""
@@ -20,6 +19,8 @@ class Optimizer(object):
         self.epochLosses = np.array([])
         self.batchLosses = np.array([])
         self.singleBatchLosses = np.array([])
+        self.testLosses = np.array([])
+        self.testBatchLosses = np.array([])
         self.setNetwork(network)
         self.setComputeAccuracies(computeAccuracies)
         self.setMaxEpoch(maxEpoch)
@@ -29,6 +30,8 @@ class Optimizer(object):
             self.epochAccuracies = np.array([])
             self.batchAccuracies = np.array([])
             self.singleBatchAccuracies = np.array([])
+            self.testAccuracies = np.array([])
+            self.testBatchAccuracies = np.array([])
 
     def setNetwork(self,network):
         if not isinstance(network, Network):
@@ -71,6 +74,28 @@ class Optimizer(object):
     def resetSingleBatchAccuracies(self):
         self.singleBatchAccuracies = np.array([])
 
+    def resetTestBatchLosses(self):
+        self.testBatchLosses = np.array([])
+
+    def resetTestBatchAccuracies(self):
+        self.testBatchAccuracies = np.array([])
+
+    def resetOptimizer(self):
+        self.epoch = 0
+        self.epochLosses = np.array([])
+        self.batchLosses = np.array([])
+        self.singleBatchLosses = np.array([])
+        self.testLosses = np.array([])
+        self.testBatchLosses = np.array([])
+        self.tensorboard = self.network.tensorboard
+        self.global_step = 0
+        if self.computeAccuracies:
+            self.epochAccuracies = np.array([])
+            self.batchAccuracies = np.array([])
+            self.singleBatchAccuracies = np.array([])
+            self.testAccuracies = np.array([])
+            self.testBatchAccuracies = np.array([])
+
     def updateLearningRate(self):
         """ If the optimizer should do a specific update of the learningrate,
         this method should be overwritten in the subclass"""
@@ -79,17 +104,59 @@ class Optimizer(object):
     def saveResults(self, targets):
         """ Save the results of the optimizing step in the optimizer object."""
         loss = self.network.loss(targets)
-        self.tensorboard.log_scalar('loss', loss, self.global_step)
+        self.tensorboard.log_scalar('training_loss_batch', loss,
+                                    self.global_step)
         self.batchLosses = np.append(self.batchLosses, loss)
         self.singleBatchLosses = np.append(self.singleBatchLosses, loss)
         if self.computeAccuracies:
             accuracy = self.network.accuracy(targets)
-            self.tensorboard.log_scalar('accuracy', accuracy, self.global_step)
+            self.tensorboard.log_scalar('training_accuracy_batch', accuracy,
+                                        self.global_step)
             self.batchAccuracies = np.append(self.batchAccuracies, accuracy)
             self.singleBatchAccuracies = np.append(
                 self.singleBatchAccuracies, accuracy)
 
-    def runMNIST(self, trainLoader, device):
+    def test_step(self, data, target):
+        self.network.propagateForward(data)
+        self.save_test_results_batch(target)
+
+    def save_test_results_batch(self, target):
+        batch_loss = self.network.loss(target)
+        self.testBatchLosses = np.append(self.testBatchLosses, batch_loss)
+        if self.computeAccuracies:
+            batch_accuracy = self.network.accuracy(target)
+            self.testBatchAccuracies = np.append(self.testBatchAccuracies,
+                                                 batch_accuracy)
+
+    def save_test_results_epoch(self):
+        test_loss = np.mean(self.testBatchLosses)
+        self.testLosses = np.append(self.testLosses, test_loss)
+        self.tensorboard.log_scalar('test_loss', test_loss, self.epoch)
+        self.resetTestBatchLosses()
+        print('Test Loss: ' + str(test_loss))
+        if self.computeAccuracies:
+            test_accuracy = np.mean(self.testBatchAccuracies)
+            self.tensorboard.log_scalar('test_accuracy', test_accuracy,
+                                        self.epoch)
+            self.resetTestBatchAccuracies()
+            print('Test Accuracy: ' + str(test_accuracy))
+
+    def save_train_results_epoch(self):
+        epochLoss = np.mean(self.singleBatchLosses)
+        self.tensorboard.log_scalar('train_loss', epochLoss, self.epoch)
+        self.resetSingleBatchLosses()
+        self.epochLosses = np.append(self.epochLosses, epochLoss)
+        print('Train Loss: ' + str(epochLoss))
+        if self.computeAccuracies:
+            epochAccuracy = np.mean(self.singleBatchAccuracies)
+            self.epochAccuracies = np.append(self.epochAccuracies,
+                                             epochAccuracy)
+            self.tensorboard.log_scalar('train_accuracy', epochAccuracy,
+                                        self.epoch)
+            self.resetSingleBatchAccuracies()
+            print('Train Accuracy: ' + str(epochAccuracy))
+
+    def runMNIST(self, trainLoader, testLoader, device):
         """ Train the network on the total training set of MNIST as
         long as epoch loss is above the threshold
         :param trainLoader: a torch.utils.data.DataLoader object
@@ -109,18 +176,11 @@ class Optimizer(object):
                 target = hf.oneHot(target, 10)
                 data, target = data.to(device), target.to(device)
                 self.step(data, target)
-            epochLoss = np.mean(self.singleBatchLosses)
-            self.resetSingleBatchLosses()
-            self.epochLosses = np.append(self.epochLosses, epochLoss)
+            self.save_train_results_epoch()
+            epochLoss = self.epochLosses[-1]
+            self.testMNIST(testLoader, device)
             self.epoch += 1
             self.updateLearningRate()
-            print('Loss: ' + str(epochLoss))
-            if self.computeAccuracies:
-                epochAccuracy = np.mean(self.singleBatchAccuracies)
-                self.epochAccuracies = np.append(self.epochAccuracies,
-                                                 epochAccuracy)
-                self.resetSingleBatchAccuracies()
-                print('Training Accuracy: ' + str(epochAccuracy))
             if self.epoch == self.maxEpoch:
                 print('Training terminated, maximum epoch reached')
             print('Epoch: ' + str(self.epoch) + ' ------------------------')
@@ -128,7 +188,15 @@ class Optimizer(object):
         self.tensorboard.close()
         print('====== Training finished =======')
 
-    def runDataset(self, inputData, targets):
+    def testMNIST(self, testLoader, device):
+        for batch_idx, (data,target) in enumerate(testLoader):
+            data = data.view(-1, 28 * 28, 1)
+            target = hf.oneHot(target, 10)
+            data, target = data.to(device), target.to(device)
+            self.test_step(data, target)
+        self.save_test_results_epoch()
+
+    def runDataset(self, inputData, targets, inputDataTest, targetsTest):
         """ Train the network on a given dataset of size
          number of batches x batch size x input/target size x 1"""
         if not (inputData.size(0) == targets.size(0) and inputData.size(1) ==
@@ -144,18 +212,11 @@ class Optimizer(object):
                 if i % 100 == 0:
                     print('batch: ' + str(i))
                 self.step(data, target)
-            epochLoss = np.mean(self.singleBatchLosses)
-            self.resetSingleBatchLosses()
-            self.epochLosses = np.append(self.epochLosses, epochLoss)
+            self.save_train_results_epoch()
+            epochLoss = self.epochLosses[-1]
+            self.testDataset(inputDataTest, targetsTest)
             self.epoch += 1
             self.updateLearningRate()
-            print('Loss: ' + str(epochLoss))
-            if self.computeAccuracies:
-                epochAccuracy = np.mean(self.singleBatchAccuracies)
-                self.epochAccuracies = np.append(self.epochAccuracies,
-                                                 epochAccuracy)
-                self.resetSingleBatchAccuracies()
-                print('Training Accuracy: ' + str(epochAccuracy))
             if self.epoch == self.maxEpoch:
                 print('Training terminated, maximum epoch reached')
             print('Epoch: ' + str(self.epoch) + ' ------------------------')
@@ -163,6 +224,13 @@ class Optimizer(object):
         self.global_step = 0
         self.tensorboard.close()
         print('====== Training finished =======')
+
+    def testDataset(self, inputData, targets):
+        for i in range(inputData.size(0)):
+            data = inputData[i, :, :, :]
+            target = targets[i, :, :, :]
+            self.test_step(data, target)
+        self.save_test_results_epoch()
 
     def step(self, inputBatch, targets):
         raise NotImplementedError

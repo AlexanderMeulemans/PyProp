@@ -5,8 +5,7 @@ from neuralnetwork import ReluLayer, InputLayer, SoftmaxOutputLayer, Network
 from optimizers import SGD, SGDMomentum
 import torch
 import torchvision
-import HelperFunctions as hf
-import numpy as np
+from utils import HelperFunctions as hf
 
 # Initializing network
 
@@ -61,16 +60,16 @@ optimizer2 = SGDMomentum(network=network,threshold=1.2, initLearningRate=0.1,
 
 
 # Train on MNIST
-optimizer1.runMNIST(train_loader, device)
+optimizer1.runMNIST(train_loader, test_loader, device)
 
 # Test network
-for batch_idx, (data,target) in enumerate(test_loader):
-    data = data.view(-1, 28 * 28, 1)
-    target = hf.oneHot(target, 10)
-    data, target = data.to(device), target.to(device)
-    predicted_classes = network.predict(data)
-    test_loss = network.loss(target)
-    test_accuracy = network.accuracy(target)
-    print('Test Loss: ' + str(test_loss))
-    print('Test Accuracy: ' + str(test_accuracy))
+# for batch_idx, (data,target) in enumerate(test_loader):
+#     data = data.view(-1, 28 * 28, 1)
+#     target = hf.oneHot(target, 10)
+#     data, target = data.to(device), target.to(device)
+#     predicted_classes = network.predict(data)
+#     test_loss = network.loss(target)
+#     test_accuracy = network.accuracy(target)
+#     print('Test Loss: ' + str(test_loss))
+#     print('Test Accuracy: ' + str(test_accuracy))
 

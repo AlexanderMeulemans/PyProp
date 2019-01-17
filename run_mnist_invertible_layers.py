@@ -5,8 +5,7 @@ from invertible_network import ReluLayer, InputLayer, SoftmaxOutputLayer, Networ
 from optimizers import SGD, SGDMomentum
 import torch
 import torchvision
-import HelperFunctions as hf
-import numpy as np
+from utils import HelperFunctions as hf
 
 # Initializing network
 

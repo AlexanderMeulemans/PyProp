@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import HelperFunctions as hf
-from HelperClasses import NetworkError
+from utils import HelperFunctions as hf
+from utils.HelperClasses import NetworkError
 import numpy as np
 
 class Layer(object):

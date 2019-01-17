@@ -2,11 +2,9 @@ import sys
 sys.path.append(r"c:\users\alexander\appdata\local\programs\python\python36\lib\site-packages")
 
 import torch
-import torch.nn as nn
 import torchvision
-import matplotlib.pyplot as plt
-from Backprop import Layer, Network
-import HelperFunctions as hf
+from Backprop import Network
+from utils import HelperFunctions as hf
 import numpy as np
 
 

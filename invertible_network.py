@@ -1,10 +1,8 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-import HelperFunctions as hf
-from HelperClasses import NetworkError, NotImplementedError
-import numpy as np
-from neuralnetwork import Layer, Network
+from utils import HelperFunctions as hf
+from utils.HelperClasses import NetworkError, NotImplementedError
+from neuralnetwork import Layer
 from bidirectional_network import BidirectionalLayer, BidirectionalNetwork
 
 

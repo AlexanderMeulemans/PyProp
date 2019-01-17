@@ -1,9 +1,6 @@
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import HelperFunctions as hf
-from HelperClasses import NetworkError
-import numpy as np
+from utils import HelperFunctions as hf
+from utils.HelperClasses import NetworkError
 from neuralnetwork import Layer, Network
 
 class BidirectionalLayer(Layer):

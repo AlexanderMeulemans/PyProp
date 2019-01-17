@@ -2,8 +2,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import sys
-import HelperClasses as hc
-import HelperFunctions as hf
+from utils import HelperClasses as hc, HelperFunctions as hf
+
 
 class Layer():
     def __init__(self, inDim, layerDim, outDim, forwardNonLin = 'relu', backwardNonLin = 'linear', learningRate = 0.01):

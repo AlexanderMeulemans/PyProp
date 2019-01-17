@@ -1,4 +1,4 @@
-from HelperFunctions import containsNaNs
+from utils.HelperFunctions import containsNaNs
 import torch
 import numpy as np
 
