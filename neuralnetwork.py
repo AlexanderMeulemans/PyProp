@@ -72,6 +72,12 @@ class Layer(object):
         if not forwardBias.shape == self.forwardBias.shape:
             raise ValueError("forwardBias has not the correct shape")
 
+        if torch.max(forwardWeights)> 1e3:
+            print('forwardParameters of {} have gone unbounded'.format(
+                self.name))
+        if torch.max(forwardBias) > 1e3:
+            print('forwardBiases of {} have gone unbounded'.format(
+                self.name))
         self.forwardWeights = forwardWeights
         self.forwardBias = forwardBias
 
