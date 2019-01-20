@@ -10,7 +10,7 @@ class InvertibleLayer(BidirectionalLayer):
     """ Layer that is invertible to make it able to propagate exact targets."""
 
     def __init__(self,inDim, layerDim, outDim, lossFunction = 'mse',
-                 name='invertible_layer'):
+                 name='invertible_layer', histograms=False):
         if inDim is not None:
             if inDim < layerDim:
                 raise ValueError("Expecting an input size bigger or equal to the "
@@ -19,7 +19,8 @@ class InvertibleLayer(BidirectionalLayer):
             if layerDim < outDim:
                 raise ValueError("Expecting a layer size bigger or equal to the "
                                  "output size")
-        super().__init__(inDim, layerDim, outDim, lossFunction, name=name)
+        super().__init__(inDim, layerDim, outDim, lossFunction, name=name,
+                         histograms=histograms)
         self.initForwardParametersTilde()
 
     def initForwardParametersTilde(self):
@@ -230,8 +231,9 @@ class InvertibleLeakyReluLayer(InvertibleLayer):
     fucntion. """
 
     def __init__(self,negativeSlope, inDim, layerDim, outDim, lossFunction =
-        'mse', name='invertible_leaky_ReLU_layer'):
-        super().__init__(inDim, layerDim, outDim, lossFunction, name=name)
+        'mse', name='invertible_leaky_ReLU_layer', histograms=False):
+        super().__init__(inDim, layerDim, outDim, lossFunction, name=name,
+                         histograms=histograms)
         self.setNegativeSlope(negativeSlope)
 
     def setNegativeSlope(self, negativeSlope):
@@ -294,9 +296,9 @@ class InvertibleOutputLayer(InvertibleLayer):
     trained using target propagation"""
 
     def __init__(self, inDim, layerDim, stepsize, lossFunction = 'mse',
-                 name='invertible_output_layer'):
+                 name='invertible_output_layer', histograms=False):
         super().__init__(inDim, layerDim, outDim=None, lossFunction =
-        lossFunction, name=name)
+        lossFunction, name=name, histograms=histograms)
         self.setStepsize(stepsize)
 
 
@@ -399,9 +401,10 @@ class InvertibleSoftmaxOutputLayer(InvertibleOutputLayer):
     can so far only be combined with an mse loss
     function."""
     def __init__(self, inDim, layerDim, stepsize, lossFunction =
-                 'crossEntropy', name='invertible_softmax_output_layer'):
+                 'crossEntropy', name='invertible_softmax_output_layer',
+                 histograms=False):
         super().__init__(inDim, layerDim, stepsize=stepsize, lossFunction =
-        lossFunction, name=name)
+        lossFunction, name=name, histograms=histograms)
         self.normalization_constant = None
 
     def forwardNonlinearity(self, linearActivation):
@@ -490,10 +493,10 @@ class InvertibleInputLayer(InvertibleLayer):
         e.g. the pixelvalues of a picture. """
 
     def __init__(self, layerDim, outDim, lossFunction = 'mse',
-                 name='invertible_input_layer'):
+                 name='invertible_input_layer', histograms=False):
         super().__init__(inDim=None, layerDim=layerDim, outDim=outDim,
                          lossFunction=lossFunction,
-                         name=name)
+                         name=name, histograms=histograms)
 
     def initForwardParameters(self):
         """ InputLayer has no forward parameters"""

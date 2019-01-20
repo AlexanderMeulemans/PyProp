@@ -1,12 +1,14 @@
 from create_datasets import GenerateDatasetFromModel
 from optimizers import SGD, SGDMomentum
-from neuralnetwork import Layer
+from neuralnetwork import Layer, LeakyReluLayer, InputLayer, LinearOutputLayer,\
+    Network
 from invertible_network import InvertibleInputLayer, \
     InvertibleLeakyReluLayer, InvertibleLinearOutputLayer, InvertibleNetwork
 import torch
 from tensorboard_api import Tensorboard
 import utils.HelperFunctions as hf
 import numpy as np
+import time
 # torch.manual_seed(42)
 
 # ======== set log directory ==========
@@ -94,16 +96,19 @@ network = InvertibleNetwork([inputlayer, hiddenlayer, outputlayer])
 # Initializing optimizer
 optimizer1 = SGD(network=network,threshold=0.0001, initLearningRate=0.1,
                  tau= 100,
-                finalLearningRate=0.005, computeAccuracies= False, maxEpoch=120)
-optimizer2 = SGDMomentum(network=network,threshold=1.2, initLearningRate=0.1,
-                         tau=100, finalLearningRate=0.005,
-                         computeAccuracies=False, maxEpoch=150, momentum=0.5)
+                finalLearningRate=0.005, computeAccuracies= False, maxEpoch=120,
+                 outputfile_name='resultfile.csv')
+
 
 
 # Train on dataset
+timings = np.array([])
+start_time = time.time()
 optimizer1.runDataset(input_dataset, output_dataset, input_dataset_test,
                       output_dataset_test)
-
+end_time = time.time()
+print('Elapsed time: {} seconds'.format(end_time-start_time))
+timings = np.append(timings, end_time-start_time)
 
 # ======== Run same experiment on shallow network ======
 # creating separate logdir
@@ -125,10 +130,42 @@ network_shallow = InvertibleNetwork([inputlayer_shallow, outputlayer_shallow])
 optimizer3 = SGD(network=network_shallow, threshold=0.0001,
                  initLearningRate=0.1,
                  tau= 100,
-                finalLearningRate=0.005, computeAccuracies= False, maxEpoch=120)
+                finalLearningRate=0.005, computeAccuracies= False, maxEpoch=120,
+                 outputfile_name='resultfile_shallow.csv')
+
+start_time = time.time()
 optimizer3.runDataset(input_dataset, output_dataset, input_dataset_test,
                       output_dataset_test)
+end_time = time.time()
+print('Elapsed time: {} seconds'.format(end_time-start_time))
+timings = np.append(timings, end_time-start_time)
+
+# ===== Run same experiment with backprop =======
+
+# Creating training network
+inputlayer = InputLayer(layerDim=6, name='input_layer_BP')
+hiddenlayer = LeakyReluLayer(negativeSlope=0.01, inDim=6,
+                                        layerDim=5,
+                                       name='hidden_layer_BP')
+outputlayer = LinearOutputLayer(inDim=5, layerDim=4, lossFunction='mse',
+                                          name='output_layer_BP')
+
+network_backprop = Network([inputlayer, hiddenlayer, outputlayer])
+
+# Initializing optimizer
+optimizer4 = SGD(network=network,threshold=0.0001, initLearningRate=0.1,
+                 tau= 100,
+                finalLearningRate=0.005, computeAccuracies= False, maxEpoch=120,
+                 outputfile_name='resultfile_BP.csv')
 
 
 
+# Train on dataset
+start_time = time.time()
+optimizer4.runDataset(input_dataset, output_dataset, input_dataset_test,
+                      output_dataset_test)
+end_time = time.time()
+print('Elapsed time: {} seconds'.format(end_time-start_time))
+timings = np.append(timings, end_time-start_time)
+np.savetxt("timings.csv", timings, delimiter=",")
 

@@ -7,8 +7,8 @@ class BidirectionalLayer(Layer):
     """ Layer in a neural network with feedforward weights as wel as
     feedbackward weights."""
     def __init__(self, inDim, layerDim, outDim, lossFunction = 'mse',
-                 name='bidirectional_layer'):
-        super().__init__(inDim, layerDim, name=name)
+                 name='bidirectional_layer', histograms=False):
+        super().__init__(inDim, layerDim, name=name, histograms=histograms)
         if outDim is not None: # if the layer is an outputlayer, outDim is None
             self.setOutDim(outDim)
         self.initBackwardParameters()

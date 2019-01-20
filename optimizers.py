@@ -2,12 +2,15 @@ import torch
 from utils import HelperFunctions as hf
 import numpy as np
 from neuralnetwork import Network
+import pandas as pd
+import os.path
 
 
 class Optimizer(object):
     """" Super class for all the different optimizers (e.g. SGD)"""
 
-    def __init__(self, network, maxEpoch = 150, computeAccuracies = False):
+    def __init__(self, network, maxEpoch = 150, computeAccuracies = False,
+                 outputfile_name = 'result_file.csv'):
         """
         :param network: network to train
         :param computeAccuracies: True if the optimizer should also save
@@ -26,12 +29,17 @@ class Optimizer(object):
         self.setMaxEpoch(maxEpoch)
         self.tensorboard = self.network.tensorboard
         self.global_step = 0
+        self.outputfile = pd.DataFrame(columns=['Train_loss', 'Test_loss'])
+        self.outputfile_name = os.path.join(os.path.curdir, outputfile_name)
         if self.computeAccuracies:
             self.epochAccuracies = np.array([])
             self.batchAccuracies = np.array([])
             self.singleBatchAccuracies = np.array([])
             self.testAccuracies = np.array([])
             self.testBatchAccuracies = np.array([])
+            self.outputfile = pd.DataFrame(columns=
+                                           ['Train_loss', 'Test_loss',
+                                            'Train_accuracy', 'Test_accuracy'])
 
     def setNetwork(self,network):
         if not isinstance(network, Network):
@@ -136,6 +144,7 @@ class Optimizer(object):
         print('Test Loss: ' + str(test_loss))
         if self.computeAccuracies:
             test_accuracy = np.mean(self.testBatchAccuracies)
+            self.testAccuracies = np.append(self.testAccuracies, test_accuracy)
             self.tensorboard.log_scalar('test_accuracy', test_accuracy,
                                         self.epoch)
             self.resetTestBatchAccuracies()
@@ -155,6 +164,17 @@ class Optimizer(object):
                                         self.epoch)
             self.resetSingleBatchAccuracies()
             print('Train Accuracy: ' + str(epochAccuracy))
+
+    def save_result_file(self):
+        train_loss = self.epochLosses[-1]
+        test_loss = self.testLosses[-1]
+        if self.computeAccuracies:
+            train_accuracy = self.epochAccuracies[-1]
+            test_accuracy = self.testAccuracies[-1]
+            self.outputfile.loc[self.epoch] = [train_loss, test_loss,
+                                               train_accuracy, test_accuracy]
+        else:
+            self.outputfile.loc[self.epoch] = [train_loss, test_loss]
 
     def runMNIST(self, trainLoader, testLoader, device):
         """ Train the network on the total training set of MNIST as
@@ -179,12 +199,14 @@ class Optimizer(object):
             self.save_train_results_epoch()
             epochLoss = self.epochLosses[-1]
             self.testMNIST(testLoader, device)
+            self.save_result_file()
             self.epoch += 1
             self.updateLearningRate()
             if self.epoch == self.maxEpoch:
                 print('Training terminated, maximum epoch reached')
             print('Epoch: ' + str(self.epoch) + ' ------------------------')
         self.global_step = 0
+        self.save_csv_file()
         self.tensorboard.close()
         print('====== Training finished =======')
 
@@ -215,6 +237,7 @@ class Optimizer(object):
             self.save_train_results_epoch()
             epochLoss = self.epochLosses[-1]
             self.testDataset(inputDataTest, targetsTest)
+            self.save_result_file()
             self.epoch += 1
             self.updateLearningRate()
             if self.epoch == self.maxEpoch:
@@ -222,6 +245,7 @@ class Optimizer(object):
             print('Epoch: ' + str(self.epoch) + ' ------------------------')
 
         self.global_step = 0
+        self.save_csv_file()
         self.tensorboard.close()
         print('====== Training finished =======')
 
@@ -235,13 +259,17 @@ class Optimizer(object):
     def step(self, inputBatch, targets):
         raise NotImplementedError
 
+    def save_csv_file(self):
+        self.outputfile.to_csv(self.outputfile_name)
+
 
 class SGD(Optimizer):
     """ Stochastic Gradient Descend optimizer"""
 
     def __init__(self, network, threshold, initLearningRate, tau=100,
                  finalLearningRate = None,
-                 computeAccuracies = False, maxEpoch = 150):
+                 computeAccuracies = False, maxEpoch = 150,
+                 outputfile_name='resultfile.csv'):
         """
         :param threshold: the optimizer will run until the network loss is
         below this threshold
@@ -257,7 +285,8 @@ class SGD(Optimizer):
         :type network: Network
         """
         super().__init__(network=network, maxEpoch=maxEpoch,
-                         computeAccuracies=computeAccuracies)
+                         computeAccuracies=computeAccuracies,
+                         outputfile_name=outputfile_name)
         self.setThreshold(threshold)
         self.setLearningRate(initLearningRate)
         self.setInitLearningRate(initLearningRate)
@@ -319,7 +348,8 @@ class SGDMomentum(SGD):
 
     def __init__(self, network, threshold, initLearningRate, tau=100,
                  finalLearningRate=None,
-                 computeAccuracies=False, maxEpoch=150, momentum = 0.5):
+                 computeAccuracies=False, maxEpoch=150, momentum = 0.5,
+                 outputfile_name = 'resultfile.csv'):
         """
         :param momentum: Momentum value that characterizes how much of the
         previous gradients is incorporated in the
@@ -328,7 +358,8 @@ class SGDMomentum(SGD):
         super().__init__(network=network, threshold=threshold,
                          initLearningRate=initLearningRate, tau=tau,
                          finalLearningRate=finalLearningRate,
-                         computeAccuracies=computeAccuracies, maxEpoch=maxEpoch)
+                         computeAccuracies=computeAccuracies, maxEpoch=maxEpoch,
+                         outputfile_name=outputfile_name)
         self.setMomentum(momentum)
         self.network.initVelocities()
 

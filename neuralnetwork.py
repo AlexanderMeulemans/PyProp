@@ -15,7 +15,7 @@ class Layer(object):
     # create tensorboard writer
     tensorboard = Tensorboard('logs')
 
-    def __init__(self, inDim, layerDim, name='layer'):
+    def __init__(self, inDim, layerDim, name='layer', histograms=False):
         """
         Initializes the Layer object
         :param inDim: input dimension of the layer (equal to the layer dimension
@@ -28,6 +28,7 @@ class Layer(object):
         self.initForwardParameters()
         self.setName(name)
         self.global_step = 0 # needed for making plots with tensorboard
+        self.setHistograms(histograms)
 
     def setLayerDim(self, layerDim):
         if not isinstance(layerDim, int):
@@ -57,6 +58,13 @@ class Layer(object):
                 i += 1
             self.name = newName
             self.__class__.allLayerNames.append(name)
+
+    def setHistograms(self, histograms):
+        if not isinstance(histograms, bool):
+            raise TypeError('The argument histogram should be a bool indicating'
+                            'whether histograms of the weights, activations and'
+                            'gradients need to be saved.')
+        self.histograms = histograms
 
     def setForwardParameters(self, forwardWeights, forwardBias):
         if not isinstance(forwardWeights, torch.Tensor):
@@ -185,14 +193,17 @@ class Layer(object):
                       - torch.mul(self.forwardBiasGrad, learningRate)
         self.setForwardParameters(forwardWeights, forwardBias)
         # save histograms
-        self.__class__.tensorboard.log_histogram(tag='{}/forwardWeights'.format(
-                                       self.name),
-                                       values=forwardWeights,
-                                       bins=20, global_step=self.global_step)
-        self.__class__.tensorboard.log_histogram(tag='{}/forwardBiases'.format(
-                                       self.name),
-                                       values=forwardBias,
-                                       bins=20, global_step=self.global_step)
+        if self.histograms:
+            self.__class__.tensorboard.log_histogram(
+                tag='{}/forwardWeights'.format(
+                self.name),
+                values=forwardWeights,
+                bins=20, global_step=self.global_step)
+            self.__class__.tensorboard.log_histogram(
+                tag='{}/forwardBiases'.format(
+                self.name),
+                values=forwardBias,
+                bins=20, global_step=self.global_step)
 
     def propagateForward(self, lowerLayer):
         """
@@ -217,10 +228,11 @@ class Layer(object):
         forwardOutput = self.forwardNonlinearity(self.forwardLinearActivation)
         self.setForwardOutput(forwardOutput)
         # save histograms
-        self.__class__.tensorboard.log_histogram(tag=
-            '{}/forwardActivations'.format(
-            self.name), values=forwardOutput, bins=20,
-            global_step=self.global_step)
+        if self.histograms:
+            self.__class__.tensorboard.log_histogram(tag=
+                '{}/forwardActivations'.format(
+                self.name), values=forwardOutput, bins=20,
+                global_step=self.global_step)
 
     def forwardNonlinearity(self, linearActivation):
         """ This method should be always overwritten by the children"""
@@ -243,14 +255,15 @@ class Layer(object):
         self.setForwardGradients(torch.mean(weight_gradients, 0), torch.mean(
             bias_gradients, 0))
         # save histograms
-        self.__class__.tensorboard.log_histogram(tag='{}/forward'
-                                                     'WeightsGradients'.format(
-            self.name), values=torch.mean(weight_gradients, 0), bins=20,
-            global_step=self.global_step)
-        self.__class__.tensorboard.log_histogram(tag='{}/forward'
-                                                     'BiasGradients'.format(
-            self.name), values=torch.mean(bias_gradients, 0), bins=20,
-            global_step=self.global_step)
+        if self.histograms:
+            self.__class__.tensorboard.log_histogram(
+                tag='{}/forwardWeightsGradients'.format(
+                self.name), values=torch.mean(weight_gradients, 0), bins=20,
+                global_step=self.global_step)
+            self.__class__.tensorboard.log_histogram(tag='{}/forward'
+                                                         'BiasGradients'.format(
+                self.name), values=torch.mean(bias_gradients, 0), bins=20,
+                global_step=self.global_step)
 
     def computeForwardGradientVelocities(self, lowerLayer, momentum,
                                        learningRate):
@@ -321,6 +334,55 @@ class ReluLayer(Layer):
             activationDer)
         self.setBackwardOutput(backwardOutput)
 
+class LeakyReluLayer(Layer):
+    """ Layer of a neural network with a Leaky RELU activation function"""
+    def __init__(self,negativeSlope, inDim, layerDim,
+                 name='leaky_ReLU_layer', histograms=False):
+        super().__init__(inDim, layerDim, name=name,
+                         histograms=histograms)
+        self.setNegativeSlope(negativeSlope)
+
+    def setNegativeSlope(self, negativeSlope):
+        """ Set the negative slope of the leaky ReLU activation function"""
+        if not isinstance(negativeSlope,float):
+            raise TypeError("Expecting a float number for negativeSlope, "
+                            "got {}".format(type(negativeSlope)))
+        if negativeSlope <= 0:
+            raise ValueError("Expecting a strictly positive float number for "
+                             "negativeSlope, got {}".format(negativeSlope))
+
+        self.negativeSlope = negativeSlope
+
+    def forwardNonlinearity(self, linearActivation):
+        activationFunction = nn.LeakyReLU(self.negativeSlope)
+        return activationFunction(linearActivation)
+
+
+    def propagateBackward(self, upperLayer):
+        """
+        :param upperLayer: the layer one step downstream of the layer 'self'
+        :type upperLayer: Layer
+        :return: saves the backwards output in self. backwardOutput is of
+        size batchDimension x layerdimension  x 1
+        """
+        if not isinstance(upperLayer, Layer):
+            raise TypeError("Expecting a Layer object as argument for "
+                            "propagateBackward")
+        if not upperLayer.inDim == self.layerDim:
+            raise ValueError("Layer sizes are not compatible for propagating "
+                             "backwards")
+
+        self.backwardInput = upperLayer.backwardOutput
+        # Construct vectorized Jacobian for all batch samples.
+        activationDer = torch.tensor(
+            [[[1.] if self.forwardLinearActivation[i, j, 0] > 0
+              else [self.negativeSlope]
+              for j in range(self.forwardLinearActivation.size(1))]
+             for i in range(self.forwardLinearActivation.size(0))])
+        backwardOutput = torch.mul(torch.matmul(torch.transpose(
+            upperLayer.forwardWeights, -1, -2), self.backwardInput),
+            activationDer)
+        self.setBackwardOutput(backwardOutput)
 
 class SoftmaxLayer(Layer):
     """ Layer of a neural network with a Softmax activation function"""
@@ -391,11 +453,12 @@ class InputLayer(Layer):
     """ Input layer of the neural network,
     e.g. the pixelvalues of a picture. """
 
-    def __init__(self, layerDim, name='input_layer'):
+    def __init__(self, layerDim, name='input_layer', histograms=False):
         """ InputLayer has only a layerDim and a
         forward activation that can be set,
          no input dimension nor parameters"""
-        super().__init__(inDim = None, layerDim=layerDim, name=name)
+        super().__init__(inDim = None, layerDim=layerDim, name=name,
+                         histograms=histograms)
 
     def propagateForward(self, lowerLayer):
         """ This function should never be called for an input layer,
@@ -428,7 +491,8 @@ class OutputLayer(Layer):
     This layer has a loss as extra attribute and some extra
     methods as explained below. """
 
-    def __init__(self, inDim, layerDim, lossFunction, name='output_layer'):
+    def __init__(self, inDim, layerDim, lossFunction, name='output_layer',
+                 histograms=False):
         """
         :param inDim: input dimension of the layer,
         equal to the layer dimension of the second last layer in the network
@@ -436,7 +500,7 @@ class OutputLayer(Layer):
         :param loss: string indicating which loss function is used to
         compute the network loss
         """
-        super().__init__(inDim, layerDim, name=name)
+        super().__init__(inDim, layerDim, name=name, histograms=histograms)
         self.setLossFunction(lossFunction)
 
     def setLossFunction(self, lossFunction):
