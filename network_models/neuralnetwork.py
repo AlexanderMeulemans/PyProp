@@ -275,76 +275,85 @@ class Layer(object):
          layer activations."""
         # Save norms
         self.save_activations()
-        weight_norm = torch.norm(self.forwardWeights)
-        bias_norm = torch.norm(self.forwardBias)
-        gradient_norm = torch.norm(self.forwardWeightsGrad)
-        gradient_bias_norm = torch.norm(self.forwardBiasGrad)
+        self.save_forward_weights()
+        self.save_forward_weight_gradients()
 
-        self.writer.add_scalar(tag='{}/forward_weights'
-                                             '_norm'.format(self.name),
-                                         scalar_value=weight_norm,
-                                         global_step=self.global_step)
-        self.writer.add_scalar(tag='{}/forward_bias'
-                                             '_norm'.format(self.name),
-                                         scalar_value=bias_norm,
-                                         global_step=self.global_step)
-        self.writer.add_scalar(tag='{}/forward_weights_gradient'
-                                             '_norm'.format(self.name),
-                                         scalar_value=gradient_norm,
-                                         global_step=self.global_step)
-        self.writer.add_scalar(tag='{}/forward_bias_gradient'
-                                             '_norm'.format(self.name),
-                                         scalar_value=gradient_bias_norm,
-                                         global_step=self.global_step)
 
-    def save_state_histograms(self,gradients_his=True, weights_his=True,
-                   activations_his=True):
+    def save_state_histograms(self):
         """ The histograms (specified by the arguments) are saved to
         tensorboard"""
         # Save histograms
-        if gradients_his:
-            self.writer.add_histogram(tag='{}/forward_weights_'
-                                                    'gradient_hist'.format(
-                self.name),
-            values=self.forwardWeightsGrad,
-            global_step= self.global_step
-            )
-            self.writer.add_histogram(tag='{}/forward_bias_'
-                                                    'gradient_hist'.format(
-                self.name),
-                values=self.forwardBiasGrad,
-                global_step=self.global_step
-            )
-        if weights_his:
-            self.writer.add_histogram(tag='{}/forward_weights_'
-                                                    'hist'.format(
-                self.name),
-                values=self.forwardWeights,
-                global_step=self.global_step)
-            self.writer.add_histogram(tag='{}/forward_bias_'
-                                                    'hist'.format(
-                self.name),
-                values=self.forwardBias,
-                global_step=self.global_step)
-        if activations_his:
-            self.save_activations_histogram()
+        self.save_forward_weights_gradients_hist()
+        self.save_forward_weights_hist()
+        self.save_activations_hist()
 
     def save_activations(self):
         """ Separate function to save the activations. This method will
-        be used in save_state, and will overwrite save_state for
-        InputLayers, as they do not have forward weights"""
+        be used in save_state"""
         activations_norm = torch.norm(self.forwardOutput)
         self.writer.add_scalar(tag='{}/forward_activations'
                                    '_norm'.format(self.name),
                                scalar_value=activations_norm,
                                global_step=self.global_step)
 
-    def save_activations_histogram(self):
+    def save_activations_hist(self):
         self.writer.add_histogram(tag='{}/forward_activations_'
                                       'hist'.format(
             self.name),
             values=self.forwardOutput,
             global_step=self.global_step)
+
+    def save_forward_weights(self):
+        weight_norm = torch.norm(self.forwardWeights)
+        bias_norm = torch.norm(self.forwardBias)
+        self.writer.add_scalar(tag='{}/forward_weights'
+                                   '_norm'.format(self.name),
+                               scalar_value=weight_norm,
+                               global_step=self.global_step)
+        self.writer.add_scalar(tag='{}/forward_bias'
+                                   '_norm'.format(self.name),
+                               scalar_value=bias_norm,
+                               global_step=self.global_step)
+
+    def save_forward_weight_gradients(self):
+        gradient_norm = torch.norm(self.forwardWeightsGrad)
+        gradient_bias_norm = torch.norm(self.forwardBiasGrad)
+
+        self.writer.add_scalar(tag='{}/forward_weights_gradient'
+                                   '_norm'.format(self.name),
+                               scalar_value=gradient_norm,
+                               global_step=self.global_step)
+        self.writer.add_scalar(tag='{}/forward_bias_gradient'
+                                   '_norm'.format(self.name),
+                               scalar_value=gradient_bias_norm,
+                               global_step=self.global_step)
+
+    def save_forward_weights_gradients_hist(self):
+        self.writer.add_histogram(tag='{}/forward_weights_'
+                                      'gradient_hist'.format(
+            self.name),
+            values=self.forwardWeightsGrad,
+            global_step=self.global_step
+        )
+        self.writer.add_histogram(tag='{}/forward_bias_'
+                                      'gradient_hist'.format(
+            self.name),
+            values=self.forwardBiasGrad,
+            global_step=self.global_step
+        )
+
+    def save_forward_weights_hist(self):
+        self.writer.add_histogram(tag='{}/forward_weights_'
+                                      'hist'.format(
+            self.name),
+            values=self.forwardWeights,
+            global_step=self.global_step)
+        self.writer.add_histogram(tag='{}/forward_bias_'
+                                      'hist'.format(
+            self.name),
+            values=self.forwardBias,
+            global_step=self.global_step)
+
 
 
 class ReluLayer(Layer):
@@ -533,10 +542,8 @@ class InputLayer(Layer):
     def save_state(self):
         self.save_activations()
 
-    def save_state_histograms(self,gradients_his=True, weights_his=True,
-                   activations_his=True):
-        if activations_his:
-            self.save_activations_histogram()
+    def save_state_histograms(self):
+        self.save_activations_hist()
 
 
 class OutputLayer(Layer):
@@ -815,14 +822,10 @@ class Network(nn.Module):
         for layer in self.layers:
             layer.global_step = global_step
 
-    def save_state_histograms(self, global_step, gradients_his=True,
-                              weights_his=True,
-                              activations_his=True):
+    def save_state_histograms(self, global_step):
         self.setGlobalStep(global_step=global_step)
         for layer in self.layers:
-            layer.save_state_histograms(gradients_his=gradients_his,
-                             weights_his=weights_his,
-                            activations_his=activations_his)
+            layer.save_state_histograms()
 
     def save_state(self, global_step):
         self.setGlobalStep(global_step)

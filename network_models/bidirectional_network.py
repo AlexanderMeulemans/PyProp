@@ -100,6 +100,64 @@ class BidirectionalLayer(Layer):
         raise NetworkError('This method should be overwritten by the '
                            'child classes')
 
+    def save_backward_weights(self):
+        weight_norm = torch.norm(self.backwardWeights)
+        bias_norm = torch.norm(self.backwardBias)
+        self.writer.add_scalar(tag='{}/backward_weights'
+                                   '_norm'.format(self.name),
+                               scalar_value=weight_norm,
+                               global_step=self.global_step)
+        self.writer.add_scalar(tag='{}/backward_bias'
+                                   '_norm'.format(self.name),
+                               scalar_value=bias_norm,
+                               global_step=self.global_step)
+
+    def save_backward_weights_hist(self):
+        self.writer.add_histogram(tag='{}/backward_weights_'
+                                      'hist'.format(
+            self.name),
+            values=self.backwardWeights,
+            global_step=self.global_step)
+        self.writer.add_histogram(tag='{}/backward_bias_'
+                                      'hist'.format(
+            self.name),
+            values=self.backwardBias,
+            global_step=self.global_step)
+
+    def save_backward_activations(self):
+        activations_norm = torch.norm(self.backwardOutput)
+        self.writer.add_scalar(tag='{}/backward_activations'
+                                   '_norm'.format(self.name),
+                               scalar_value=activations_norm,
+                               global_step=self.global_step)
+
+    def save_backward_activations_hist(self):
+        self.writer.add_histogram(tag='{}/backward_activations_'
+                                      'hist'.format(
+            self.name),
+            values=self.backwardOutput,
+            global_step=self.global_step)
+
+    def save_state(self):
+        """ Saves summary scalars (2-norm) of the gradients, weights and
+         layer activations."""
+        # Save norms
+        self.save_activations()
+        self.save_forward_weights()
+        self.save_forward_weight_gradients()
+        self.save_backward_weights()
+        self.save_backward_activations()
+
+    def save_state_histograms(self):
+        """ The histograms (specified by the arguments) are saved to
+        tensorboard"""
+        # Save histograms
+        self.save_forward_weights_gradients_hist()
+        self.save_forward_weights_hist()
+        self.save_activations_hist()
+        self.save_backward_activations_hist()
+        self.save_backward_weights_hist()
+
 
 class BidirectionalNetwork(Network):
     """ Bidirectional Network consisting of multiple layers that can propagate

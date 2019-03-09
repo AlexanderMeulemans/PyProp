@@ -374,6 +374,24 @@ class InvertibleOutputLayer(InvertibleLayer):
         """ Outputlayer does not have backward parameters"""
         raise NetworkError("Outputlayer does not have backward parameters")
 
+    def save_state(self):
+        """ Saves summary scalars (2-norm) of the gradients, weights and
+                 layer activations."""
+        # Save norms
+        self.save_activations()
+        self.save_forward_weights()
+        self.save_forward_weight_gradients()
+        self.save_backward_activations()
+
+    def save_state_histograms(self):
+        """ The histograms (specified by the arguments) are saved to
+                tensorboard"""
+        # Save histograms
+        self.save_forward_weights_gradients_hist()
+        self.save_forward_weights_hist()
+        self.save_activations_hist()
+        self.save_backward_activations_hist()
+
 class InvertibleLinearOutputLayer(InvertibleOutputLayer):
     """ Invertible output layer with a linear activation function. This layer
     can so far only be combined with an mse loss
@@ -535,6 +553,22 @@ class InvertibleInputLayer(InvertibleLayer):
         raise NetworkError("The forwardOutput should be directly set "
                            "to the input values of the network for "
                            "an InputLayer")
+
+    def save_state(self):
+        """ Saves summary scalars (2-norm) of the gradients, weights and
+                 layer activations."""
+        # Save norms
+        self.save_activations()
+        self.save_backward_weights()
+        self.save_backward_activations()
+
+    def save_state_histograms(self):
+        """ The histograms (specified by the arguments) are saved to
+                tensorboard"""
+        # Save histograms
+        self.save_activations_hist()
+        self.save_backward_activations_hist()
+        self.save_backward_weights_hist()
 
 
 class InvertibleNetwork(BidirectionalNetwork):
