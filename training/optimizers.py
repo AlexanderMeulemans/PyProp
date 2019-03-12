@@ -139,7 +139,7 @@ class Optimizer(object):
                                                  batch_accuracy)
 
     def save_test_results_epoch(self):
-        test_loss = torch.mean(self.testBatchLosses)
+        test_loss = torch.Tensor([torch.mean(self.testBatchLosses)])
         self.testLosses = torch.cat([self.testLosses, test_loss], 0)
         self.writer.add_scalar(tag='test_loss',
                                scalar_value=test_loss,
@@ -156,7 +156,7 @@ class Optimizer(object):
             print('Test Accuracy: ' + str(test_accuracy))
 
     def save_train_results_epoch(self):
-        epochLoss = torch.mean(self.singleBatchLosses)
+        epochLoss = torch.Tensor([torch.mean(self.singleBatchLosses)])
         self.writer.add_scalar(tag='train_loss', scalar_value=epochLoss,
                                global_step=self.epoch)
         self.resetSingleBatchLosses()

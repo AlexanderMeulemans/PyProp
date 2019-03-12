@@ -71,10 +71,10 @@ network_backprop = Network([inputlayer, hiddenlayer, outputlayer])
 
 # Initializing optimizer
 optimizer4 = SGD(network=network_backprop, threshold=0.0001,
-                 initLearningRate=0.1,
+                 initLearningRate=0.01,
                  tau=100,
                  finalLearningRate=0.005, computeAccuracies=False,
-                 maxEpoch=5,
+                 maxEpoch=100,
                  outputfile_name='resultfile_BP.csv')
 
 
