@@ -7,6 +7,8 @@ import time
 from tensorboardX import SummaryWriter
 from utils.LLS import linear_least_squares
 
+torch.manual_seed(47)
+
 # ======== User variables ============
 training_size = 1000
 testing_size = 100

@@ -19,11 +19,11 @@ class Optimizer(object):
         :type network: Network
         """
         self.epoch = 0
-        self.epochLosses = np.array([])
-        self.batchLosses = np.array([])
-        self.singleBatchLosses = np.array([])
-        self.testLosses = np.array([])
-        self.testBatchLosses = np.array([])
+        self.epochLosses = torch.Tensor([])
+        self.batchLosses = torch.Tensor([])
+        self.singleBatchLosses = torch.Tensor([])
+        self.testLosses = torch.Tensor([])
+        self.testBatchLosses = torch.Tensor([])
         self.setNetwork(network)
         self.setComputeAccuracies(computeAccuracies)
         self.setMaxEpoch(maxEpoch)
@@ -32,11 +32,11 @@ class Optimizer(object):
         self.outputfile = pd.DataFrame(columns=['Train_loss', 'Test_loss'])
         self.outputfile_name = '../logs/{}'.format(outputfile_name)
         if self.computeAccuracies:
-            self.epochAccuracies = np.array([])
-            self.batchAccuracies = np.array([])
-            self.singleBatchAccuracies = np.array([])
-            self.testAccuracies = np.array([])
-            self.testBatchAccuracies = np.array([])
+            self.epochAccuracies = torch.Tensor([])
+            self.batchAccuracies = torch.Tensor([])
+            self.singleBatchAccuracies = torch.Tensor([])
+            self.testAccuracies = torch.Tensor([])
+            self.testBatchAccuracies = torch.Tensor([])
             self.outputfile = pd.DataFrame(columns=
                                            ['Train_loss', 'Test_loss',
                                             'Train_accuracy', 'Test_accuracy'])
@@ -77,32 +77,31 @@ class Optimizer(object):
 
 
     def resetSingleBatchLosses(self):
-        self.singleBatchLosses = np.array([])
+        self.singleBatchLosses = torch.Tensor([])
 
     def resetSingleBatchAccuracies(self):
-        self.singleBatchAccuracies = np.array([])
+        self.singleBatchAccuracies = torch.Tensor([])
 
     def resetTestBatchLosses(self):
-        self.testBatchLosses = np.array([])
+        self.testBatchLosses = torch.Tensor([])
 
     def resetTestBatchAccuracies(self):
-        self.testBatchAccuracies = np.array([])
+        self.testBatchAccuracies = torch.Tensor([])
 
     def resetOptimizer(self):
         self.epoch = 0
-        self.epochLosses = np.array([])
-        self.batchLosses = np.array([])
-        self.singleBatchLosses = np.array([])
-        self.testLosses = np.array([])
-        self.testBatchLosses = np.array([])
-        self.tensorboard = self.network.tensorboard
+        self.epochLosses = torch.Tensor([])
+        self.batchLosses = torch.Tensor([])
+        self.singleBatchLosses = torch.Tensor([])
+        self.testLosses = torch.Tensor([])
+        self.testBatchLosses = torch.Tensor([])
         self.global_step = 0
         if self.computeAccuracies:
-            self.epochAccuracies = np.array([])
-            self.batchAccuracies = np.array([])
-            self.singleBatchAccuracies = np.array([])
-            self.testAccuracies = np.array([])
-            self.testBatchAccuracies = np.array([])
+            self.epochAccuracies = torch.Tensor([])
+            self.batchAccuracies = torch.Tensor([])
+            self.singleBatchAccuracies = torch.Tensor([])
+            self.testAccuracies = torch.Tensor([])
+            self.testBatchAccuracies = torch.Tensor([])
 
     def updateLearningRate(self):
         """ If the optimizer should do a specific update of the learningrate,
@@ -115,17 +114,17 @@ class Optimizer(object):
         self.writer.add_scalar(tag='training_loss_batch',
                                scalar_value=loss,
                                global_step=self.global_step)
-        self.batchLosses = np.append(self.batchLosses, loss)
-        self.singleBatchLosses = np.append(self.singleBatchLosses, loss)
+        self.batchLosses = torch.cat([self.batchLosses, loss])
+        self.singleBatchLosses = torch.cat([self.singleBatchLosses, loss])
         self.network.save_state(self.global_step)
         if self.computeAccuracies:
             accuracy = self.network.accuracy(targets)
             self.writer.add_scalar(tag='training_accuracy_batch',
                                    scalar_value=accuracy,
                                    global_step=self.global_step)
-            self.batchAccuracies = np.append(self.batchAccuracies, accuracy)
-            self.singleBatchAccuracies = np.append(
-                self.singleBatchAccuracies, accuracy)
+            self.batchAccuracies = torch.cat([self.batchAccuracies, accuracy],0)
+            self.singleBatchAccuracies = torch.cat(
+                [self.singleBatchAccuracies, accuracy],0)
 
     def test_step(self, data, target):
         self.network.propagateForward(data)
@@ -133,23 +132,23 @@ class Optimizer(object):
 
     def save_test_results_batch(self, target):
         batch_loss = self.network.loss(target)
-        self.testBatchLosses = np.append(self.testBatchLosses, batch_loss)
+        self.testBatchLosses = torch.cat([self.testBatchLosses, batch_loss], 0)
         if self.computeAccuracies:
             batch_accuracy = self.network.accuracy(target)
-            self.testBatchAccuracies = np.append(self.testBatchAccuracies,
+            self.testBatchAccuracies = torch.cat(self.testBatchAccuracies,
                                                  batch_accuracy)
 
     def save_test_results_epoch(self):
-        test_loss = np.mean(self.testBatchLosses)
-        self.testLosses = np.append(self.testLosses, test_loss)
+        test_loss = torch.mean(self.testBatchLosses)
+        self.testLosses = torch.cat([self.testLosses, test_loss], 0)
         self.writer.add_scalar(tag='test_loss',
                                scalar_value=test_loss,
                                global_step=self.epoch)
         self.resetTestBatchLosses()
         print('Test Loss: ' + str(test_loss))
         if self.computeAccuracies:
-            test_accuracy = np.mean(self.testBatchAccuracies)
-            self.testAccuracies = np.append(self.testAccuracies, test_accuracy)
+            test_accuracy = torch.cat([self.testBatchAccuracies], 0)
+            self.testAccuracies = torch.cat([self.testAccuracies, test_accuracy], 0)
             self.writer.add_scalar(tag='test_accuracy',
                                    scalar_value=test_accuracy,
                                    global_step=self.epoch)
@@ -157,17 +156,17 @@ class Optimizer(object):
             print('Test Accuracy: ' + str(test_accuracy))
 
     def save_train_results_epoch(self):
-        epochLoss = np.mean(self.singleBatchLosses)
+        epochLoss = torch.mean(self.singleBatchLosses)
         self.writer.add_scalar(tag='train_loss', scalar_value=epochLoss,
                                global_step=self.epoch)
         self.resetSingleBatchLosses()
-        self.epochLosses = np.append(self.epochLosses, epochLoss)
-        self.network.save_state_histograms(self.epoch, True, True, True)
+        self.epochLosses = torch.cat([self.epochLosses, epochLoss], 0)
+        self.network.save_state_histograms(self.epoch)
         print('Train Loss: ' + str(epochLoss))
         if self.computeAccuracies:
-            epochAccuracy = np.mean(self.singleBatchAccuracies)
-            self.epochAccuracies = np.append(self.epochAccuracies,
-                                             epochAccuracy)
+            epochAccuracy = torch.cat([self.singleBatchAccuracies], 0)
+            self.epochAccuracies = torch.cat([self.epochAccuracies,
+                                             epochAccuracy], 0)
             self.writer.add_scalar(tag='train_accuracy',
                                    scalar_value=epochAccuracy,
                                    global_step=self.epoch)

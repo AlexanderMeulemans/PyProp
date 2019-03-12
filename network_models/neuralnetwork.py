@@ -23,9 +23,9 @@ class Layer(object):
         self.setLayerDim(layerDim)
         if inDim is not None: # inDim is None when layer is inputlayer
             self.setInDim(inDim)
-        self.initForwardParameters()
         self.setName(name)
         self.setWriter(writer=writer)
+        self.initForwardParameters()
         self.global_step = 0 # needed for making plots with tensorboard
 
     def setWriter(self, writer):
@@ -79,7 +79,7 @@ class Layer(object):
             raise ValueError("forwardBias has not the correct shape")
 
         if torch.max(forwardWeights)> 1e3:
-            print('forwardParameters of {} have gone unbounded'.format(
+            print('forwardWeights of {} have gone unbounded'.format(
                 self.name))
         if torch.max(forwardBias) > 1e3:
             print('forwardBiases of {} have gone unbounded'.format(
@@ -103,6 +103,12 @@ class Layer(object):
         if not forwardBiasGrad.shape == self.forwardBiasGrad.shape:
             raise ValueError("forwardBiasGrad has not the correct shape")
 
+        if torch.max(forwardWeightsGrad)> 1e3:
+            print('forwardWeightsGrad of {} have gone unbounded'.format(
+                self.name))
+        if torch.max(forwardBiasGrad) > 1e3:
+            print('forwardBiasesGrad of {} have gone unbounded'.format(
+                self.name))
         self.forwardWeightsGrad = forwardWeightsGrad
         self.forwardBiasGrad = forwardBiasGrad
 
@@ -133,6 +139,10 @@ class Layer(object):
         if not backwardOutput.size(-1) == 1:
             raise ValueError("Expecting same dimension as layerDim")
         self.backwardOutput = backwardOutput
+        if torch.max(backwardOutput)> 1e2:
+            print('backwardOutputs of {} have gone unbounded: {}'.format(
+                self.name, torch.max(backwardOutput)))
+
 
     def initForwardParameters(self):
         """ Initializes the layer parameters when the layer is created.
@@ -143,6 +153,7 @@ class Layer(object):
         self.forwardBias = torch.zeros(self.layerDim, 1)
         self.forwardWeightsGrad = torch.zeros(self.layerDim, self.inDim)
         self.forwardBiasGrad = torch.zeros(self.layerDim, 1)
+        self.save_initial_state()
 
     def initVelocities(self):
         """ Initializes the velocities of the gradients. This should only be
@@ -213,6 +224,9 @@ class Layer(object):
         self.setForwardLinearActivation(forwardLinearActivation)
         forwardOutput = self.forwardNonlinearity(self.forwardLinearActivation)
         self.setForwardOutput(forwardOutput)
+        if torch.max(forwardOutput)> 1e3:
+            print('forwardOutputs of {} have gone unbounded'.format(
+                self.name))
 
     def forwardNonlinearity(self, linearActivation):
         """ This method should be always overwritten by the children"""
@@ -344,8 +358,7 @@ class Layer(object):
 
     def save_forward_weights_hist(self):
         self.writer.add_histogram(tag='{}/forward_weights_'
-                                      'hist'.format(
-            self.name),
+                                      'hist'.format(self.name),
             values=self.forwardWeights,
             global_step=self.global_step)
         self.writer.add_histogram(tag='{}/forward_bias_'
@@ -353,6 +366,18 @@ class Layer(object):
             self.name),
             values=self.forwardBias,
             global_step=self.global_step)
+
+    def save_initial_state(self):
+        self.writer.add_histogram(tag='{}/forward_weights_initial_'
+                                      'hist'.format(
+            self.name),
+            values=self.forwardWeights,
+            global_step=0)
+        self.writer.add_histogram(tag='{}/forward_bias_initial_'
+                                      'hist'.format(
+            self.name),
+            values=self.forwardBias,
+            global_step=0)
 
 
 
@@ -388,6 +413,15 @@ class ReluLayer(Layer):
             upperLayer.forwardWeights, -1, -2), self.backwardInput),
             activationDer)
         self.setBackwardOutput(backwardOutput)
+        if torch.max(backwardOutput)> 1e3:
+            print('backwardOutputs of {} have gone unbounded'.format(
+                self.name))
+            print('max backwardInput: {}'.format(torch.max(self.backwardInput)))
+            print('upper layer max forward weights: {}'.format(
+                torch.max(upperLayer.forwardWeights)
+            ))
+            # print('Jacobian:')
+            # print(activationDer)
 
 class LeakyReluLayer(Layer):
     """ Layer of a neural network with a Leaky RELU activation function"""
@@ -592,7 +626,7 @@ class OutputLayer(Layer):
             loss = lossFunction(forwardOutputSqueezed, target_classes)
             return torch.mean(loss)#.numpy()
         elif self.lossFunction == 'mse':
-            lossFunction = nn.MSELoss()
+            lossFunction = nn.MSELoss(reduction='mean')
             forwardOutputSqueezed = torch.reshape(self.forwardOutput,
                                                   (self.forwardOutput.shape[0],
                                                    self.forwardOutput.shape[1]))
@@ -600,7 +634,19 @@ class OutputLayer(Layer):
                                             (target.shape[0],
                                              target.shape[1]))
             loss = lossFunction(forwardOutputSqueezed, targetSqueezed)
-            return torch.mean(loss)#.numpy()
+            loss = torch.Tensor([torch.mean(loss)])
+            if loss > 1e2:
+                print('loss is bigger than 100. Loss: {}'.format(loss))
+                print('self computed loss: {}'.format(
+                    (forwardOutputSqueezed-targetSqueezed).pow(2).sum()/
+                    forwardOutputSqueezed.numel()))
+                print('inputs: {}'.format(forwardOutputSqueezed))
+                print('targets: {}'.format(targetSqueezed))
+                print('max difference: {}'.format(torch.max(
+                    forwardOutputSqueezed-targetSqueezed
+                )))
+
+            return loss
 
     def propagateBackward(self, upperLayer):
         """ This function should never be called for an output layer,
@@ -681,6 +727,11 @@ class LinearOutputLayer(OutputLayer):
                              'has shape' + str(target.shape))
         backwardOutput = 2 * (self.forwardOutput - target)
         self.setBackwardOutput(backwardOutput)
+        if torch.max(backwardOutput) > 1e2:
+            print('backwardOutputs of {} have gone unbounded: {}'.format(
+            self.name, torch.max(backwardOutput)))
+            print('model output: {}'.format(self.forwardOutput))
+            print('target: {}'.format(target))
 
 
 class Network(nn.Module):

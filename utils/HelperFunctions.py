@@ -58,7 +58,7 @@ def accuracy(predictions, targets):
     for i in range(predictions.size(0)):
         if predictions[i] == targets[i]:
             correct_labels += 1.
-    return correct_labels/total_labels
+    return torch.Tensor([correct_labels/total_labels])
 
 def containsNoNaNs(tensor):
     a = tensor == tensor

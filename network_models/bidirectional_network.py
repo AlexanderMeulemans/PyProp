@@ -41,6 +41,7 @@ class BidirectionalLayer(Layer):
         self.backwardBias = torch.zeros(self.layerDim, 1)
         self.backwardWeightsGrad = torch.zeros(self.layerDim, self.outDim)
         self.backwardBiasGrad = torch.zeros(self.layerDim, 1)
+        self.save_initial_backward_state()
 
     def setBackwardParameters(self, backwardWeights, backwardBias):
         if not isinstance(backwardWeights, torch.Tensor):
@@ -157,6 +158,18 @@ class BidirectionalLayer(Layer):
         self.save_activations_hist()
         self.save_backward_activations_hist()
         self.save_backward_weights_hist()
+
+    def save_initial_backward_state(self):
+        self.writer.add_histogram(tag='{}/backward_weights_initial_'
+                                      'hist'.format(
+            self.name),
+            values=self.backwardWeights,
+            global_step=0)
+        self.writer.add_histogram(tag='{}/backward_bias_initial'
+                                      'hist'.format(
+            self.name),
+            values=self.backwardBias,
+            global_step=0)
 
 
 class BidirectionalNetwork(Network):
