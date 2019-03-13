@@ -227,6 +227,26 @@ class InvertibleLayer(BidirectionalLayer):
         raise NetworkError("computeVectorizedJacobian should always be "
                            "overwritten by children of InvertibleLayer")
 
+    def check_inverse(self, upperLayer):
+        """ Check whether the computed inverse from iterative updates
+        is still equal to the exact inverse. This is done by calculating the
+        frobeniusnorm of W^(-1)*W - I
+        :type upperLayer: InvertibleLayer
+        """
+        forwardWeightsBar = torch.cat((upperLayer.forwardWeights,
+                                       upperLayer.forwardWeightsTilde), 0)
+        error = torch.matmul(self.backwardWeights, forwardWeightsBar) \
+        - torch.eye(self.backwardWeights.shape[0])
+        return torch.norm(error)
+
+    def save_inverse_error(self, upperLayer):
+        error = self.check_inverse(upperLayer)
+        self.writer.add_scalar(tag='{}/inverse_error'.format(self.name),
+                               scalar_value=error,
+                               global_step=self.global_step)
+
+
+
 
 class InvertibleLeakyReluLayer(InvertibleLayer):
     """ Layer of an invertible neural network with a leaky RELU activation
@@ -342,7 +362,7 @@ class InvertibleOutputLayer(InvertibleLayer):
                                                   (self.forwardOutput.shape[0],
                                                    self.forwardOutput.shape[1]))
             loss = lossFunction(forwardOutputSqueezed, target_classes)
-            return torch.mean(loss)#.numpy()
+            return torch.Tensor([torch.mean(loss)])
         elif self.lossFunction == 'mse':
             lossFunction = nn.MSELoss()
             forwardOutputSqueezed = torch.reshape(self.forwardOutput,
@@ -352,7 +372,7 @@ class InvertibleOutputLayer(InvertibleLayer):
                                             (target.shape[0],
                                              target.shape[1]))
             loss = lossFunction(forwardOutputSqueezed, targetSqueezed)
-            return torch.mean(loss)#.numpy()
+            return torch.Tensor([torch.mean(loss)])
 
     def propagateBackward(self, upperLayer):
         """ This function should never be called for an output layer,
@@ -611,4 +631,11 @@ class InvertibleNetwork(BidirectionalNetwork):
         for i in range(0, len(self.layers)-1):
             self.layers[i].initInverse(self.layers[i+1])
 
+    def save_inverse_error(self):
+        for i in range(0, len(self.layers)-1):
+            self.layers[i].save_inverse_error(self.layers[i+1])
+
+    def save_state(self, global_step):
+        super().save_state(global_step)
+        self.save_inverse_error()
 

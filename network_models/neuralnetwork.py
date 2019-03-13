@@ -78,10 +78,10 @@ class Layer(object):
         if not forwardBias.shape == self.forwardBias.shape:
             raise ValueError("forwardBias has not the correct shape")
 
-        if torch.max(forwardWeights)> 1e3:
+        if torch.max(torch.abs(forwardWeights))> 1e3:
             print('forwardWeights of {} have gone unbounded'.format(
                 self.name))
-        if torch.max(forwardBias) > 1e3:
+        if torch.max(torch.abs(forwardBias)) > 1e3:
             print('forwardBiases of {} have gone unbounded'.format(
                 self.name))
         self.forwardWeights = forwardWeights
@@ -103,10 +103,10 @@ class Layer(object):
         if not forwardBiasGrad.shape == self.forwardBiasGrad.shape:
             raise ValueError("forwardBiasGrad has not the correct shape")
 
-        if torch.max(forwardWeightsGrad)> 1e3:
+        if torch.max(torch.abs(forwardWeightsGrad))> 1e3:
             print('forwardWeightsGrad of {} have gone unbounded'.format(
                 self.name))
-        if torch.max(forwardBiasGrad) > 1e3:
+        if torch.max(torch.abs(forwardBiasGrad)) > 1e3:
             print('forwardBiasesGrad of {} have gone unbounded'.format(
                 self.name))
         self.forwardWeightsGrad = forwardWeightsGrad
@@ -139,9 +139,9 @@ class Layer(object):
         if not backwardOutput.size(-1) == 1:
             raise ValueError("Expecting same dimension as layerDim")
         self.backwardOutput = backwardOutput
-        if torch.max(backwardOutput)> 1e2:
+        if torch.max(torch.abs(backwardOutput))> 1e2:
             print('backwardOutputs of {} have gone unbounded: {}'.format(
-                self.name, torch.max(backwardOutput)))
+                self.name, torch.max(torch.abs(backwardOutput))))
 
 
     def initForwardParameters(self):
@@ -224,7 +224,7 @@ class Layer(object):
         self.setForwardLinearActivation(forwardLinearActivation)
         forwardOutput = self.forwardNonlinearity(self.forwardLinearActivation)
         self.setForwardOutput(forwardOutput)
-        if torch.max(forwardOutput)> 1e3:
+        if torch.max(torch.abs(forwardOutput))> 1e3:
             print('forwardOutputs of {} have gone unbounded'.format(
                 self.name))
 
@@ -413,12 +413,13 @@ class ReluLayer(Layer):
             upperLayer.forwardWeights, -1, -2), self.backwardInput),
             activationDer)
         self.setBackwardOutput(backwardOutput)
-        if torch.max(backwardOutput)> 1e3:
+        if torch.max(torch.abs(backwardOutput))> 1e3:
             print('backwardOutputs of {} have gone unbounded'.format(
                 self.name))
-            print('max backwardInput: {}'.format(torch.max(self.backwardInput)))
+            print('max backwardInput: {}'.format(torch.max(torch.abs(
+                self.backwardInput))))
             print('upper layer max forward weights: {}'.format(
-                torch.max(upperLayer.forwardWeights)
+                torch.max(torch.abs(upperLayer.forwardWeights))
             ))
             # print('Jacobian:')
             # print(activationDer)
@@ -624,7 +625,7 @@ class OutputLayer(Layer):
                                                   (self.forwardOutput.shape[0],
                                                    self.forwardOutput.shape[1]))
             loss = lossFunction(forwardOutputSqueezed, target_classes)
-            return torch.mean(loss)#.numpy()
+            return torch.Tensor([torch.mean(loss)])#.numpy()
         elif self.lossFunction == 'mse':
             lossFunction = nn.MSELoss(reduction='mean')
             forwardOutputSqueezed = torch.reshape(self.forwardOutput,
@@ -637,14 +638,9 @@ class OutputLayer(Layer):
             loss = torch.Tensor([torch.mean(loss)])
             if loss > 1e2:
                 print('loss is bigger than 100. Loss: {}'.format(loss))
-                print('self computed loss: {}'.format(
-                    (forwardOutputSqueezed-targetSqueezed).pow(2).sum()/
-                    forwardOutputSqueezed.numel()))
-                print('inputs: {}'.format(forwardOutputSqueezed))
-                print('targets: {}'.format(targetSqueezed))
-                print('max difference: {}'.format(torch.max(
+                print('max difference: {}'.format(torch.max(torch.abs(
                     forwardOutputSqueezed-targetSqueezed
-                )))
+                ))))
 
             return loss
 
@@ -727,11 +723,9 @@ class LinearOutputLayer(OutputLayer):
                              'has shape' + str(target.shape))
         backwardOutput = 2 * (self.forwardOutput - target)
         self.setBackwardOutput(backwardOutput)
-        if torch.max(backwardOutput) > 1e2:
+        if torch.max(torch.abs(backwardOutput)) > 1e2:
             print('backwardOutputs of {} have gone unbounded: {}'.format(
-            self.name, torch.max(backwardOutput)))
-            print('model output: {}'.format(self.forwardOutput))
-            print('target: {}'.format(target))
+            self.name, torch.max(torch.abs(backwardOutput))))
 
 
 class Network(nn.Module):

@@ -5,7 +5,7 @@ from network_models.neuralnetwork import Layer, LeakyReluLayer, InputLayer, Line
 from network_models.invertible_network import InvertibleInputLayer, \
     InvertibleLeakyReluLayer, InvertibleLinearOutputLayer, InvertibleNetwork
 import torch
-from utils.tensorboard_api import Tensorboard
+from depreciated.tensorboard_api import Tensorboard
 import utils.HelperFunctions as hf
 import numpy as np
 import time

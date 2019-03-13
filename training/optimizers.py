@@ -135,8 +135,8 @@ class Optimizer(object):
         self.testBatchLosses = torch.cat([self.testBatchLosses, batch_loss], 0)
         if self.computeAccuracies:
             batch_accuracy = self.network.accuracy(target)
-            self.testBatchAccuracies = torch.cat(self.testBatchAccuracies,
-                                                 batch_accuracy)
+            self.testBatchAccuracies = torch.cat([self.testBatchAccuracies,
+                                                 batch_accuracy])
 
     def save_test_results_epoch(self):
         test_loss = torch.Tensor([torch.mean(self.testBatchLosses)])
@@ -147,8 +147,9 @@ class Optimizer(object):
         self.resetTestBatchLosses()
         print('Test Loss: ' + str(test_loss))
         if self.computeAccuracies:
-            test_accuracy = torch.cat([self.testBatchAccuracies], 0)
-            self.testAccuracies = torch.cat([self.testAccuracies, test_accuracy], 0)
+            test_accuracy = torch.Tensor([torch.mean(self.testBatchAccuracies)])
+            self.testAccuracies = torch.cat([self.testAccuracies, test_accuracy]
+                                            , 0)
             self.writer.add_scalar(tag='test_accuracy',
                                    scalar_value=test_accuracy,
                                    global_step=self.epoch)
@@ -164,7 +165,8 @@ class Optimizer(object):
         self.network.save_state_histograms(self.epoch)
         print('Train Loss: ' + str(epochLoss))
         if self.computeAccuracies:
-            epochAccuracy = torch.cat([self.singleBatchAccuracies], 0)
+            epochAccuracy = torch.Tensor([torch.mean(self.singleBatchAccuracies)
+                                          ])
             self.epochAccuracies = torch.cat([self.epochAccuracies,
                                              epochAccuracy], 0)
             self.writer.add_scalar(tag='train_accuracy',
@@ -198,7 +200,7 @@ class Optimizer(object):
         print('Epoch: ' + str(self.epoch) + ' ------------------------')
         while epochLoss > self.threshold and self.epoch < self.maxEpoch:
             for batch_idx, (data, target) in enumerate(trainLoader):
-                if batch_idx % 50 == 0:
+                if batch_idx % 5 == 0:
                     print('batch: ' + str(batch_idx))
                 data = data.view(-1, 28*28, 1)
                 target = hf.oneHot(target, 10)

@@ -3,8 +3,15 @@
   <component name="ChangeListManager">
     <list default="true" id="627a70cb-13ab-4e6b-bda9-3721d10194d6" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/experiments/runMNIST.py" beforeDir="false" afterPath="$PROJECT_DIR$/experiments/runMNIST.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/experiments/run_toyexample2.py" beforeDir="false" afterPath="$PROJECT_DIR$/experiments/run_toyexample2.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/experiments/run_toyexample_BP.py" beforeDir="false" afterPath="$PROJECT_DIR$/experiments/run_toyexample_BP.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/experiments/toy_example_invertibleTP.py" beforeDir="false" afterPath="$PROJECT_DIR$/experiments/toy_example_invertibleTP.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network_models/invertible_network.py" beforeDir="false" afterPath="$PROJECT_DIR$/network_models/invertible_network.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network_models/neuralnetwork.py" beforeDir="false" afterPath="$PROJECT_DIR$/network_models/neuralnetwork.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/training/optimizers.py" beforeDir="false" afterPath="$PROJECT_DIR$/training/optimizers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/tensorboard_api.py" beforeDir="false" afterPath="$PROJECT_DIR$/depreciated/tensorboard_api.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -13,7 +20,11 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="CoverageDataManager">
+    <SUITE FILE_PATH="coverage/Thesis$optimizers.coverage" NAME="optimizers Coverage Results" MODIFIED="1552408034935" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/training" />
+    <SUITE FILE_PATH="coverage/Thesis$toy_example_invertibleTP.coverage" NAME="toy_example_invertibleTP Coverage Results" MODIFIED="1552492726620" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/experiments" />
+    <SUITE FILE_PATH="coverage/Thesis$run_mnist.coverage" NAME="run_mnist Coverage Results" MODIFIED="1552408045448" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Thesis$run_toyexample_BP.coverage" NAME="run_toyexample_BP Coverage Results" MODIFIED="1552395280310" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/experiments" />
+    <SUITE FILE_PATH="coverage/Thesis$runMNIST.coverage" NAME="runMNIST Coverage Results" MODIFIED="1552491124620" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/experiments" />
     <SUITE FILE_PATH="coverage/Thesis$neuralnetwork__1_.coverage" NAME="neuralnetwork (1) Coverage Results" MODIFIED="1552380801714" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/network_models" />
     <SUITE FILE_PATH="coverage/Thesis$test.coverage" NAME="test Coverage Results" MODIFIED="1552327736528" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
@@ -24,29 +35,53 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/experiments/run_toyexample2.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="1050">
-                  <caret line="80" column="38" selection-start-line="50" selection-end-line="80" selection-end-column="38" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/utils/plot_resultfiles.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="180">
-                  <caret line="14" column="12" selection-start-line="14" selection-start-column="12" selection-end-line="14" selection-end-column="12" />
-                  <folding>
-                    <element signature="e#0#31#0" expanded="true" />
-                  </folding>
+                <state relative-caret-position="-375">
+                  <caret line="78" column="32" selection-start-line="78" selection-start-column="32" selection-end-line="78" selection-end-column="32" />
                 </state>
               </provider>
             </entry>
           </file>
           <file pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/network_models/invertible_network.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="243">
+                  <caret line="237" column="68" selection-start-line="237" selection-start-column="68" selection-end-line="237" selection-end-column="68" />
+                  <folding>
+                    <element signature="e#0#12#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/network_models/neuralnetwork.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="423">
-                  <caret line="414" selection-start-line="414" selection-end-line="414" />
+                <state relative-caret-position="400">
+                  <caret line="878" selection-start-line="878" selection-end-line="878" />
+                  <folding>
+                    <element signature="e#0#12#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/training/optimizers.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="163">
+                  <caret line="116" selection-start-line="116" selection-end-line="116" />
+                  <folding>
+                    <element signature="e#0#12#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/utils/create_datasets.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="210">
+                  <caret line="15" column="24" selection-start-line="15" selection-start-column="24" selection-end-line="15" selection-end-column="24" />
                   <folding>
                     <element signature="e#0#12#0" expanded="true" />
                   </folding>
@@ -68,43 +103,10 @@
       <split-second>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
           <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/network_models/invertible_network.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="8430">
-                  <caret line="567" column="25" selection-start-line="567" selection-start-column="25" selection-end-line="567" selection-end-column="25" />
-                  <folding>
-                    <element signature="e#0#12#0" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/network_models/bidirectional_network.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="600">
-                  <caret line="43" column="42" selection-start-line="43" selection-start-column="42" selection-end-line="43" selection-end-column="42" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/training/optimizers.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="169">
-                  <caret line="141" column="44" selection-start-line="141" selection-start-column="34" selection-end-line="141" selection-end-column="44" />
-                  <folding>
-                    <element signature="e#0#12#0" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/experiments/run_toyexample_BP.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="267">
-                  <caret line="64" column="62" selection-start-line="64" selection-start-column="62" selection-end-line="64" selection-end-column="62" />
+                <state relative-caret-position="135">
+                  <caret line="9" selection-start-line="9" selection-end-line="9" selection-end-column="21" />
                   <folding>
                     <element signature="e#0#58#0" expanded="true" />
                   </folding>
@@ -113,12 +115,21 @@
             </entry>
           </file>
           <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/test.py">
+            <entry file="file://$PROJECT_DIR$/experiments/runMNIST.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="75">
-                  <caret line="6" column="10" selection-start-line="6" selection-start-column="10" selection-end-line="6" selection-end-column="10" />
+                <state relative-caret-position="360">
+                  <caret line="27" column="22" selection-start-line="16" selection-end-line="27" selection-end-column="22" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/experiments/toy_example_invertibleTP.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="190">
+                  <caret line="78" column="58" selection-start-line="78" selection-start-column="58" selection-end-line="78" selection-end-column="58" />
                   <folding>
-                    <element signature="e#0#18#0" expanded="true" />
+                    <element signature="e#0#58#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
@@ -137,9 +148,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>computeGradients</find>
-      <find>computeGradientVelocities</find>
-      <find>forwardOutputTilde</find>
       <find>.loss</find>
       <find>inverseNonlinearity</find>
       <find>computeVectorizedJacobian</find>
@@ -154,7 +162,6 @@
       <find>Tensorboard</find>
       <find>Relu</find>
       <find>OutputL</find>
-      <find>print</find>
       <find>log</find>
       <find>global_step</find>
       <find>global</find>
@@ -167,6 +174,10 @@
       <find>loss</find>
       <find>save_initial_state</find>
       <find>setBackwardO</find>
+      <find>torch.mean</find>
+      <find>print</find>
+      <find>torch.max(</find>
+      <find>OutputLayer</find>
     </findStrings>
     <replaceStrings>
       <replace>self</replace>
@@ -231,15 +242,16 @@
         <option value="$PROJECT_DIR$/neuralnetwork.py" />
         <option value="$PROJECT_DIR$/experiments.py" />
         <option value="$PROJECT_DIR$/training.py" />
-        <option value="$PROJECT_DIR$/network_models/invertible_network.py" />
         <option value="$PROJECT_DIR$/utils/LLS.py" />
-        <option value="$PROJECT_DIR$/experiments/toy_example_invertibleTP.py" />
-        <option value="$PROJECT_DIR$/test.py" />
         <option value="$PROJECT_DIR$/utils/HelperFunctions.py" />
         <option value="$PROJECT_DIR$/network_models/bidirectional_network.py" />
+        <option value="$PROJECT_DIR$/test.py" />
         <option value="$PROJECT_DIR$/network_models/neuralnetwork.py" />
-        <option value="$PROJECT_DIR$/experiments/run_toyexample_BP.py" />
         <option value="$PROJECT_DIR$/training/optimizers.py" />
+        <option value="$PROJECT_DIR$/experiments/run_toyexample_BP.py" />
+        <option value="$PROJECT_DIR$/experiments/runMNIST.py" />
+        <option value="$PROJECT_DIR$/network_models/invertible_network.py" />
+        <option value="$PROJECT_DIR$/experiments/toy_example_invertibleTP.py" />
       </list>
     </option>
   </component>
@@ -254,6 +266,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -265,6 +278,11 @@
               <item name="Thesis" type="b2602c69:ProjectViewProjectNode" />
               <item name="Thesis" type="462c0819:PsiDirectoryNode" />
               <item name="experiments" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="Thesis" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Thesis" type="462c0819:PsiDirectoryNode" />
+              <item name="logs" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="Thesis" type="b2602c69:ProjectViewProjectNode" />
@@ -285,7 +303,6 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -296,11 +313,11 @@
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/depreciated" />
       <recent name="C:\Users\Alexander\Documents\burgerlijk ingenieur\2018-2019\Thesis\logs" />
       <recent name="C:\Users\Alexander\Documents\burgerlijk ingenieur\2018-2019\Thesis\experiments" />
       <recent name="C:\Users\Alexander\Documents\burgerlijk ingenieur\2018-2019\Thesis\utils" />
       <recent name="C:\Users\Alexander\Documents\burgerlijk ingenieur\2018-2019\Thesis\training" />
-      <recent name="C:\Users\Alexander\Documents\burgerlijk ingenieur\2018-2019\Thesis\run_files" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -315,7 +332,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.run_toyexample_BP">
+  <component name="RunManager" selected="Python.toy_example_invertibleTP">
     <configuration name="Unnamed" type="PythonConfigurationType" factoryName="Python">
       <module name="Thesis" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -332,28 +349,6 @@
       <option name="SCRIPT_NAME" value="" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="hashcode2" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="Thesis" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/hashcode2.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
       <option name="REDIRECT_INPUT" value="false" />
@@ -382,7 +377,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="neuralnetwork" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="optimizers" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="Thesis" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -390,14 +385,36 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/training" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="C:\Users\Alexander\Documents\burgerlijk ingenieur\2018-2019\Thesis\network_models\neuralnetwork.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/training/optimizers.py" />
       <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="runMNIST" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="Thesis" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/experiments" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/experiments/runMNIST.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
       <option name="REDIRECT_INPUT" value="false" />
@@ -448,22 +465,22 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="test" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="toy_example_invertibleTP" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="Thesis" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
+      <option name="SDK_HOME" value="$USER_HOME$/anaconda3/envs/complete_environment/bin/python3.6" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/experiments" />
+      <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/experiments/toy_example_invertibleTP.py" />
       <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
       <option name="REDIRECT_INPUT" value="false" />
@@ -473,19 +490,19 @@
     <list>
       <item itemvalue="Python.Unnamed" />
       <item itemvalue="Python.run_mnist" />
-      <item itemvalue="Python.hashcode2" />
-      <item itemvalue="Python.neuralnetwork" />
       <item itemvalue="Python.run_toyexample_BP" />
-      <item itemvalue="Python.test" />
       <item itemvalue="Python.neuralnetwork (1)" />
+      <item itemvalue="Python.runMNIST" />
+      <item itemvalue="Python.optimizers" />
+      <item itemvalue="Python.toy_example_invertibleTP" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.toy_example_invertibleTP" />
+        <item itemvalue="Python.runMNIST" />
+        <item itemvalue="Python.optimizers" />
         <item itemvalue="Python.run_toyexample_BP" />
         <item itemvalue="Python.neuralnetwork (1)" />
-        <item itemvalue="Python.test" />
-        <item itemvalue="Python.neuralnetwork" />
-        <item itemvalue="Python.hashcode2" />
       </list>
     </recent_temporary>
   </component>
@@ -502,17 +519,19 @@
       <workItem from="1552296508373" duration="2243000" />
       <workItem from="1552326107107" duration="5960000" />
       <workItem from="1552378007409" duration="3179000" />
-      <workItem from="1552394375373" duration="1069000" />
+      <workItem from="1552394375373" duration="4868000" />
+      <workItem from="1552407738043" duration="9719000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="12451000" />
+    <option name="totallyTimeSpent" value="25969000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="67" y="25" width="1853" height="1055" extended-state="6" />
+    <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.09352518" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.094631985" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -525,7 +544,7 @@
       <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info anchor="bottom" id="Terminal" order="8" />
       <window_info anchor="bottom" id="Python Console" order="9" weight="0.33693305" />
-      <window_info active="true" anchor="bottom" id="Run" order="10" visible="true" weight="0.36393088" />
+      <window_info active="true" anchor="bottom" id="Run" order="10" visible="true" weight="0.41468683" />
       <window_info anchor="bottom" id="Docker" order="11" show_stripe_button="false" />
       <window_info anchor="bottom" id="File Transfer" order="12" weight="0.32937366" />
       <window_info anchor="bottom" id="Database Changes" order="13" />
@@ -557,6 +576,24 @@
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/training/optimizers.py</url>
+          <line>346</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+      </breakpoints>
+      <default-breakpoints>
+        <breakpoint type="python-exception">
+          <properties notifyOnTerminate="true" exception="BaseException">
+            <option name="notifyOnTerminate" value="true" />
+          </properties>
+        </breakpoint>
+      </default-breakpoints>
+    </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/torch/tensor.py" />
@@ -594,31 +631,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/utils/tensorboard_api.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="544">
-          <caret line="36" column="14" selection-start-line="36" selection-start-column="14" selection-end-line="36" selection-end-column="14" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/utils/create_datasets.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="238">
-          <caret line="15" column="24" selection-start-line="15" selection-start-column="24" selection-end-line="15" selection-end-column="24" />
-          <folding>
-            <element signature="e#0#12#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Hashcode.py" />
-    <entry file="file://$PROJECT_DIR$/experiments/runMNIST.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1054">
-          <caret line="62" column="54" selection-start-line="62" selection-start-column="54" selection-end-line="62" selection-end-column="54" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/hashcode2.py" />
     <entry file="file://$PROJECT_DIR$/experiments.py" />
     <entry file="file://$PROJECT_DIR$/training.py" />
@@ -635,19 +648,30 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/experiments/run_toyexample2.py">
+    <entry file="file://$PROJECT_DIR$/network_models/bidirectional_network.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1050">
-          <caret line="80" column="38" selection-start-line="50" selection-end-line="80" selection-end-column="38" />
+        <state relative-caret-position="600">
+          <caret line="43" column="42" selection-start-line="43" selection-start-column="42" selection-end-line="43" selection-end-column="42" />
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/test.py" />
     <entry file="file://$PROJECT_DIR$/utils/plot_resultfiles.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="180">
           <caret line="14" column="12" selection-start-line="14" selection-start-column="12" selection-end-line="14" selection-end-column="12" />
           <folding>
             <element signature="e#0#31#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/create_datasets.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="210">
+          <caret line="15" column="24" selection-start-line="15" selection-start-column="24" selection-end-line="15" selection-end-column="24" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -659,57 +683,58 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/network_models/invertible_network.py">
+    <entry file="file://$USER_HOME$/.PyCharm2018.3/system/remote_sources/-1275684159/201545292/tokenize.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="8430">
-          <caret line="567" column="25" selection-start-line="567" selection-start-column="25" selection-end-line="567" selection-end-column="25" />
-          <folding>
-            <element signature="e#0#12#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="296">
+          <caret line="454" column="22" lean-forward="true" selection-start-line="454" selection-start-column="22" selection-end-line="454" selection-end-column="22" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test.py">
+    <entry file="file://$PROJECT_DIR$/experiments/run_toyexample2.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="75">
-          <caret line="6" column="10" selection-start-line="6" selection-start-column="10" selection-end-line="6" selection-end-column="10" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="-375">
+          <caret line="78" column="32" selection-start-line="78" selection-start-column="32" selection-end-line="78" selection-end-column="32" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/experiments/toy_example_invertibleTP.py">
+    <entry file="file://$PROJECT_DIR$/depreciated/tensorboard_api.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="135">
-          <caret line="19" selection-start-line="19" selection-end-line="19" />
-          <folding>
-            <element signature="e#0#58#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/network_models/bidirectional_network.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="600">
-          <caret line="43" column="42" selection-start-line="43" selection-start-column="42" selection-end-line="43" selection-end-column="42" />
+        <state relative-caret-position="480">
+          <caret line="36" column="14" selection-start-line="36" selection-start-column="14" selection-end-line="36" selection-end-column="14" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/network_models/neuralnetwork.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="423">
-          <caret line="414" selection-start-line="414" selection-end-line="414" />
+        <state relative-caret-position="400">
+          <caret line="878" selection-start-line="878" selection-end-line="878" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/experiments/runMNIST.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="360">
+          <caret line="27" column="22" selection-start-line="16" selection-end-line="27" selection-end-column="22" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/training/optimizers.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="169">
-          <caret line="141" column="44" selection-start-line="141" selection-start-column="34" selection-end-line="141" selection-end-column="44" />
+        <state relative-caret-position="163">
+          <caret line="116" selection-start-line="116" selection-end-line="116" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/network_models/invertible_network.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="243">
+          <caret line="237" column="68" selection-start-line="237" selection-start-column="68" selection-end-line="237" selection-end-column="68" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
           </folding>
@@ -718,8 +743,18 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/experiments/run_toyexample_BP.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="267">
-          <caret line="64" column="62" selection-start-line="64" selection-start-column="62" selection-end-line="64" selection-end-column="62" />
+        <state relative-caret-position="135">
+          <caret line="9" selection-start-line="9" selection-end-line="9" selection-end-column="21" />
+          <folding>
+            <element signature="e#0#58#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/experiments/toy_example_invertibleTP.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="190">
+          <caret line="78" column="58" selection-start-line="78" selection-start-column="58" selection-end-line="78" selection-end-column="58" />
           <folding>
             <element signature="e#0#58#0" expanded="true" />
           </folding>

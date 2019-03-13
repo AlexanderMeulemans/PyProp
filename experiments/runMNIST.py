@@ -5,25 +5,41 @@ from network_models.neuralnetwork import ReluLayer, InputLayer, SoftmaxOutputLay
 from training.optimizers import SGD, SGDMomentum
 import torch
 import torchvision
+from tensorboardX import SummaryWriter
+import os
 
 # Initializing network
 
+# ======== set log directory ==========
+log_dir = '../logs/MNIST_BP_500n'
+writer = SummaryWriter(log_dir=log_dir)
+
+# ======== set device ============
 if torch.cuda.is_available():
-    nb_gpus = torch.cuda.device_count()
-    gpu_idx = nb_gpus - 1
+    gpu_idx = 0
     device = torch.device("cuda:{}".format(gpu_idx))
+    # IMPORTANT: set_default_tensor_type uses automatically device 0,
+    # untill now, I did not find a fix for this
+    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
     torch.set_default_tensor_type('torch.cuda.FloatTensor')
     print('using GPU')
 else:
     device = torch.device("cpu")
     print('using CPU')
-inputlayer = InputLayer(28*28)
-hiddenlayer = ReluLayer(28*28,100)
-outputlayer = SoftmaxOutputLayer(100,10,'crossEntropy')
+
+# ======== Design network =============
+
+inputlayer = InputLayer(layerDim=28*28, writer=writer, name='input_layer_BP')
+hiddenlayer = ReluLayer(inDim=28*28, layerDim=500, writer=writer,
+                                       name='hidden_layer_BP')
+outputlayer = SoftmaxOutputLayer(inDim=500, layerDim=10,
+                                 lossFunction='crossEntropy',
+                                 name='output_layer_BP',
+                                 writer=writer)
 
 network = Network([inputlayer, hiddenlayer, outputlayer])
-if torch.cuda.is_available():
-    network.cuda(torch.cuda.current_device())
+# if torch.cuda.is_available():
+#     network.cuda(device)
 
 # Loading dataset
 train_set = torchvision.datasets.MNIST(root='./data', train = True, download=True,
@@ -39,7 +55,7 @@ test_set = torchvision.datasets.MNIST(root='./data', train=False, download=True,
                                  (0.1307,), (0.3081,))
                              ]))
 
-batch_size = 128
+batch_size = 1024
 
 train_loader = torch.utils.data.DataLoader(
                  dataset=train_set,

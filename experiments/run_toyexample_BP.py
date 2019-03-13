@@ -10,18 +10,21 @@ from utils.LLS import linear_least_squares
 torch.manual_seed(47)
 
 # ======== User variables ============
-training_size = 1000
-testing_size = 100
+nb_training_batches = 1000
+batch_size = 10
+testing_size = 1000
 
 # ======== set log directory ==========
 log_dir = '../logs/toyexample_BP'
 writer = SummaryWriter(log_dir=log_dir)
 
-
+# ========= Set device ===========
 if torch.cuda.is_available():
-    nb_gpus = torch.cuda.device_count()
-    gpu_idx = nb_gpus - 1
+    gpu_idx = 0
     device = torch.device("cuda:{}".format(gpu_idx))
+    # IMPORTANT: set_default_tensor_type uses automatically device 0,
+    # untill now, I did not find a fix for this
+    # os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_idx)
     torch.set_default_tensor_type('torch.cuda.FloatTensor')
     print('using GPU')
 else:
@@ -43,9 +46,10 @@ true_network = Network([input_layer_true, hidden_layer_true,
 
 generator = GenerateDatasetFromModel(true_network)
 
-input_dataset, output_dataset = generator.generate(training_size, 10)
-input_dataset_test, output_dataset_test = generator.generate(
-    testing_size, 10)
+input_dataset, output_dataset = generator.generate(nb_training_batches,
+                                                   batch_size)
+input_dataset_test, output_dataset_test = generator.generate(1,
+    testing_size)
 
 # compute least squares solution as control
 print('computing LS solution ...')
@@ -57,7 +61,7 @@ print('LS train loss: '+str(train_loss))
 print('LS test loss: '+str(test_loss))
 
 
-# ===== Run same experiment with backprop =======
+# ===== Run experiment with backprop =======
 
 # Creating training network
 inputlayer = InputLayer(layerDim=6, writer=writer, name='input_layer_BP')
