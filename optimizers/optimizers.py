@@ -1,7 +1,7 @@
 import torch
 from utils import HelperFunctions as hf
 import numpy as np
-from network_models.neuralnetwork import Network
+from layers.network import Network
 import pandas as pd
 import os.path
 

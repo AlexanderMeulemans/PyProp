@@ -1,8 +1,8 @@
 from utils.create_datasets import GenerateDatasetFromModel
-from training.optimizers import SGD
-from network_models.neuralnetwork import Layer, LeakyReluLayer, InputLayer, LinearOutputLayer,\
+from optimizers.optimizers import SGD
+from layers.layer import Layer, LeakyReluLayer, InputLayer, LinearOutputLayer,\
     Network
-from network_models.invertible_network import InvertibleInputLayer, \
+from layers.invertible_layer import InvertibleInputLayer, \
     InvertibleLeakyReluLayer, InvertibleLinearOutputLayer, InvertibleNetwork
 import torch
 from depreciated.tensorboard_api import Tensorboard

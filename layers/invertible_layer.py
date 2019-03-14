@@ -2,8 +2,8 @@ import torch
 import torch.nn as nn
 from utils import HelperFunctions as hf
 from utils.HelperClasses import NetworkError, NotImplementedError
-from network_models.neuralnetwork import Layer
-from network_models.bidirectional_network import BidirectionalLayer, BidirectionalNetwork
+from layers.layer import Layer
+from layers.bidirectional_layer import BidirectionalLayer
 
 
 class InvertibleLayer(BidirectionalLayer):
@@ -44,8 +44,10 @@ class InvertibleLayer(BidirectionalLayer):
         self.backwardBias = torch.empty(self.layerDim, 1)
 
     def initInverse(self, upperLayer):
-        """ Initializes the backward weights to the inverse of the forward weights. After this
-        initial inverse is computed, the sherman-morrison formula can be used to compute the
+        """ Initializes the backward weights to the inverse of the
+        forward weights. After this
+        initial inverse is computed, the sherman-morrison formula can be
+        used to compute the
         inverses later in training"""
         self.backwardWeights = torch.inverse(torch.cat((upperLayer.forwardWeights,
                                             upperLayer.forwardWeightsTilde), 0))
@@ -591,51 +593,5 @@ class InvertibleInputLayer(InvertibleLayer):
         self.save_backward_weights_hist()
 
 
-class InvertibleNetwork(BidirectionalNetwork):
-    """ Invertible Network consisting of multiple invertible layers. This class
-        provides a range of methods to facilitate training of the networks """
-    def __init__(self, layers):
-        super().__init__(layers)
-        self.initInverses()
 
-    def setLayers(self, layers):
-        if not isinstance(layers, list):
-            raise TypeError("Expecting a list object containing all the "
-                            "layers of the network")
-        if len(layers) < 2:
-            raise ValueError("Expecting at least 2 layers (including input "
-                             "and output layer) in a network")
-        if not isinstance(layers[0], InvertibleInputLayer):
-            raise TypeError("First layer of the network should be of type"
-                            " InputLayer")
-        if not isinstance(layers[-1], InvertibleOutputLayer):
-            raise TypeError("Last layer of the network should be of "
-                            "type OutputLayer")
-        for i in range(1, len(layers)):
-            if not isinstance(layers[i], InvertibleLayer):
-                TypeError("All layers of the network should be of type "
-                          "InvertibleLayer")
-            if not layers[i - 1].layerDim == layers[i].inDim:
-                raise ValueError("layerDim should match with inDim of "
-                                 "next layer")
-            if not layers[i-1].outDim == layers[i].layerDim:
-                raise ValueError("outputDim should match with layerDim of next "
-                                 "layer")
-
-        self.layers = layers
-
-    def initInverses(self):
-        """ Initialize the backward weights of all layers to the inverse of
-        the forward weights of
-        the layer on top."""
-        for i in range(0, len(self.layers)-1):
-            self.layers[i].initInverse(self.layers[i+1])
-
-    def save_inverse_error(self):
-        for i in range(0, len(self.layers)-1):
-            self.layers[i].save_inverse_error(self.layers[i+1])
-
-    def save_state(self, global_step):
-        super().save_state(global_step)
-        self.save_inverse_error()
 

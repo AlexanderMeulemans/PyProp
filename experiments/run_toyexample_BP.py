@@ -1,11 +1,13 @@
 from utils.create_datasets import GenerateDatasetFromModel
-from training.optimizers import SGD
-from network_models.neuralnetwork import InputLayer, ReluLayer, \
-    LinearOutputLayer, Network
+from optimizers.optimizers import SGD
+from layers.layer import InputLayer, ReluLayer, \
+    LinearOutputLayer
+from layers.network import Network
 import torch
 import time
 from tensorboardX import SummaryWriter
 from utils.LLS import linear_least_squares
+import os
 
 torch.manual_seed(47)
 
@@ -20,13 +22,14 @@ writer = SummaryWriter(log_dir=log_dir)
 
 # ========= Set device ===========
 if torch.cuda.is_available():
-    gpu_idx = 0
+    gpu_idx = 1
     device = torch.device("cuda:{}".format(gpu_idx))
     # IMPORTANT: set_default_tensor_type uses automatically device 0,
     # untill now, I did not find a fix for this
-    # os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_idx)
+    os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+    os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_idx)
     torch.set_default_tensor_type('torch.cuda.FloatTensor')
-    print('using GPU')
+    print('using GPU {}'.format(gpu_idx))
 else:
     device = torch.device("cpu")
     print('using CPU')

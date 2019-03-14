@@ -1,8 +1,6 @@
-import sys
-sys.path.append(r"c:\users\alexander\appdata\local\programs\python\python36\lib\site-packages")
-
-from network_models.neuralnetwork import ReluLayer, InputLayer, SoftmaxOutputLayer, Network
-from training.optimizers import SGD, SGDMomentum
+from layers.layer import ReluLayer, InputLayer, SoftmaxOutputLayer
+from layers.network import Network
+from optimizers.optimizers import SGD, SGDMomentum
 import torch
 import torchvision
 from tensorboardX import SummaryWriter

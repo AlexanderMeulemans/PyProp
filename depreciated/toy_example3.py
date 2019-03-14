@@ -1,6 +1,6 @@
 from utils.create_datasets import GenerateDatasetFromModel
-from training.optimizers import SGD, SGDMomentum
-from network_models.invertible_network import InvertibleInputLayer, \
+from optimizers.optimizers import SGD, SGDMomentum
+from layers.invertible_layer import InvertibleInputLayer, \
     InvertibleLeakyReluLayer, InvertibleSoftmaxOutputLayer, InvertibleNetwork
 import torch
 
