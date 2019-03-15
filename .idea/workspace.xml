@@ -2,15 +2,21 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="627a70cb-13ab-4e6b-bda9-3721d10194d6" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/experiments/runMNIST.py" beforeDir="false" afterPath="$PROJECT_DIR$/experiments/runMNIST.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/experiments/run_toyexample_BP.py" beforeDir="false" afterPath="$PROJECT_DIR$/experiments/run_toyexample_BP.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/experiments/toy_example_invertibleTP.py" beforeDir="false" afterPath="$PROJECT_DIR$/experiments/toy_example_invertibleTP.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/layers/bidirectional_layer.py" beforeDir="false" afterPath="$PROJECT_DIR$/layers/bidirectional_layer.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/layers/invertible_layer.py" beforeDir="false" afterPath="$PROJECT_DIR$/layers/invertible_layer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/layers/layer.py" beforeDir="false" afterPath="$PROJECT_DIR$/layers/layer.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/networks/bidirectional_network.py" beforeDir="false" afterPath="$PROJECT_DIR$/networks/bidirectional_network.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/networks/invertible_network.py" beforeDir="false" afterPath="$PROJECT_DIR$/networks/invertible_network.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/networks/network.py" beforeDir="false" afterPath="$PROJECT_DIR$/networks/network.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/optimizers/optimizers.py" beforeDir="false" afterPath="$PROJECT_DIR$/optimizers/optimizers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/HelperClasses.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/HelperClasses.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/HelperFunctions.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/HelperFunctions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/LLS.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/LLS.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utils/create_datasets.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/create_datasets.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/gen_py_stub.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/plot_resultfiles.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/plot_resultfiles.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -31,20 +37,26 @@
     <splitter split-orientation="horizontal" split-proportion="0.5">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/experiments/run_toyexample_BP.py">
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/networks/bidirectional_network.py">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="120">
-                  <caret line="8" column="42" selection-start-line="8" selection-start-column="42" selection-end-line="8" selection-end-column="42" />
+                  <caret line="8" column="3" selection-start-line="8" selection-start-column="3" selection-end-line="8" selection-end-column="3" />
+                  <folding>
+                    <element signature="e#0#12#0" expanded="true" />
+                  </folding>
                 </state>
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/networks/bidirectional_network.py">
+          <file pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/utils/plot_resultfiles.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state>
-                  <caret column="12" selection-start-column="12" selection-end-column="12" />
+                <state relative-caret-position="120">
+                  <caret line="8" column="3" selection-start-line="8" selection-start-column="3" selection-end-line="8" selection-end-column="3" />
+                  <folding>
+                    <element signature="e#0#31#0" expanded="true" />
+                  </folding>
                 </state>
               </provider>
             </entry>
@@ -52,8 +64,11 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/optimizers/optimizers.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-4740">
-                  <caret line="2" selection-start-line="2" selection-end-line="2" />
+                <state relative-caret-position="120">
+                  <caret line="8" column="3" selection-start-line="8" selection-start-column="3" selection-end-line="8" selection-end-column="3" />
+                  <folding>
+                    <element signature="e#0#12#0" expanded="true" />
+                  </folding>
                 </state>
               </provider>
             </entry>
@@ -61,10 +76,52 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/networks/invertible_network.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="360">
-                  <caret line="24" column="44" selection-start-line="24" selection-start-column="44" selection-end-line="24" selection-end-column="44" />
+                <state relative-caret-position="120">
+                  <caret line="8" column="3" selection-start-line="8" selection-start-column="3" selection-end-line="8" selection-end-column="3" />
                   <folding>
                     <element signature="e#0#71#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/utils/create_datasets.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="120">
+                  <caret line="8" column="3" selection-start-line="8" selection-start-column="3" selection-end-line="8" selection-end-column="3" />
+                  <folding>
+                    <element signature="e#0#12#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/utils/HelperClasses.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="120">
+                  <caret line="8" column="3" selection-start-line="8" selection-start-column="3" selection-end-line="8" selection-end-column="3" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/utils/LLS.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="120">
+                  <caret line="8" column="3" selection-start-line="8" selection-start-column="3" selection-end-line="8" selection-end-column="3" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/utils/HelperFunctions.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="120">
+                  <caret line="8" column="3" selection-start-line="8" selection-start-column="3" selection-end-line="8" selection-end-column="3" />
+                  <folding>
+                    <element signature="e#0#12#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
@@ -74,14 +131,20 @@
       </split-first>
       <split-second>
         <leaf>
-          <file pinned="false" current-in-tab="false">
+          <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/networks/network.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-596">
-                  <caret line="11" column="41" selection-start-line="11" selection-start-column="41" selection-end-line="11" selection-end-column="41" />
-                  <folding>
-                    <element signature="e#0#12#0" expanded="true" />
-                  </folding>
+                <state relative-caret-position="150">
+                  <caret line="10" column="12" selection-start-line="10" selection-start-column="12" selection-end-line="10" selection-end-column="12" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/experiments/runMNIST.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="120">
+                  <caret line="8" column="3" selection-start-line="8" selection-start-column="3" selection-end-line="8" selection-end-column="3" />
                 </state>
               </provider>
             </entry>
@@ -89,34 +152,22 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/layers/layer.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state>
-                  <caret selection-end-line="5" selection-end-column="38" />
+                <state relative-caret-position="120">
+                  <caret line="8" column="3" selection-start-line="8" selection-start-column="3" selection-end-line="8" selection-end-column="3" />
                   <folding>
                     <element signature="e#0#12#0" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/experiments/toy_example_invertibleTP.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="100">
-                  <caret line="82" column="38" selection-start-line="82" selection-start-column="38" selection-end-line="82" selection-end-column="38" />
-                  <folding>
-                    <element signature="e#0#58#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
             </entry>
           </file>
           <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/layers/invertible_layer.py">
+            <entry file="file://$PROJECT_DIR$/experiments/toy_example_invertibleTP.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-195">
-                  <caret line="170" column="20" selection-start-line="170" selection-start-column="20" selection-end-line="170" selection-end-column="20" />
+                <state relative-caret-position="120">
+                  <caret line="8" column="3" selection-start-line="8" selection-start-column="3" selection-end-line="8" selection-end-column="3" />
                   <folding>
-                    <element signature="e#0#12#0" expanded="true" />
+                    <element signature="e#0#58#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
@@ -126,7 +177,7 @@
             <entry file="file://$PROJECT_DIR$/networks/invertible_network.py">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="330">
-                  <caret line="24" column="44" selection-start-line="24" selection-start-column="44" selection-end-line="24" selection-end-column="44" />
+                  <caret line="34" column="44" selection-start-line="34" selection-start-column="44" selection-end-line="34" selection-end-column="44" />
                 </state>
               </provider>
             </entry>
@@ -134,8 +185,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/layers/bidirectional_layer.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-1080">
-                  <caret line="3" column="30" selection-start-line="3" selection-start-column="30" selection-end-line="3" selection-end-column="30" />
+                <state relative-caret-position="120">
+                  <caret line="8" column="3" selection-start-line="8" selection-start-column="3" selection-end-line="8" selection-end-column="3" />
                   <folding>
                     <element signature="e#0#12#0" expanded="true" />
                   </folding>
@@ -250,24 +301,32 @@
         <option value="$PROJECT_DIR$/neuralnetwork.py" />
         <option value="$PROJECT_DIR$/experiments.py" />
         <option value="$PROJECT_DIR$/training.py" />
-        <option value="$PROJECT_DIR$/utils/LLS.py" />
-        <option value="$PROJECT_DIR$/utils/HelperFunctions.py" />
         <option value="$PROJECT_DIR$/test.py" />
         <option value="$PROJECT_DIR$/network_models/neuralnetwork.py" />
         <option value="$PROJECT_DIR$/network_models/Layer.py" />
         <option value="$PROJECT_DIR$/network_models/Network.py" />
         <option value="$PROJECT_DIR$/training/optimizers.py" />
-        <option value="$PROJECT_DIR$/utils/create_datasets.py" />
-        <option value="$PROJECT_DIR$/experiments/runMNIST.py" />
         <option value="$PROJECT_DIR$/network_models/network.py" />
-        <option value="$PROJECT_DIR$/experiments/run_toyexample_BP.py" />
         <option value="$PROJECT_DIR$/network_models/bidirectional_network.py" />
         <option value="$PROJECT_DIR$/network_models/bidirectional_layer.py" />
         <option value="$PROJECT_DIR$/network_models/invertible_layer.py" />
         <option value="$PROJECT_DIR$/network_models/invertible_network.py" />
         <option value="$PROJECT_DIR$/utils/gen_py_stub.sh" />
-        <option value="$PROJECT_DIR$/layers/invertible_layer.py" />
+        <option value="$PROJECT_DIR$/experiments/run_toyexample_BP.py" />
+        <option value="$PROJECT_DIR$/experiments/runMNIST.py" />
         <option value="$PROJECT_DIR$/experiments/toy_example_invertibleTP.py" />
+        <option value="$PROJECT_DIR$/layers/bidirectional_layer.py" />
+        <option value="$PROJECT_DIR$/networks/bidirectional_network.py" />
+        <option value="$PROJECT_DIR$/layers/invertible_layer.py" />
+        <option value="$PROJECT_DIR$/layers/layer.py" />
+        <option value="$PROJECT_DIR$/networks/invertible_network.py" />
+        <option value="$PROJECT_DIR$/networks/network.py" />
+        <option value="$PROJECT_DIR$/optimizers/optimizers.py" />
+        <option value="$PROJECT_DIR$/utils/create_datasets.py" />
+        <option value="$PROJECT_DIR$/utils/HelperClasses.py" />
+        <option value="$PROJECT_DIR$/utils/HelperFunctions.py" />
+        <option value="$PROJECT_DIR$/utils/LLS.py" />
+        <option value="$PROJECT_DIR$/utils/plot_resultfiles.py" />
       </list>
     </option>
   </component>
@@ -558,18 +617,18 @@
       <workItem from="1552326107107" duration="5960000" />
       <workItem from="1552378007409" duration="3179000" />
       <workItem from="1552394375373" duration="4868000" />
-      <workItem from="1552407738043" duration="26788000" />
+      <workItem from="1552407738043" duration="28477000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="43038000" />
+    <option name="totallyTimeSpent" value="44727000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="67" y="25" width="1853" height="1055" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.094631985" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.094631985" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -582,7 +641,7 @@
       <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info anchor="bottom" id="Terminal" order="8" />
       <window_info anchor="bottom" id="Python Console" order="9" weight="0.33693305" />
-      <window_info active="true" anchor="bottom" id="Run" order="10" visible="true" weight="0.41468683" />
+      <window_info anchor="bottom" id="Run" order="10" weight="0.41468683" />
       <window_info anchor="bottom" id="Docker" order="11" show_stripe_button="false" />
       <window_info anchor="bottom" id="File Transfer" order="12" weight="0.32937366" />
       <window_info anchor="bottom" id="Database Changes" order="13" />
@@ -623,13 +682,6 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/optimizers/optimizers.py</url>
-          <line>346</line>
-          <option name="timeStamp" value="2" />
-        </line-breakpoint>
-      </breakpoints>
       <default-breakpoints>
         <breakpoint type="python-exception">
           <properties notifyOnTerminate="true" exception="BaseException">
@@ -693,43 +745,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/utils/create_datasets.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="375">
-          <caret line="25" lean-forward="true" selection-start-line="25" selection-end-line="25" />
-          <folding>
-            <element signature="e#0#12#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/utils/HelperClasses.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="15" column="8" selection-start-line="15" selection-start-column="8" selection-end-line="15" selection-end-column="8" />
-          <folding>
-            <element signature="e#0#12#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/utils/HelperFunctions.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="869">
-          <caret line="60" column="54" lean-forward="true" selection-start-line="60" selection-start-column="54" selection-end-line="60" selection-end-column="54" />
-          <folding>
-            <element signature="e#0#12#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/utils/LLS.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="15">
-          <caret line="1" column="75" selection-start-line="1" selection-start-column="75" selection-end-line="1" selection-end-column="75" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/experiments/run_toyexample.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="645">
@@ -751,16 +766,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="45">
           <caret line="3" column="81" selection-start-line="3" selection-start-column="31" selection-end-line="3" selection-end-column="81" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/utils/plot_resultfiles.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="210">
-          <caret line="14" column="12" selection-start-line="14" selection-start-column="12" selection-end-line="14" selection-end-column="12" />
-          <folding>
-            <element signature="e#0#31#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -927,13 +932,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/networks/bidirectional_network.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="12" selection-start-column="12" selection-end-column="12" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/utils/gen_py_stub.sh">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="345">
@@ -941,29 +939,57 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/experiments/runMNIST.py">
+    <entry file="file://$PROJECT_DIR$/experiments/run_toyexample_BP.py">
       <provider selected="true" editor-type-id="text-editor">
         <state>
+          <caret lean-forward="true" selection-end-line="8" selection-end-column="3" />
           <folding>
-            <element signature="e#0#74#0" expanded="true" />
+            <element signature="e#0#58#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/layers/invertible_layer.py">
+    <entry file="file://$PROJECT_DIR$/experiments/runMNIST.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-195">
-          <caret line="170" column="20" selection-start-line="170" selection-start-column="20" selection-end-line="170" selection-end-column="20" />
+        <state relative-caret-position="120">
+          <caret line="8" column="3" selection-start-line="8" selection-start-column="3" selection-end-line="8" selection-end-column="3" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/layers/bidirectional_layer.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="120">
+          <caret line="8" column="3" selection-start-line="8" selection-start-column="3" selection-end-line="8" selection-end-column="3" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/layers/bidirectional_layer.py">
+    <entry file="file://$PROJECT_DIR$/layers/invertible_layer.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1080">
-          <caret line="3" column="30" selection-start-line="3" selection-start-column="30" selection-end-line="3" selection-end-column="30" />
+        <state relative-caret-position="120">
+          <caret line="8" column="3" selection-start-line="8" selection-start-column="3" selection-end-line="8" selection-end-column="3" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/experiments/toy_example_invertibleTP.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="120">
+          <caret line="8" column="3" selection-start-line="8" selection-start-column="3" selection-end-line="8" selection-end-column="3" />
+          <folding>
+            <element signature="e#0#58#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/networks/bidirectional_network.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="120">
+          <caret line="8" column="3" selection-start-line="8" selection-start-column="3" selection-end-line="8" selection-end-column="3" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
           </folding>
@@ -972,8 +998,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/layers/layer.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret selection-end-line="5" selection-end-column="38" />
+        <state relative-caret-position="120">
+          <caret line="8" column="3" selection-start-line="8" selection-start-column="3" selection-end-line="8" selection-end-column="3" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
           </folding>
@@ -982,8 +1008,42 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/networks/network.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-596">
-          <caret line="11" column="41" selection-start-line="11" selection-start-column="41" selection-end-line="11" selection-end-column="41" />
+        <state relative-caret-position="150">
+          <caret line="10" column="12" selection-start-line="10" selection-start-column="12" selection-end-line="10" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/networks/invertible_network.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="120">
+          <caret line="8" column="3" selection-start-line="8" selection-start-column="3" selection-end-line="8" selection-end-column="3" />
+          <folding>
+            <element signature="e#0#71#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/create_datasets.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="120">
+          <caret line="8" column="3" selection-start-line="8" selection-start-column="3" selection-end-line="8" selection-end-column="3" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/HelperClasses.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="120">
+          <caret line="8" column="3" selection-start-line="8" selection-start-column="3" selection-end-line="8" selection-end-column="3" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/HelperFunctions.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="120">
+          <caret line="8" column="3" selection-start-line="8" selection-start-column="3" selection-end-line="8" selection-end-column="3" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
           </folding>
@@ -992,31 +1052,27 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/optimizers/optimizers.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-4740">
-          <caret line="2" selection-start-line="2" selection-end-line="2" />
+        <state relative-caret-position="120">
+          <caret line="8" column="3" selection-start-line="8" selection-start-column="3" selection-end-line="8" selection-end-column="3" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/experiments/run_toyexample_BP.py">
+    <entry file="file://$PROJECT_DIR$/utils/LLS.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="120">
-          <caret line="8" column="42" selection-start-line="8" selection-start-column="42" selection-end-line="8" selection-end-column="42" />
+          <caret line="8" column="3" selection-start-line="8" selection-start-column="3" selection-end-line="8" selection-end-column="3" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/networks/invertible_network.py">
+    <entry file="file://$PROJECT_DIR$/utils/plot_resultfiles.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="330">
-          <caret line="24" column="44" selection-start-line="24" selection-start-column="44" selection-end-line="24" selection-end-column="44" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/experiments/toy_example_invertibleTP.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="100">
-          <caret line="82" column="38" selection-start-line="82" selection-start-column="38" selection-end-line="82" selection-end-column="38" />
+        <state relative-caret-position="120">
+          <caret line="8" column="3" selection-start-line="8" selection-start-column="3" selection-end-line="8" selection-end-column="3" />
           <folding>
-            <element signature="e#0#58#0" expanded="true" />
+            <element signature="e#0#31#0" expanded="true" />
           </folding>
         </state>
       </provider>

@@ -1,3 +1,13 @@
+"""
+Copyright 2019 Alexander Meulemans
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+"""
+
 import numpy as np
 def linear_least_squares(input_dataset, output_dataset, input_dataset_test,
                          output_dataset_test):
