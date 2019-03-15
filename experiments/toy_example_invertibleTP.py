@@ -5,7 +5,7 @@ InvertibleLeakyReluLayer, InvertibleLinearOutputLayer
 from networks.invertible_network import InvertibleNetwork
 from layers.layer import InputLayer, LeakyReluLayer, \
     LinearOutputLayer
-from layers.network import Network
+from networks.network import Network
 import torch
 import numpy as np
 import time
@@ -13,7 +13,7 @@ from tensorboardX import SummaryWriter
 from utils.LLS import linear_least_squares
 import os
 
-torch.manual_seed(33)
+torch.manual_seed(47)
 
 # ======== User variables ============
 nb_training_batches = 1000
@@ -41,7 +41,7 @@ else:
 
 input_layer_true = InputLayer(layerDim=5, writer=writer,
                               name='input_layer_true_model')
-hidden_layer_true = LeakyReluLayer(negativeSlope=0.3,inDim=5,layerDim=5,
+hidden_layer_true = LeakyReluLayer(negativeSlope=0.35,inDim=5,layerDim=5,
                                    writer=writer,
                                    name='hidden_layer_true_model')
 output_layer_true = LinearOutputLayer(inDim=5, layerDim=5,
@@ -72,7 +72,7 @@ print('LS test loss: '+str(test_loss))
 # Creating training network
 inputlayer = InvertibleInputLayer(layerDim=5,outDim=5, lossFunction='mse',
                                   name='input_layer', writer=writer)
-hiddenlayer = InvertibleLeakyReluLayer(negativeSlope=0.01, inDim=5,
+hiddenlayer = InvertibleLeakyReluLayer(negativeSlope=0.35, inDim=5,
                                         layerDim=5, outDim=5, lossFunction=
                                         'mse',
                                        name='hidden_layer',

@@ -1,9 +1,7 @@
 import torch
 from utils import HelperFunctions as hf
-import numpy as np
-from layers.network import Network
+from networks.network import Network
 import pandas as pd
-import os.path
 
 
 class Optimizer(object):

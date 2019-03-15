@@ -1,5 +1,5 @@
 from layers.layer import ReluLayer, InputLayer, SoftmaxOutputLayer
-from layers.network import Network
+from networks.network import Network
 from optimizers.optimizers import SGD, SGDMomentum
 import torch
 import torchvision

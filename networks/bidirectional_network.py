@@ -1,5 +1,5 @@
 import torch
-from layers.network import Network
+from networks.network import Network
 
 class BidirectionalNetwork(Network):
     """ Bidirectional Network consisting of multiple layers that can propagate

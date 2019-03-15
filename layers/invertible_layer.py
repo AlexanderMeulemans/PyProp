@@ -169,7 +169,6 @@ class InvertibleLayer(BidirectionalLayer):
     def propagateBackward(self, upperLayer):
         """Propagate the target signal from the upper layer to the current
         layer (self)
-        TODO(finish this function)
         :type upperLayer: InvertibleLayer
         """
         if not isinstance(upperLayer, InvertibleLayer):

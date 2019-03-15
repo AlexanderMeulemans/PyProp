@@ -2,7 +2,7 @@ from utils.create_datasets import GenerateDatasetFromModel
 from optimizers.optimizers import SGD
 from layers.layer import InputLayer, ReluLayer, \
     LinearOutputLayer
-from layers.network import Network
+from networks.network import Network
 import torch
 import time
 from tensorboardX import SummaryWriter

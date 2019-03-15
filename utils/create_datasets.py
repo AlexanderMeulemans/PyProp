@@ -1,5 +1,5 @@
 import torch
-from layers.network import Network
+from networks.network import Network
 
 class GenerateDatasetFromModel(object):
     """ Generates a toy example dataset from a given true network, that can be
