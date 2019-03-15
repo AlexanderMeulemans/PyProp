@@ -1,5 +1,6 @@
 *.xml
 *.pyc
 **/logs
+**/.idea
 
 
