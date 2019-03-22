@@ -16,9 +16,10 @@ from networks.bidirectional_network import BidirectionalNetwork
 class InvertibleNetwork(BidirectionalNetwork):
     """ Invertible Network consisting of multiple invertible layers. This class
         provides a range of methods to facilitate training of the networks """
-    def __init__(self, layers):
-        super().__init__(layers)
+    def __init__(self, layers, name=None, debug_mode=False):
+        super().__init__(layers,name)
         self.initInverses()
+        self.debug_mode = debug_mode
 
     def setLayers(self, layers):
         if not isinstance(layers, list):
@@ -60,3 +61,28 @@ class InvertibleNetwork(BidirectionalNetwork):
     def save_state(self, global_step):
         super().save_state(global_step)
         self.save_inverse_error()
+
+    def test_invertibility(self, inputBatch):
+        """ Propagate an input batch forward and backward, and compute the error
+        of the inversions (backpropagated targets should be equal to forward
+        activations"""
+        self.propagateForward(inputBatch)
+        self.custom_propagate_backward(self.layers[-1].forwardOutput)
+        for layer in self.layers:
+            layer.save_invertibility_test()
+
+    def custom_propagate_backward(self, backward_input):
+        """
+        Propagate directly the given backward_input backwards through the
+        network instead of computing the output target value with
+        computeBackwardOutput().
+        """
+        self.layers[-1].setBackwardOutput(backward_input)
+        for i in range(len(self.layers) - 2, -1, -1):
+            self.layers[i].propagateBackward(self.layers[i + 1])
+
+    def save_state(self, global_step):
+        """ Also perform an invertibiltiy test at the end of each batch
+        if debug mode is on True"""
+        super().save_state(global_step)
+        self.test_invertibility(self.layers[0].forwardOutput)

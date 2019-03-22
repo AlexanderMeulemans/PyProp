@@ -159,7 +159,10 @@ class Layer(object):
         This method should only be used when creating
         a new layer. Use setForwardParameters to update the parameters and
         computeGradient to update the gradients"""
-        self.forwardWeights = torch.randn(self.layerDim, self.inDim)
+        self.forwardWeights = hf.get_invertible_random_matrix(self.layerDim,
+                                                              self.inDim)
+        U,S,V = torch.svd(self.forwardWeights)
+        print('{}/forwardWeights_s_min: {}'.format(self.name, S[-1]))
         self.forwardBias = torch.zeros(self.layerDim, 1)
         self.forwardWeightsGrad = torch.zeros(self.layerDim, self.inDim)
         self.forwardBiasGrad = torch.zeros(self.layerDim, 1)
@@ -330,6 +333,9 @@ class Layer(object):
     def save_forward_weights(self):
         weight_norm = torch.norm(self.forwardWeights)
         bias_norm = torch.norm(self.forwardBias)
+        U, S, V = torch.svd(self.forwardWeights)
+        s_max = S[0]
+        s_min = S[-1]
         self.writer.add_scalar(tag='{}/forward_weights'
                                    '_norm'.format(self.name),
                                scalar_value=weight_norm,
@@ -337,6 +343,12 @@ class Layer(object):
         self.writer.add_scalar(tag='{}/forward_bias'
                                    '_norm'.format(self.name),
                                scalar_value=bias_norm,
+                               global_step=self.global_step)
+        self.writer.add_scalar(tag='{}/forward_weights_s_max'.format(self.name),
+                               scalar_value=s_max,
+                               global_step=self.global_step)
+        self.writer.add_scalar(tag='{}/forward_weights_s_min'.format(self.name),
+                               scalar_value=s_min,
                                global_step=self.global_step)
 
     def save_forward_weight_gradients(self):

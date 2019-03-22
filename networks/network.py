@@ -16,13 +16,13 @@ class Network(object):
     methods to facilitate training of the
     networks """
 
-    def __init__(self, layers):
+    def __init__(self, layers, name=None):
         """
         :param layers: list of all the layers in the network
         :param writer: SummaryWriter object to save states of the layer
         to tensorboard
         """
-        super(Network, self).__init__()
+        self.set_name(name)
         self.setLayers(layers)
         self.writer = self.layers[0].writer
 
@@ -47,6 +47,22 @@ class Network(object):
                                  "next layer")
 
         self.layers = layers
+        if self.name is not None:
+            self.set_layer_names()
+
+    def set_name(self, name):
+        if name is not None:
+            if not isinstance(name, str):
+                raise TypeError("Expecting a string or None "
+                                "as name for the network")
+        self.name = name
+
+    def set_layer_names(self):
+        """ appends a prefix <network_name>/ to each layer name, to structure
+        the tensorboard logs if multiple networks are used for an experiment
+        """
+        for layer in self.layers:
+            layer.setName(self.name + '/' + layer.name)
 
     def initVelocities(self):
         """ Initialize the gradient velocities in all the layers. Only called

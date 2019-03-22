@@ -22,15 +22,8 @@ import time
 from tensorboardX import SummaryWriter
 from utils.LLS import linear_least_squares
 import os
-import random
 
-# seed = 47
-# torch.manual_seed(seed)
-# torch.cuda.manual_seed(seed)
-# np.random.seed(seed)
-# random.seed(seed)
-# torch.backends.cudnn.deterministic = True
-# torch.backends.cudnn.benchmark = False
+torch.manual_seed(47)
 
 # ======== User variables ============
 nb_training_batches = 10000
@@ -38,7 +31,7 @@ batch_size = 1
 testing_size = 1000
 
 # ======== set log directory ==========
-log_dir = '../logs/debug_TP'
+log_dir = '../logs/TP_hand_crafted_weights'
 writer = SummaryWriter(log_dir=log_dir)
 
 # ======== set device ============
@@ -56,15 +49,25 @@ else:
 
 # ======== Create toy model dataset =============
 
-input_layer_true = InputLayer(layerDim=5, writer=writer,
+input_layer_true = InputLayer(layerDim=3, writer=writer,
                               name='input_layer_true_model')
-hidden_layer_true = LeakyReluLayer(negativeSlope=0.35,inDim=5,layerDim=5,
+hidden_layer_true = LeakyReluLayer(negativeSlope=0.35,inDim=3,layerDim=3,
                                    writer=writer,
                                    name='hidden_layer_true_model')
-output_layer_true = LinearOutputLayer(inDim=5, layerDim=5,
+output_layer_true = LinearOutputLayer(inDim=3, layerDim=3,
                                       lossFunction='mse',
                                       writer=writer,
                                       name='output_layer_true_model')
+
+weights_hidden_layer = torch.Tensor([])
+weights_output_layer = torch.Tensor([])
+bias_hidden_layer = torch.zeros((3,1))
+bias_output_layer = torch.zeros((3,1))
+
+hidden_layer_true.setForwardParameters(weights_hidden_layer, bias_hidden_layer)
+output_layer_true.setForwardParameters(weights_output_layer, bias_output_layer)
+
+
 true_network = Network([input_layer_true, hidden_layer_true,
                                   output_layer_true])
 
@@ -102,7 +105,7 @@ outputlayer = InvertibleLinearOutputLayer(inDim=5, layerDim=5,
 network = InvertibleNetwork([inputlayer, hiddenlayer, outputlayer])
 
 # Initializing optimizer
-optimizer1 = SGD(network=network,threshold=0.001, initLearningRate=0.5,
+optimizer1 = SGD(network=network,threshold=0.001, initLearningRate=0.01,
                  tau= 100,
                 finalLearningRate=0.005, computeAccuracies=False,
                  maxEpoch=120,

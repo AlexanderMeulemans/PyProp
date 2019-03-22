@@ -51,7 +51,7 @@ class InvertibleLayer(BidirectionalLayer):
         a new layer. Use setbackwardParameters to update the parameters and
         computeGradient to update the gradients"""
         self.backwardWeights = torch.empty(self.layerDim, self.layerDim)
-        self.backwardBias = torch.empty(self.layerDim, 1)
+        self.backwardBias = torch.zeros(self.layerDim, 1)
 
     def initInverse(self, upperLayer):
         """ Initializes the backward weights to the inverse of the
@@ -61,7 +61,8 @@ class InvertibleLayer(BidirectionalLayer):
         inverses later in training"""
         self.backwardWeights = torch.inverse(torch.cat((upperLayer.forwardWeights,
                                             upperLayer.forwardWeightsTilde), 0))
-
+        self.backwardBias = - torch.cat((upperLayer.forwardBias,
+                     upperLayer.forwardBiasTilde), 0)
     # def initForwardParametersBar(self):
     #     """ Concatenates the forwardWeights with the forwardWeightsTilde to
     #     create a square matrix ForwardWeightsBar. Similarly concatenates the
@@ -162,8 +163,8 @@ class InvertibleLayer(BidirectionalLayer):
 
         denominator = 1 - torch.matmul(torch.transpose(v, -1, -2),
                                        torch.matmul(self.backwardWeights, u))
-        if torch.abs(denominator) < 1e-3:
-            denominator = 1e-3*torch.sign(denominator)
+        # if torch.abs(denominator) < 1e-3:
+        #     denominator = 1e-3*torch.sign(denominator)
 
         numerator = torch.matmul(torch.matmul(self.backwardWeights, u),
                                  torch.matmul(torch.transpose(v, -1, -2),
@@ -255,8 +256,6 @@ class InvertibleLayer(BidirectionalLayer):
         self.writer.add_scalar(tag='{}/inverse_error'.format(self.name),
                                scalar_value=error,
                                global_step=self.global_step)
-
-
 
 
 class InvertibleLeakyReluLayer(InvertibleLayer):
@@ -413,6 +412,7 @@ class InvertibleOutputLayer(InvertibleLayer):
         self.save_forward_weights()
         self.save_forward_weight_gradients()
         self.save_backward_activations()
+        self.save_distance_target()
 
     def save_state_histograms(self):
         """ The histograms (specified by the arguments) are saved to
@@ -471,12 +471,12 @@ class InvertibleSoftmaxOutputLayer(InvertibleOutputLayer):
     def forwardNonlinearity(self, linearActivation):
         self.normalization_constant = torch.logsumexp(linearActivation,1)
         softmax = nn.Softmax(dim=1)
-        print('original linear activation: {}'.format(linearActivation))
+        # print('original linear activation: {}'.format(linearActivation))
         return softmax(linearActivation)
 
     def inverseNonlinearity(self, input):
-        print('computed linear activation: {}'.format(
-            torch.log(input) + self.normalization_constant))
+        # print('computed linear activation: {}'.format(
+        #     torch.log(input) + self.normalization_constant))
         return torch.log(input) + self.normalization_constant
 
     def computeVectorizedJacobian(self):
@@ -592,6 +592,7 @@ class InvertibleInputLayer(InvertibleLayer):
         self.save_activations()
         self.save_backward_weights()
         self.save_backward_activations()
+        self.save_distance_target()
 
     def save_state_histograms(self):
         """ The histograms (specified by the arguments) are saved to

@@ -47,7 +47,8 @@ class BidirectionalLayer(Layer):
         This method should only be used when creating
         a new layer. Use setbackwardParameters to update the parameters and
         computeGradient to update the gradients"""
-        self.backwardWeights = torch.randn(self.layerDim, self.outDim)
+        self.backwardWeights = hf.get_invertible_random_matrix(self.layerDim,
+                                                              self.outDim)
         self.backwardBias = torch.zeros(self.layerDim, 1)
         self.backwardWeightsGrad = torch.zeros(self.layerDim, self.outDim)
         self.backwardBiasGrad = torch.zeros(self.layerDim, 1)
@@ -111,9 +112,25 @@ class BidirectionalLayer(Layer):
         raise NetworkError('This method should be overwritten by the '
                            'child classes')
 
+    def distance_target(self):
+        """ Computes ratio of the L2 norm of the distance between the
+        forward activation
+        and the target activation and the L2 norm of the forward activation.
+        If the batch
+        contains more than one sample, the average of the distances is returned.
+        """
+        differences = self.forwardOutput - self.backwardOutput
+        distances = torch.norm(differences.view(differences.shape[0], -1),
+                               p=2, dim=1)
+        forward_norm = torch.norm(self.forwardOutput.view(
+            self.forwardOutput.shape[0], -1),p=2, dim=1)
+        relative_distances = torch.div(distances, forward_norm)
+        return torch.Tensor([torch.mean(relative_distances)])
+
     def save_backward_weights(self):
         weight_norm = torch.norm(self.backwardWeights)
         bias_norm = torch.norm(self.backwardBias)
+        # print('{} backward_weights_norm: {}'.format(self.name, weight_norm))
         self.writer.add_scalar(tag='{}/backward_weights'
                                    '_norm'.format(self.name),
                                scalar_value=weight_norm,
@@ -149,6 +166,22 @@ class BidirectionalLayer(Layer):
             values=self.backwardOutput,
             global_step=self.global_step)
 
+    def save_distance_target(self):
+        mean_distance = self.distance_target()
+        # print('{} distance target: {}'.format(self.name, mean_distance))
+        self.writer.add_scalar(tag='{}/distance_target'.format(self.name),
+                               scalar_value=mean_distance,
+                               global_step=self.global_step)
+
+    def save_invertibility_test(self):
+        mean_distance = self.distance_target()
+        # print('{} invertibility test: {}'.format(self.name, mean_distance))
+        self.writer.add_scalar(tag='{}/invertibility_distance'
+                               .format(self.name),
+                              scalar_value=mean_distance,
+                              global_step=self.global_step)
+
+
     def save_state(self):
         """ Saves summary scalars (2-norm) of the gradients, weights and
          layer activations."""
@@ -158,6 +191,7 @@ class BidirectionalLayer(Layer):
         self.save_forward_weight_gradients()
         self.save_backward_weights()
         self.save_backward_activations()
+        self.save_distance_target()
 
     def save_state_histograms(self):
         """ The histograms (specified by the arguments) are saved to

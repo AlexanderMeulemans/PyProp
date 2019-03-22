@@ -82,3 +82,23 @@ def init_logdir(dr):
     directory = os.path.join(os.path.curdir, dr)
     if not os.path.exists(directory):
         os.makedirs(directory)
+
+def get_invertible_random_matrix(rows, cols, threshold = 0.4, max_iter=300):
+    m = torch.randn(rows, cols)
+    U,S,V = torch.svd(m)
+    s_max = S[0]
+    s_min = S[-1]
+    iter = 0
+
+    while s_max*s_min<threshold:
+        m = torch.randn(rows, cols)
+        U, S, V = torch.svd(m)
+        s_max = S[0]
+        s_min = S[-1]
+        iter += 1
+        if iter >=max_iter:
+            raise RuntimeWarning('max iterations reached of '
+                  'get_invertible_random_matrix.'
+                  'random matrix returned without checking the singular values')
+
+    return m

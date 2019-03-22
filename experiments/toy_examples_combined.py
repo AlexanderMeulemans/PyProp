@@ -22,24 +22,14 @@ import time
 from tensorboardX import SummaryWriter
 from utils.LLS import linear_least_squares
 import os
-import random
 
-# seed = 47
-# torch.manual_seed(seed)
-# torch.cuda.manual_seed(seed)
-# np.random.seed(seed)
-# random.seed(seed)
-# torch.backends.cudnn.deterministic = True
-# torch.backends.cudnn.benchmark = False
+torch.manual_seed(47)
 
 # ======== User variables ============
 nb_training_batches = 10000
 batch_size = 1
 testing_size = 1000
 
-# ======== set log directory ==========
-log_dir = '../logs/debug_TP'
-writer = SummaryWriter(log_dir=log_dir)
 
 # ======== set device ============
 if torch.cuda.is_available():
@@ -53,6 +43,11 @@ if torch.cuda.is_available():
 else:
     device = torch.device("cpu")
     print('using CPU')
+
+# ======== set log directory ==========
+main_dir = '../logs/toy_example_combined'
+log_dir = main_dir + '/shallow_network'
+writer = SummaryWriter(log_dir=log_dir)
 
 # ======== Create toy model dataset =============
 
@@ -84,8 +79,58 @@ weights, train_loss, test_loss = linear_least_squares(input_dataset,
 print('LS train loss: '+str(train_loss))
 print('LS test loss: '+str(test_loss))
 
-# ===== Run experiment with invertible TP =======
+# ===== Run experiment with shallow BP network =======
+input_layer_shallow = InputLayer(layerDim=5, writer=writer,
+                                 name='input_layer')
+output_layer_shallow = LinearOutputLayer(inDim=5, layerDim=5,
+                                      lossFunction='mse',
+                                      writer=writer,
+                                      name='output_layer')
+shallow_network = Network([input_layer_shallow, output_layer_shallow])
 
+optimizer1 = SGD(network=shallow_network,threshold=0.001, initLearningRate=0.01,
+                 tau= 100,
+                finalLearningRate=0.005, computeAccuracies=False,
+                 maxEpoch=100,
+                 outputfile_name='resultfile_shallow.csv')
+
+start_time = time.time()
+optimizer1.runDataset(input_dataset, output_dataset, input_dataset_test,
+                      output_dataset_test)
+end_time = time.time()
+print('Elapsed time: {} seconds'.format(end_time-start_time))
+
+# ===== Run experiment with BP network ========
+log_dir = main_dir + '/BP_network'
+writer = SummaryWriter(log_dir=log_dir)
+
+input_layer_BP = InputLayer(layerDim=5, writer=writer,
+                              name='input_layer')
+hidden_layer_BP= LeakyReluLayer(negativeSlope=0.35,inDim=5,layerDim=5,
+                                   writer=writer,
+                                   name='hidden_layer')
+output_layer_BP = LinearOutputLayer(inDim=5, layerDim=5,
+                                      lossFunction='mse',
+                                      writer=writer,
+                                      name='output_layer')
+BP_network = Network([input_layer_BP, hidden_layer_BP,
+                                  output_layer_BP])
+
+optimizer2 = SGD(network=BP_network,threshold=0.001, initLearningRate=0.01,
+                 tau= 100,
+                finalLearningRate=0.005, computeAccuracies=False,
+                 maxEpoch=100,
+                 outputfile_name='resultfile_BP.csv')
+
+start_time = time.time()
+optimizer2.runDataset(input_dataset, output_dataset, input_dataset_test,
+                      output_dataset_test)
+end_time = time.time()
+print('Elapsed time: {} seconds'.format(end_time-start_time))
+
+# ===== Run experiment with invertible TP =======
+log_dir = main_dir + '/TP_network'
+writer = SummaryWriter(log_dir=log_dir)
 # Creating training network
 inputlayer = InvertibleInputLayer(layerDim=5,outDim=5, lossFunction='mse',
                                   name='input_layer', writer=writer)
@@ -102,19 +147,14 @@ outputlayer = InvertibleLinearOutputLayer(inDim=5, layerDim=5,
 network = InvertibleNetwork([inputlayer, hiddenlayer, outputlayer])
 
 # Initializing optimizer
-optimizer1 = SGD(network=network,threshold=0.001, initLearningRate=0.5,
+optimizer3 = SGD(network=network,threshold=0.001, initLearningRate=0.01,
                  tau= 100,
                 finalLearningRate=0.005, computeAccuracies=False,
-                 maxEpoch=120,
-                 outputfile_name='resultfile.csv')
+                 maxEpoch=100,
+                 outputfile_name='resultfile_TP.csv')
 
-
-
-# Train on dataset
-timings = np.array([])
 start_time = time.time()
-optimizer1.runDataset(input_dataset, output_dataset, input_dataset_test,
+optimizer3.runDataset(input_dataset, output_dataset, input_dataset_test,
                       output_dataset_test)
 end_time = time.time()
 print('Elapsed time: {} seconds'.format(end_time-start_time))
-timings = np.append(timings, end_time-start_time)
