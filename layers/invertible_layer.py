@@ -19,17 +19,17 @@ from layers.bidirectional_layer import BidirectionalLayer
 class InvertibleLayer(BidirectionalLayer):
     """ Layer that is invertible to make it able to propagate exact targets."""
 
-    def __init__(self,inDim, layerDim, outDim, writer, lossFunction = 'mse',
+    def __init__(self, in_dim, layer_dim, outDim, writer, lossFunction ='mse',
                  name='invertible_layer'):
-        if inDim is not None:
-            if inDim < layerDim:
+        if in_dim is not None:
+            if in_dim < layer_dim:
                 raise ValueError("Expecting an input size bigger or equal to the "
                                  "layer size")
         if outDim is not None:
-            if layerDim < outDim:
+            if layer_dim < outDim:
                 raise ValueError("Expecting a layer size bigger or equal to the "
                                  "output size")
-        super().__init__(inDim, layerDim, outDim,
+        super().__init__(in_dim, layer_dim, outDim,
                          lossFunction=lossFunction,
                          name=name,
                          writer=writer)
@@ -41,17 +41,17 @@ class InvertibleLayer(BidirectionalLayer):
         when the layer is created.
         This method should only be used when creating
         a new layer. These parameters should remain fixed"""
-        self.forwardWeightsTilde = torch.randn(self.inDim - self.layerDim,
-                                              self.inDim)
-        self.forwardBiasTilde = torch.zeros(self.inDim - self.layerDim, 1)
+        self.forwardWeightsTilde = torch.randn(self.in_dim - self.layer_dim,
+                                               self.in_dim)
+        self.forwardBiasTilde = torch.zeros(self.in_dim - self.layer_dim, 1)
 
     def initBackwardParameters(self):
         """ Initializes the layer parameters when the layer is created.
         This method should only be used when creating
         a new layer. Use setbackwardParameters to update the parameters and
         computeGradient to update the gradients"""
-        self.backwardWeights = torch.empty(self.layerDim, self.layerDim)
-        self.backwardBias = torch.zeros(self.layerDim, 1)
+        self.backwardWeights = torch.empty(self.layer_dim, self.layer_dim)
+        self.backwardBias = torch.zeros(self.layer_dim, 1)
 
     def initInverse(self, upperLayer):
         """ Initializes the backward weights to the inverse of the
@@ -79,10 +79,10 @@ class InvertibleLayer(BidirectionalLayer):
         if forwardOutputTilde.size(0) == 0:
             self.forwardOutputTilde = forwardOutputTilde
         else:
-            if not forwardOutputTilde.size(-2) == self.inDim - self.layerDim:
-                raise ValueError("Expecting same dimension as inDim - layerDim")
+            if not forwardOutputTilde.size(-2) == self.in_dim - self.layer_dim:
+                raise ValueError("Expecting same dimension as in_dim - layer_dim")
             if not forwardOutputTilde.size(-1) == 1:
-                raise ValueError("Expecting same dimension as layerDim")
+                raise ValueError("Expecting same dimension as layer_dim")
             self.forwardOutputTilde = forwardOutputTilde
 
 
@@ -116,7 +116,7 @@ class InvertibleLayer(BidirectionalLayer):
         if not isinstance(lowerLayer, InvertibleLayer):
             raise TypeError("Expecting an InvertibleLayer object as "
                             "argument for propagateForwardTilde")
-        if not lowerLayer.layerDim == self.inDim:
+        if not lowerLayer.layer_dim == self.in_dim:
             raise ValueError("Layer sizes are not compatible for "
                              "propagating forward")
 
@@ -186,7 +186,7 @@ class InvertibleLayer(BidirectionalLayer):
             raise TypeError("Expecting an InvertibleLayer object as argument "
                             "for "
                             "propagateBackward")
-        if not upperLayer.inDim == self.layerDim:
+        if not upperLayer.in_dim == self.layer_dim:
             raise ValueError("Layer sizes are not compatible for propagating "
                              "backwards")
 
@@ -262,11 +262,11 @@ class InvertibleLeakyReluLayer(InvertibleLayer):
     """ Layer of an invertible neural network with a leaky RELU activation
     fucntion. """
 
-    def __init__(self,negativeSlope, inDim, layerDim,
+    def __init__(self, negativeSlope, in_dim, layer_dim,
                  outDim, writer,
                  lossFunction='mse',
                  name='invertible_leaky_ReLU_layer'):
-        super().__init__(inDim, layerDim, outDim,
+        super().__init__(in_dim, layer_dim, outDim,
                          writer=writer,
                          lossFunction=lossFunction,
                          name=name)
@@ -331,10 +331,10 @@ class InvertibleOutputLayer(InvertibleLayer):
     """ Super class for the last layer of an invertible network, that will be
     trained using target propagation"""
 
-    def __init__(self, inDim, layerDim, writer, stepsize,
+    def __init__(self, in_dim, layer_dim, writer, stepsize,
                  lossFunction = 'mse',
                  name='invertible_output_layer'):
-        super().__init__(inDim, layerDim, writer=writer,
+        super().__init__(in_dim, layer_dim, writer=writer,
                          outDim=None,
                          lossFunction=lossFunction,
                          name=name)
@@ -458,10 +458,10 @@ class InvertibleSoftmaxOutputLayer(InvertibleOutputLayer):
     """ Invertible output layer with a linear activation function. This layer
     can so far only be combined with an mse loss
     function."""
-    def __init__(self, inDim, layerDim, writer, stepsize,
+    def __init__(self, in_dim, layer_dim, writer, stepsize,
                  lossFunction='crossEntropy',
                  name='invertible_softmax_output_layer'):
-        super().__init__(inDim, layerDim,
+        super().__init__(in_dim, layer_dim,
                          writer=writer,
                          stepsize=stepsize,
                          lossFunction=lossFunction,
@@ -553,10 +553,10 @@ class InvertibleInputLayer(InvertibleLayer):
     """ Input layer of the invertible neural network,
         e.g. the pixelvalues of a picture. """
 
-    def __init__(self, layerDim, outDim, writer,
+    def __init__(self, layer_dim, outDim, writer,
                  lossFunction = 'mse',
                  name='invertible_input_layer'):
-        super().__init__(inDim=None, layerDim=layerDim,
+        super().__init__(in_dim=None, layer_dim=layer_dim,
                          outDim=outDim,
                          writer=writer,
                          lossFunction=lossFunction,

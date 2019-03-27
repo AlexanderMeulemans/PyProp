@@ -21,60 +21,60 @@ class Layer(object):
     feedforward weights. This class should not be used directly,
     only via its children"""
     # create class variable of existing layer names
-    allLayerNames = []
+    all_layer_names = []
 
-    def __init__(self, inDim, layerDim, writer, name='layer'):
+    def __init__(self, in_dim, layer_dim, writer, name='layer'):
         """
         Initializes the Layer object
-        :param inDim: input dimension of the layer (equal to the layer dimension
+        :param in_dim: input dimension of the layer (equal to the layer dimension
         of the previous layer in the network)
-        :param layerDim: Layer dimension
+        :param layer_dim: Layer dimension
         """
-        self.setLayerDim(layerDim)
-        if inDim is not None: # inDim is None when layer is inputlayer
-            self.setInDim(inDim)
-        self.setName(name)
-        self.setWriter(writer=writer)
+        self.set_layer_dim(layer_dim)
+        if in_dim is not None: # in_dim is None when layer is inputlayer
+            self.set_in_dim(in_dim)
+        self.set_name(name)
+        self.set_writer(writer=writer)
         self.initForwardParameters()
-        self.global_step = 0 # needed for making plots with tensorboard
+        self.global_step = 0  # needed for making plots with tensorboard
 
-    def setWriter(self, writer):
+    def set_writer(self, writer):
         if not isinstance(writer,SummaryWriter):
             raise TypeError("Writer object has to be of type "
                             "SummaryWriter, now got {}".format(
                 type(writer)))
         self.writer = writer
 
-    def setLayerDim(self, layerDim):
-        if not isinstance(layerDim, int):
+    def set_layer_dim(self, layer_dim):
+        if not isinstance(layer_dim, int):
             raise TypeError("Expecting an integer layer dimension")
-        if layerDim <= 0:
+        if layer_dim <= 0:
             raise ValueError("Expecting strictly positive layer dimension")
-        self.layerDim = layerDim
+        self.layer_dim = layer_dim
 
-    def setInDim(self, inDim):
-        if not isinstance(inDim, int):
+    def set_in_dim(self, in_dim):
+        if not isinstance(in_dim, int):
             raise TypeError("Expecting an integer layer dimension")
-        if inDim <= 0:
+        if in_dim <= 0:
             raise ValueError("Expecting strictly positive layer dimension")
-        self.inDim = inDim
+        self.in_dim = in_dim
 
-    def setName(self, name):
+    def set_name(self, name):
         if not isinstance(name, str):
             raise TypeError("Expecting a string as name for the layer")
-        if not name in self.__class__.allLayerNames:
+        if not name in self.__class__.all_layer_names:
             self.name = name
-            self.__class__.allLayerNames.append(name)
+            self.__class__.all_layer_names.append(name)
         else:
-            newName = name
+            new_name = name
             i=1
-            while newName in self.__class__.allLayerNames:
-                newName = name + '_' + str(i)
+            while new_name in self.__class__.all_layer_names:
+                new_name = name + '_' + str(i)
                 i += 1
-            self.name = newName
-            self.__class__.allLayerNames.append(name)
+            self.name = new_name
+            self.__class__.all_layer_names.append(name)
 
-    def setForwardParameters(self, forwardWeights, forwardBias):
+    def set_forward_parameters(self, forwardWeights, forwardBias):
         if not isinstance(forwardWeights, torch.Tensor):
             raise TypeError("Expecting a tensor object for self.forwardWeights")
         if not isinstance(forwardBias, torch.Tensor):
@@ -125,29 +125,29 @@ class Layer(object):
     def setForwardOutput(self, forwardOutput):
         if not isinstance(forwardOutput, torch.Tensor):
             raise TypeError("Expecting a tensor object for self.forwardOutput")
-        if not forwardOutput.size(-2) == self.layerDim:
-            raise ValueError("Expecting same dimension as layerDim")
+        if not forwardOutput.size(-2) == self.layer_dim:
+            raise ValueError("Expecting same dimension as layer_dim")
         if not forwardOutput.size(-1) == 1:
-            raise ValueError("Expecting same dimension as layerDim")
+            raise ValueError("Expecting same dimension as layer_dim")
         self.forwardOutput = forwardOutput
 
     def setForwardLinearActivation(self, forwardLinearActivation):
         if not isinstance(forwardLinearActivation, torch.Tensor):
             raise TypeError("Expecting a tensor object for "
                             "self.forwardLinearActivation")
-        if not forwardLinearActivation.size(-2) == self.layerDim:
-            raise ValueError("Expecting same dimension as layerDim")
+        if not forwardLinearActivation.size(-2) == self.layer_dim:
+            raise ValueError("Expecting same dimension as layer_dim")
         if not forwardLinearActivation.size(-1) == 1:
-            raise ValueError("Expecting same dimension as layerDim")
+            raise ValueError("Expecting same dimension as layer_dim")
         self.forwardLinearActivation = forwardLinearActivation
 
     def setBackwardOutput(self, backwardOutput):
         if not isinstance(backwardOutput, torch.Tensor):
             raise TypeError("Expecting a tensor object for self.backwardOutput")
-        if not backwardOutput.size(-2) == self.layerDim:
-            raise ValueError("Expecting same dimension as layerDim")
+        if not backwardOutput.size(-2) == self.layer_dim:
+            raise ValueError("Expecting same dimension as layer_dim")
         if not backwardOutput.size(-1) == 1:
-            raise ValueError("Expecting same dimension as layerDim")
+            raise ValueError("Expecting same dimension as layer_dim")
         self.backwardOutput = backwardOutput
         if torch.max(torch.abs(backwardOutput))> 1e2:
             print('backwardOutputs of {} have gone unbounded: {}'.format(
@@ -157,23 +157,23 @@ class Layer(object):
     def initForwardParameters(self):
         """ Initializes the layer parameters when the layer is created.
         This method should only be used when creating
-        a new layer. Use setForwardParameters to update the parameters and
+        a new layer. Use set_forward_parameters to update the parameters and
         computeGradient to update the gradients"""
-        self.forwardWeights = hf.get_invertible_random_matrix(self.layerDim,
-                                                              self.inDim)
+        self.forwardWeights = hf.get_invertible_random_matrix(self.layer_dim,
+                                                              self.in_dim)
         U,S,V = torch.svd(self.forwardWeights)
         print('{}/forwardWeights_s_min: {}'.format(self.name, S[-1]))
-        self.forwardBias = torch.zeros(self.layerDim, 1)
-        self.forwardWeightsGrad = torch.zeros(self.layerDim, self.inDim)
-        self.forwardBiasGrad = torch.zeros(self.layerDim, 1)
+        self.forwardBias = torch.zeros(self.layer_dim, 1)
+        self.forwardWeightsGrad = torch.zeros(self.layer_dim, self.in_dim)
+        self.forwardBiasGrad = torch.zeros(self.layer_dim, 1)
         self.save_initial_state()
 
     def initVelocities(self):
         """ Initializes the velocities of the gradients. This should only be
         called when an optimizer with momentum
         is used, otherwise these attributes will not be used"""
-        self.forwardWeightsVel = torch.zeros(self.layerDim, self.inDim)
-        self.forwardBiasVel = torch.zeros(self.layerDim, 1)
+        self.forwardWeightsVel = torch.zeros(self.layer_dim, self.in_dim)
+        self.forwardBiasVel = torch.zeros(self.layer_dim, 1)
 
     def setForwardVelocities(self, forwardWeightsVel, forwardBiasVel):
         if not isinstance(forwardWeightsVel, torch.Tensor):
@@ -195,8 +195,8 @@ class Layer(object):
 
     def zeroGrad(self):
         """ Set the gradients of the layer parameters to zero """
-        self.forwardWeightsGrad = torch.zeros(self.layerDim, self.inDim)
-        self.forwardBiasGrad = torch.zeros(self.layerDim, 1)
+        self.forwardWeightsGrad = torch.zeros(self.layer_dim, self.in_dim)
+        self.forwardBiasGrad = torch.zeros(self.layer_dim, 1)
 
     def updateForwardParameters(self, learningRate):
         """
@@ -213,7 +213,7 @@ class Layer(object):
                          - torch.mul(self.forwardWeightsGrad, learningRate)
         forwardBias = self.forwardBias \
                       - torch.mul(self.forwardBiasGrad, learningRate)
-        self.setForwardParameters(forwardWeights, forwardBias)
+        self.set_forward_parameters(forwardWeights, forwardBias)
 
     def propagateForward(self, lowerLayer):
         """
@@ -226,7 +226,7 @@ class Layer(object):
         if not isinstance(lowerLayer, Layer):
             raise TypeError("Expecting a Layer object as "
                             "argument for propagateForward")
-        if not lowerLayer.layerDim == self.inDim:
+        if not lowerLayer.layer_dim == self.in_dim:
             raise ValueError("Layer sizes are not compatible for "
                              "propagating forward")
 
@@ -292,7 +292,7 @@ class Layer(object):
                          - self.forwardWeightsVel
         forwardBias = self.forwardBias \
                       - self.forwardBiasVel
-        self.setForwardParameters(forwardWeights, forwardBias)
+        self.set_forward_parameters(forwardWeights, forwardBias)
 
     def propagateBackward(self, upperLayer):
         raise NetworkError('This method has to be overwritten by child classes')
@@ -420,7 +420,7 @@ class ReluLayer(Layer):
         if not isinstance(upperLayer, Layer):
             raise TypeError("Expecting a Layer object as argument for "
                             "propagateBackward")
-        if not upperLayer.inDim == self.layerDim:
+        if not upperLayer.in_dim == self.layer_dim:
             raise ValueError("Layer sizes are not compatible for propagating "
                              "backwards")
 
@@ -448,9 +448,9 @@ class ReluLayer(Layer):
 
 class LeakyReluLayer(Layer):
     """ Layer of a neural network with a Leaky RELU activation function"""
-    def __init__(self,negativeSlope, inDim, layerDim, writer,
+    def __init__(self, negativeSlope, in_dim, layer_dim, writer,
                  name='leaky_ReLU_layer'):
-        super().__init__(inDim, layerDim, writer, name=name)
+        super().__init__(in_dim, layer_dim, writer, name=name)
         self.setNegativeSlope(negativeSlope)
 
     def setNegativeSlope(self, negativeSlope):
@@ -479,7 +479,7 @@ class LeakyReluLayer(Layer):
         if not isinstance(upperLayer, Layer):
             raise TypeError("Expecting a Layer object as argument for "
                             "propagateBackward")
-        if not upperLayer.inDim == self.layerDim:
+        if not upperLayer.in_dim == self.layer_dim:
             raise ValueError("Layer sizes are not compatible for propagating "
                              "backwards")
 
@@ -513,7 +513,7 @@ class SoftmaxLayer(Layer):
         if not isinstance(upperLayer, Layer):
             raise TypeError("Expecting a Layer object as argument for  "
                             "propagateBackward")
-        if not upperLayer.inDim == self.layerDim:
+        if not upperLayer.in_dim == self.layer_dim:
             raise ValueError("Layer sizes are not compatible for "
                              "propagating backwards")
 
@@ -550,7 +550,7 @@ class LinearLayer(Layer):
         if not isinstance(upperLayer, Layer):
             raise TypeError("Expecting a Layer object as "
                             "argument for propagateBackward")
-        if not upperLayer.inDim == self.layerDim:
+        if not upperLayer.in_dim == self.layer_dim:
             raise ValueError("Layer sizes are not compatible "
                              "for propagating backwards")
 
@@ -564,11 +564,11 @@ class InputLayer(Layer):
     """ Input layer of the neural network,
     e.g. the pixelvalues of a picture. """
 
-    def __init__(self, layerDim, writer, name='input_layer'):
-        """ InputLayer has only a layerDim and a
+    def __init__(self, layer_dim, writer, name='input_layer'):
+        """ InputLayer has only a layer_dim and a
         forward activation that can be set,
          no input dimension nor parameters"""
-        super().__init__(inDim = None, layerDim=layerDim, writer=writer,
+        super().__init__(in_dim= None, layer_dim=layer_dim, writer=writer,
                          name=name)
 
     def propagateForward(self, lowerLayer):
@@ -608,16 +608,16 @@ class OutputLayer(Layer):
     This layer has a loss as extra attribute and some extra
     methods as explained below. """
 
-    def __init__(self, inDim, layerDim, lossFunction, writer,
+    def __init__(self, in_dim, layer_dim, lossFunction, writer,
                  name='output_layer'):
         """
-        :param inDim: input dimension of the layer,
+        :param in_dim: input dimension of the layer,
         equal to the layer dimension of the second last layer in the network
-        :param layerDim: Layer dimension
+        :param layer_dim: Layer dimension
         :param loss: string indicating which loss function is used to
         compute the network loss
         """
-        super().__init__(inDim, layerDim, writer, name=name)
+        super().__init__(in_dim, layer_dim, writer, name=name)
         self.setLossFunction(lossFunction)
 
     def setLossFunction(self, lossFunction):

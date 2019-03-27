@@ -43,7 +43,7 @@ class Network(object):
             if not isinstance(layers[i], Layer):
                 TypeError("All layers of the network should be of type Layer")
             if not layers[i - 1].layerDim == layers[i].inDim:
-                raise ValueError("layerDim should match with inDim of "
+                raise ValueError("layer_dim should match with in_dim of "
                                  "next layer")
 
         self.layers = layers
@@ -62,7 +62,7 @@ class Network(object):
         the tensorboard logs if multiple networks are used for an experiment
         """
         for layer in self.layers:
-            layer.setName(self.name + '/' + layer.name)
+            layer.set_name(self.name + '/' + layer.name)
 
     def initVelocities(self):
         """ Initialize the gradient velocities in all the layers. Only called

@@ -56,7 +56,7 @@ optimizer2 = SGDMomentum(network=network,threshold=1.2, initLearningRate=0.1,
 
 
 # Train on MNIST
-optimizer1.runMNIST(train_loader, device)
+optimizer1.run_mnist(train_loader, device)
 
 # Test network
 for batch_idx, (data,target) in enumerate(test_loader):

@@ -16,9 +16,9 @@ from layers.layer import Layer
 class BidirectionalLayer(Layer):
     """ Layer in a neural network with feedforward weights as well as
     feedbackward weights."""
-    def __init__(self, inDim, layerDim, outDim, writer, lossFunction = 'mse',
+    def __init__(self, in_dim, layer_dim, outDim, writer, lossFunction ='mse',
                  name='bidirectional_layer'):
-        super().__init__(inDim, layerDim, name=name, writer=writer)
+        super().__init__(in_dim, layer_dim, name=name, writer=writer)
         if outDim is not None: # if the layer is an outputlayer, outDim is None
             self.setOutDim(outDim)
         self.initBackwardParameters()
@@ -47,11 +47,11 @@ class BidirectionalLayer(Layer):
         This method should only be used when creating
         a new layer. Use setbackwardParameters to update the parameters and
         computeGradient to update the gradients"""
-        self.backwardWeights = hf.get_invertible_random_matrix(self.layerDim,
-                                                              self.outDim)
-        self.backwardBias = torch.zeros(self.layerDim, 1)
-        self.backwardWeightsGrad = torch.zeros(self.layerDim, self.outDim)
-        self.backwardBiasGrad = torch.zeros(self.layerDim, 1)
+        self.backwardWeights = hf.get_invertible_random_matrix(self.layer_dim,
+                                                               self.outDim)
+        self.backwardBias = torch.zeros(self.layer_dim, 1)
+        self.backwardWeightsGrad = torch.zeros(self.layer_dim, self.outDim)
+        self.backwardBiasGrad = torch.zeros(self.layer_dim, 1)
         self.save_initial_backward_state()
 
     def setBackwardParameters(self, backwardWeights, backwardBias):
@@ -95,10 +95,10 @@ class BidirectionalLayer(Layer):
         if not isinstance(backwardOutput, torch.Tensor):
             raise TypeError("Expecting a tensor object for "
                             "self.backwardOutput")
-        if not backwardOutput.size(-2) == self.layerDim:
-            raise ValueError("Expecting same dimension as layerDim")
+        if not backwardOutput.size(-2) == self.layer_dim:
+            raise ValueError("Expecting same dimension as layer_dim")
         if not backwardOutput.size(-1) == 1:
-            raise ValueError("Expecting same dimension as layerDim")
+            raise ValueError("Expecting same dimension as layer_dim")
         self.backwardOutput = backwardOutput
 
     def backwardNonlinearity(self, linearActivation):

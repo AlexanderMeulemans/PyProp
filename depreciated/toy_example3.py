@@ -15,13 +15,13 @@ else:
 
 # Create toy model dataset
 
-input_layer_true = InvertibleInputLayer(layerDim=6,outDim=5,
+input_layer_true = InvertibleInputLayer(layer_dim=6, outDim=5,
                                         lossFunction='mse')
-hidden_layer_true = InvertibleLeakyReluLayer(negativeSlope=0.01, inDim=6,
-                                        layerDim=5, outDim=4, lossFunction=
+hidden_layer_true = InvertibleLeakyReluLayer(negativeSlope=0.01, in_dim=6,
+                                             layer_dim=5, outDim=4, lossFunction=
                                         'mse')
-output_layer_true = InvertibleSoftmaxOutputLayer(inDim=5, layerDim=4,
-                                              stepsize=0.05)
+output_layer_true = InvertibleSoftmaxOutputLayer(in_dim=5, layer_dim=4,
+                                                 stepsize=0.05)
 
 true_network = InvertibleNetwork([input_layer_true,hidden_layer_true,
                                   output_layer_true])
@@ -34,12 +34,12 @@ input_dataset_test, output_dataset_test = generator.generate(1000, 1)
 
 
 # Creating training network
-inputlayer = InvertibleInputLayer(layerDim=6,outDim=5, lossFunction='mse')
-hiddenlayer = InvertibleLeakyReluLayer(negativeSlope=0.01, inDim=6,
-                                        layerDim=5, outDim=4, lossFunction=
+inputlayer = InvertibleInputLayer(layer_dim=6, outDim=5, lossFunction='mse')
+hiddenlayer = InvertibleLeakyReluLayer(negativeSlope=0.01, in_dim=6,
+                                       layer_dim=5, outDim=4, lossFunction=
                                         'mse')
-outputlayer = InvertibleSoftmaxOutputLayer(inDim=5, layerDim=4,
-                                              stepsize=0.05)
+outputlayer = InvertibleSoftmaxOutputLayer(in_dim=5, layer_dim=4,
+                                           stepsize=0.05)
 
 network = InvertibleNetwork([inputlayer, hiddenlayer, outputlayer])
 

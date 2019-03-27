@@ -194,7 +194,7 @@ class Optimizer(object):
         else:
             self.outputfile.loc[self.epoch] = [train_loss, test_loss]
 
-    def runMNIST(self, trainLoader, testLoader, device):
+    def run_mnist(self, trainLoader, testLoader, device):
         """ Train the network on the total training set of MNIST as
         long as epoch loss is above the threshold
         :param trainLoader: a torch.utils.data.DataLoader object

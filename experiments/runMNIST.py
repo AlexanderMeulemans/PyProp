@@ -36,7 +36,7 @@ else:
 
 # ======== Design network =============
 
-inputlayer = InputLayer(layerDim=28*28, writer=writer, name='input_layer_BP')
+inputlayer = InputLayer(layer_dim=28 * 28, writer=writer, name='input_layer_BP')
 hiddenlayer = ReluLayer(inDim=28*28, layerDim=500, writer=writer,
                                        name='hidden_layer_BP')
 outputlayer = SoftmaxOutputLayer(inDim=500, layerDim=10,
@@ -82,7 +82,7 @@ optimizer2 = SGDMomentum(network=network,threshold=1.2, initLearningRate=0.1,
 
 
 # Train on MNIST
-optimizer1.runMNIST(train_loader, test_loader, device)
+optimizer1.run_mnist(train_loader, test_loader, device)
 
 # Test network
 # for batch_idx, (data,target) in enumerate(test_loader):

@@ -75,24 +75,24 @@ class Layer(object):
         if not isinstance(forwardOutput, torch.Tensor):
             raise TypeError("Expecting a tensor object for self.forwardOutput")
         if not forwardOutput.size(-2) == self.layerDim:
-            raise ValueError("Expecting same dimension as layerDim")
+            raise ValueError("Expecting same dimension as layer_dim")
         if not forwardOutput.size(-1) == 1:
-            raise ValueError("Expecting same dimension as layerDim")
+            raise ValueError("Expecting same dimension as layer_dim")
         self.forwardOutput = forwardOutput
 
     def setBackwardOutput(self,backwardOutput):
         if not isinstance(backwardOutput, torch.Tensor):
             raise TypeError("Expecting a tensor object for self.backwardOutput")
         if not backwardOutput.size(-2) == self.layerDim:
-            raise ValueError("Expecting same dimension as layerDim")
+            raise ValueError("Expecting same dimension as layer_dim")
         if not backwardOutput.size(-1) == 1:
-            raise ValueError("Expecting same dimension as layerDim")
+            raise ValueError("Expecting same dimension as layer_dim")
         self.backwardOutput = backwardOutput
 
     def initParameters(self):
         """ Initializes the layer parameters when the layer is created.
         This method should only be used when creating
-        a new layer. Use setForwardParameters to update the parameters and
+        a new layer. Use set_forward_parameters to update the parameters and
         computeGradient to update the gradients"""
         self.forwardWeights = torch.rand(self.layerDim, self.inDim)
         self.forwardBias = torch.zeros(self.layerDim, 1)
@@ -318,7 +318,7 @@ class InputLayer(Layer):
     e.g. the pixelvalues of a picture. """
 
     def __init__(self,layerDim):
-        """ InputLayer has only a layerDim and a
+        """ InputLayer has only a layer_dim and a
         forward activation that can be set,
          no input dimension nor parameters"""
         self.setLayerDim(layerDim)
@@ -499,7 +499,7 @@ class Network(nn.Module):
             if not isinstance(layers[i],Layer):
                 TypeError("All layers of the network should be of type Layer")
             if not layers[i-1].layerDim == layers[i].inDim:
-                raise ValueError("layerDim should match with inDim of "
+                raise ValueError("layer_dim should match with in_dim of "
                                  "next layer")
 
         self.layers = layers

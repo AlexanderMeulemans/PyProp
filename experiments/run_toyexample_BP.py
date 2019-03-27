@@ -47,7 +47,7 @@ else:
 
 # Create toy model dataset
 
-input_layer_true = InputLayer(layerDim=6, writer=writer,
+input_layer_true = InputLayer(layer_dim=6, writer=writer,
                               name='input_layer_true_model')
 hidden_layer_true = ReluLayer(inDim=6,layerDim=10, writer=writer,
                               name='hidden_layer_true_model')
@@ -78,7 +78,7 @@ print('LS test loss: '+str(test_loss))
 # ===== Run experiment with backprop =======
 
 # Creating training network
-inputlayer = InputLayer(layerDim=6, writer=writer, name='input_layer_BP')
+inputlayer = InputLayer(layer_dim=6, writer=writer, name='input_layer_BP')
 hiddenlayer = ReluLayer(inDim=6, layerDim=10, writer=writer,
                                        name='hidden_layer_BP')
 outputlayer = LinearOutputLayer(inDim=10, layerDim=4, lossFunction='mse',

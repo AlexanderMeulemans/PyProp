@@ -39,10 +39,10 @@ class InvertibleNetwork(BidirectionalNetwork):
                 TypeError("All layers of the network should be of type "
                           "InvertibleLayer")
             if not layers[i - 1].layerDim == layers[i].inDim:
-                raise ValueError("layerDim should match with inDim of "
+                raise ValueError("layer_dim should match with in_dim of "
                                  "next layer")
             if not layers[i-1].outDim == layers[i].layerDim:
-                raise ValueError("outputDim should match with layerDim of next "
+                raise ValueError("outputDim should match with layer_dim of next "
                                  "layer")
 
         self.layers = layers

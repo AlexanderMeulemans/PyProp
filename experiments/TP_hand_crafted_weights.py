@@ -49,9 +49,9 @@ else:
 
 # ======== Create toy model dataset =============
 
-input_layer_true = InputLayer(layerDim=3, writer=writer,
+input_layer_true = InputLayer(layer_dim=3, writer=writer,
                               name='input_layer_true_model')
-hidden_layer_true = LeakyReluLayer(negativeSlope=0.35,inDim=3,layerDim=3,
+hidden_layer_true = LeakyReluLayer(negativeSlope=0.35, in_dim=3, layer_dim=3,
                                    writer=writer,
                                    name='hidden_layer_true_model')
 output_layer_true = LinearOutputLayer(inDim=3, layerDim=3,
@@ -64,8 +64,8 @@ weights_output_layer = torch.Tensor([])
 bias_hidden_layer = torch.zeros((3,1))
 bias_output_layer = torch.zeros((3,1))
 
-hidden_layer_true.setForwardParameters(weights_hidden_layer, bias_hidden_layer)
-output_layer_true.setForwardParameters(weights_output_layer, bias_output_layer)
+hidden_layer_true.set_forward_parameters(weights_hidden_layer, bias_hidden_layer)
+output_layer_true.set_forward_parameters(weights_output_layer, bias_output_layer)
 
 
 true_network = Network([input_layer_true, hidden_layer_true,
@@ -90,10 +90,10 @@ print('LS test loss: '+str(test_loss))
 # ===== Run experiment with invertible TP =======
 
 # Creating training network
-inputlayer = InvertibleInputLayer(layerDim=5,outDim=5, lossFunction='mse',
+inputlayer = InvertibleInputLayer(layer_dim=5, outDim=5, lossFunction='mse',
                                   name='input_layer', writer=writer)
-hiddenlayer = InvertibleLeakyReluLayer(negativeSlope=0.35, inDim=5,
-                                        layerDim=5, outDim=5, lossFunction=
+hiddenlayer = InvertibleLeakyReluLayer(negativeSlope=0.35, in_dim=5,
+                                       layer_dim=5, outDim=5, lossFunction=
                                         'mse',
                                        name='hidden_layer',
                                        writer=writer)

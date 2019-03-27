@@ -29,11 +29,11 @@ else:
 
 # Create toy model dataset
 
-input_layer_true = InvertibleInputLayer(layerDim=6,outDim=5,
+input_layer_true = InvertibleInputLayer(layer_dim=6, outDim=5,
                                         lossFunction='mse',
                                         name='input_layer_truemodel')
-hidden_layer_true = InvertibleLeakyReluLayer(negativeSlope=0.01, inDim=6,
-                                        layerDim=5, outDim=4,
+hidden_layer_true = InvertibleLeakyReluLayer(negativeSlope=0.01, in_dim=6,
+                                             layer_dim=5, outDim=4,
                                              lossFunction='mse',
                                              name='hidden_layer_truemodel')
 output_layer_true = InvertibleLinearOutputLayer(inDim=5, layerDim=4,
@@ -81,10 +81,10 @@ print('LS train loss: '+str(train_loss))
 print('LS test loss: '+str(test_loss))
 
 # Creating training network
-inputlayer = InvertibleInputLayer(layerDim=6,outDim=5, lossFunction='mse',
+inputlayer = InvertibleInputLayer(layer_dim=6, outDim=5, lossFunction='mse',
                                   name='input_layer')
-hiddenlayer = InvertibleLeakyReluLayer(negativeSlope=0.01, inDim=6,
-                                        layerDim=5, outDim=4, lossFunction=
+hiddenlayer = InvertibleLeakyReluLayer(negativeSlope=0.01, in_dim=6,
+                                       layer_dim=5, outDim=4, lossFunction=
                                         'mse',
                                        name='hidden_layer')
 outputlayer = InvertibleLinearOutputLayer(inDim=5, layerDim=4,
@@ -118,7 +118,7 @@ Layer.tensorboard = Tensorboard(log_dir)
 
 # Creating training network
 
-inputlayer_shallow = InvertibleInputLayer(layerDim=6,outDim=4,
+inputlayer_shallow = InvertibleInputLayer(layer_dim=6, outDim=4,
                                           lossFunction='mse',
                                           name='input_layer')
 
@@ -143,10 +143,10 @@ timings = np.append(timings, end_time-start_time)
 # ===== Run same experiment with backprop =======
 
 # Creating training network
-inputlayer = InputLayer(layerDim=6, name='input_layer_BP')
-hiddenlayer = LeakyReluLayer(negativeSlope=0.01, inDim=6,
-                                        layerDim=5,
-                                       name='hidden_layer_BP')
+inputlayer = InputLayer(layer_dim=6, name='input_layer_BP')
+hiddenlayer = LeakyReluLayer(negativeSlope=0.01, in_dim=6,
+                             layer_dim=5,
+                             name='hidden_layer_BP')
 outputlayer = LinearOutputLayer(inDim=5, layerDim=4, lossFunction='mse',
                                           name='output_layer_BP')
 
