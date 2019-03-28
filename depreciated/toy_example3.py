@@ -1,8 +1,9 @@
-from utils.create_datasets import GenerateDatasetFromModel
-from optimizers.optimizers import SGD, SGDMomentum
+import torch
+
 from layers.invertible_layer import InvertibleInputLayer, \
     InvertibleLeakyReluLayer, InvertibleSoftmaxOutputLayer, InvertibleNetwork
-import torch
+from optimizers.optimizers import SGD, SGDMomentum
+from utils.create_datasets import GenerateDatasetFromModel
 
 torch.manual_seed(42)
 
@@ -15,15 +16,16 @@ else:
 
 # Create toy model dataset
 
-input_layer_true = InvertibleInputLayer(layer_dim=6, outDim=5,
-                                        lossFunction='mse')
-hidden_layer_true = InvertibleLeakyReluLayer(negativeSlope=0.01, in_dim=6,
-                                             layer_dim=5, outDim=4, lossFunction=
-                                        'mse')
+input_layer_true = InvertibleInputLayer(layer_dim=6, out_dim=5,
+                                        loss_function='mse')
+hidden_layer_true = InvertibleLeakyReluLayer(negative_slope=0.01, in_dim=6,
+                                             layer_dim=5, out_dim=4,
+                                             loss_function=
+                                             'mse')
 output_layer_true = InvertibleSoftmaxOutputLayer(in_dim=5, layer_dim=4,
-                                                 stepsize=0.05)
+                                                 step_size=0.05)
 
-true_network = InvertibleNetwork([input_layer_true,hidden_layer_true,
+true_network = InvertibleNetwork([input_layer_true, hidden_layer_true,
                                   output_layer_true])
 
 generator = GenerateDatasetFromModel(true_network)
@@ -31,32 +33,30 @@ generator = GenerateDatasetFromModel(true_network)
 input_dataset, output_dataset = generator.generate(7000, 1)
 input_dataset_test, output_dataset_test = generator.generate(1000, 1)
 
-
-
 # Creating training network
-inputlayer = InvertibleInputLayer(layer_dim=6, outDim=5, lossFunction='mse')
-hiddenlayer = InvertibleLeakyReluLayer(negativeSlope=0.01, in_dim=6,
-                                       layer_dim=5, outDim=4, lossFunction=
-                                        'mse')
+inputlayer = InvertibleInputLayer(layer_dim=6, out_dim=5, loss_function='mse')
+hiddenlayer = InvertibleLeakyReluLayer(negative_slope=0.01, in_dim=6,
+                                       layer_dim=5, out_dim=4, loss_function=
+                                       'mse')
 outputlayer = InvertibleSoftmaxOutputLayer(in_dim=5, layer_dim=4,
-                                           stepsize=0.05)
+                                           step_size=0.05)
 
 network = InvertibleNetwork([inputlayer, hiddenlayer, outputlayer])
 
 # Initializing optimizer
-optimizer1 = SGD(network=network,threshold=0.01, initLearningRate=0.01,
-                 tau= 100,
-                finalLearningRate=0.0005, computeAccuracies= False, maxEpoch=120)
-optimizer2 = SGDMomentum(network=network,threshold=1.2, initLearningRate=0.1,
-                         tau=100, finalLearningRate=0.005,
-                         computeAccuracies=False, maxEpoch=150, momentum=0.5)
-
+optimizer1 = SGD(network=network, threshold=0.01, init_learning_rate=0.01,
+                 tau=100,
+                 final_learning_rate=0.0005, compute_accuracies=False,
+                 max_epoch=120)
+optimizer2 = SGDMomentum(network=network, threshold=1.2, init_learning_rate=0.1,
+                         tau=100, final_learning_rate=0.005,
+                         compute_accuracies=False, max_epoch=150, momentum=0.5)
 
 # Train on MNIST
-optimizer1.runDataset(input_dataset, output_dataset)
+optimizer1.run_dataset(input_dataset, output_dataset)
 
 # Test network
 
-predicted_classes = network.predict(input_dataset_test[0,:,:,:])
-test_loss = network.loss(output_dataset_test[0,:,:,:])
+predicted_classes = network.predict(input_dataset_test[0, :, :, :])
+test_loss = network.loss(output_dataset_test[0, :, :, :])
 print('Test Loss: ' + str(test_loss))

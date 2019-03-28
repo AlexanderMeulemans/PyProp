@@ -10,6 +10,7 @@ You may obtain a copy of the License at
 
 import torch.nn as nn
 
+
 class IdentityLayer(nn.Module):
     def __init__(self):
         super(IdentityLayer, self).__init__()
@@ -17,8 +18,10 @@ class IdentityLayer(nn.Module):
     def forward(self, x):
         return x
 
+
 class NetworkError(Exception):
     pass
+
 
 class NotImplementedError(Exception):
     pass

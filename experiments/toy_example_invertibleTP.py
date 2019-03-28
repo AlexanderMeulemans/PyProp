@@ -11,7 +11,7 @@ You may obtain a copy of the License at
 from utils.create_datasets import GenerateDatasetFromModel
 from optimizers.optimizers import SGD
 from layers.invertible_layer import InvertibleInputLayer, \
-InvertibleLeakyReluLayer, InvertibleLinearOutputLayer
+    InvertibleLeakyReluLayer, InvertibleLinearOutputLayer
 from networks.invertible_network import InvertibleNetwork
 from layers.layer import InputLayer, LeakyReluLayer, \
     LinearOutputLayer
@@ -24,11 +24,11 @@ from utils.LLS import linear_least_squares
 import os
 import random
 
-# seed = 47
-# torch.manual_seed(seed)
-# torch.cuda.manual_seed(seed)
-# np.random.seed(seed)
-# random.seed(seed)
+seed = 47
+torch.manual_seed(seed)
+torch.cuda.manual_seed(seed)
+np.random.seed(seed)
+random.seed(seed)
 # torch.backends.cudnn.deterministic = True
 # torch.backends.cudnn.benchmark = False
 
@@ -36,20 +36,25 @@ import random
 nb_training_batches = 10000
 batch_size = 1
 testing_size = 1000
+CPU = True
 
 # ======== set log directory ==========
 log_dir = '../logs/debug_TP'
 writer = SummaryWriter(log_dir=log_dir)
 
 # ======== set device ============
-if torch.cuda.is_available():
-    gpu_idx = 0
-    device = torch.device("cuda:{}".format(gpu_idx))
-    # IMPORTANT: set_default_tensor_type uses automatically device 0,
-    # untill now, I did not find a fix for this
-    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-    torch.set_default_tensor_type('torch.cuda.FloatTensor')
-    print('using GPU')
+if not CPU:
+    if torch.cuda.is_available():
+        gpu_idx = 0
+        device = torch.device("cuda:{}".format(gpu_idx))
+        # IMPORTANT: set_default_tensor_type uses automatically device 0,
+        # untill now, I did not find a fix for this
+        os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+        torch.set_default_tensor_type('torch.cuda.FloatTensor')
+        print('using GPU')
+    else:
+        device = torch.device("cpu")
+        print('using CPU')
 else:
     device = torch.device("cpu")
     print('using CPU')
@@ -58,15 +63,15 @@ else:
 
 input_layer_true = InputLayer(layer_dim=5, writer=writer,
                               name='input_layer_true_model')
-hidden_layer_true = LeakyReluLayer(negativeSlope=0.35, in_dim=5, layer_dim=5,
+hidden_layer_true = LeakyReluLayer(negative_slope=0.35, in_dim=5, layer_dim=5,
                                    writer=writer,
                                    name='hidden_layer_true_model')
-output_layer_true = LinearOutputLayer(inDim=5, layerDim=5,
-                                      lossFunction='mse',
+output_layer_true = LinearOutputLayer(in_dim=5, layer_dim=5,
+                                      loss_function='mse',
                                       writer=writer,
                                       name='output_layer_true_model')
 true_network = Network([input_layer_true, hidden_layer_true,
-                                  output_layer_true])
+                        output_layer_true])
 
 generator = GenerateDatasetFromModel(true_network)
 
@@ -81,40 +86,38 @@ weights, train_loss, test_loss = linear_least_squares(input_dataset,
                                                       output_dataset,
                                                       input_dataset_test,
                                                       output_dataset_test)
-print('LS train loss: '+str(train_loss))
-print('LS test loss: '+str(test_loss))
+print('LS train loss: ' + str(train_loss))
+print('LS test loss: ' + str(test_loss))
 
 # ===== Run experiment with invertible TP =======
 
 # Creating training network
-inputlayer = InvertibleInputLayer(layer_dim=5, outDim=5, lossFunction='mse',
+inputlayer = InvertibleInputLayer(layer_dim=5, out_dim=5, loss_function='mse',
                                   name='input_layer', writer=writer)
-hiddenlayer = InvertibleLeakyReluLayer(negativeSlope=0.35, in_dim=5,
-                                       layer_dim=5, outDim=5, lossFunction=
-                                        'mse',
+hiddenlayer = InvertibleLeakyReluLayer(negative_slope=0.35, in_dim=5,
+                                       layer_dim=5, out_dim=5, loss_function=
+                                       'mse',
                                        name='hidden_layer',
                                        writer=writer)
-outputlayer = InvertibleLinearOutputLayer(inDim=5, layerDim=5,
-                                              stepsize=0.01,
+outputlayer = InvertibleLinearOutputLayer(in_dim=5, layer_dim=5,
+                                          step_size=0.05,
                                           name='output_layer',
                                           writer=writer)
 
 network = InvertibleNetwork([inputlayer, hiddenlayer, outputlayer])
 
 # Initializing optimizer
-optimizer1 = SGD(network=network,threshold=0.001, initLearningRate=0.5,
-                 tau= 100,
-                finalLearningRate=0.005, computeAccuracies=False,
-                 maxEpoch=120,
+optimizer1 = SGD(network=network, threshold=0.001, init_learning_rate=0.5,
+                 tau=100,
+                 final_learning_rate=0.005, compute_accuracies=False,
+                 max_epoch=120,
                  outputfile_name='resultfile.csv')
-
-
 
 # Train on dataset
 timings = np.array([])
 start_time = time.time()
-optimizer1.runDataset(input_dataset, output_dataset, input_dataset_test,
-                      output_dataset_test)
+optimizer1.run_dataset(input_dataset, output_dataset, input_dataset_test,
+                       output_dataset_test)
 end_time = time.time()
-print('Elapsed time: {} seconds'.format(end_time-start_time))
-timings = np.append(timings, end_time-start_time)
+print('Elapsed time: {} seconds'.format(end_time - start_time))
+timings = np.append(timings, end_time - start_time)

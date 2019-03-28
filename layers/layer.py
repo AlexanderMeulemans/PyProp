@@ -26,20 +26,21 @@ class Layer(object):
     def __init__(self, in_dim, layer_dim, writer, name='layer'):
         """
         Initializes the Layer object
-        :param in_dim: input dimension of the layer (equal to the layer dimension
+        :param in_dim: input dimension of the layer (equal
+        to the layer dimension
         of the previous layer in the network)
         :param layer_dim: Layer dimension
         """
         self.set_layer_dim(layer_dim)
-        if in_dim is not None: # in_dim is None when layer is inputlayer
+        if in_dim is not None:  # in_dim is None when layer is inputlayer
             self.set_in_dim(in_dim)
         self.set_name(name)
         self.set_writer(writer=writer)
-        self.initForwardParameters()
+        self.init_forward_parameters()
         self.global_step = 0  # needed for making plots with tensorboard
 
     def set_writer(self, writer):
-        if not isinstance(writer,SummaryWriter):
+        if not isinstance(writer, SummaryWriter):
             raise TypeError("Writer object has to be of type "
                             "SummaryWriter, now got {}".format(
                 type(writer)))
@@ -67,203 +68,206 @@ class Layer(object):
             self.__class__.all_layer_names.append(name)
         else:
             new_name = name
-            i=1
+            i = 1
             while new_name in self.__class__.all_layer_names:
                 new_name = name + '_' + str(i)
                 i += 1
             self.name = new_name
             self.__class__.all_layer_names.append(name)
 
-    def set_forward_parameters(self, forwardWeights, forwardBias):
-        if not isinstance(forwardWeights, torch.Tensor):
-            raise TypeError("Expecting a tensor object for self.forwardWeights")
-        if not isinstance(forwardBias, torch.Tensor):
-            raise TypeError("Expecting a tensor object for self.forwardBias")
-        if hf.containsNaNs(forwardWeights):
-            raise ValueError("forwardWeights contains NaNs")
-        if hf.containsNaNs(forwardBias):
-            raise ValueError("forwardBias contains NaNs")
-        if not forwardWeights.shape == self.forwardWeights.shape:
-            raise ValueError("forwardWeights has not the correct shape")
-        if not forwardBias.shape == self.forwardBias.shape:
-            raise ValueError("forwardBias has not the correct shape")
+    def set_forward_parameters(self, forward_weights, forward_bias):
+        if not isinstance(forward_weights, torch.Tensor):
+            raise TypeError(
+                "Expecting a tensor object for self.forward_weights")
+        if not isinstance(forward_bias, torch.Tensor):
+            raise TypeError("Expecting a tensor object for self.forward_bias")
+        if hf.contains_nans(forward_weights):
+            raise ValueError("forward_weights contains NaNs")
+        if hf.contains_nans(forward_bias):
+            raise ValueError("forward_bias contains NaNs")
+        if not forward_weights.shape == self.forward_weights.shape:
+            raise ValueError("forward_weights has not the correct shape")
+        if not forward_bias.shape == self.forward_bias.shape:
+            raise ValueError("forward_bias has not the correct shape")
 
-        if torch.max(torch.abs(forwardWeights))> 1e3:
-            print('forwardWeights of {} have gone unbounded'.format(
+        if torch.max(torch.abs(forward_weights)) > 1e3:
+            print('forward_weights of {} have gone unbounded'.format(
                 self.name))
-        if torch.max(torch.abs(forwardBias)) > 1e3:
+        if torch.max(torch.abs(forward_bias)) > 1e3:
             print('forwardBiases of {} have gone unbounded'.format(
                 self.name))
-        self.forwardWeights = forwardWeights
-        self.forwardBias = forwardBias
+        self.forward_weights = forward_weights
+        self.forward_bias = forward_bias
 
-    def setForwardGradients(self, forwardWeightsGrad, forwardBiasGrad):
-        if not isinstance(forwardWeightsGrad, torch.Tensor):
+    def set_forward_gradients(self, forward_weights_grad, forward_bias_grad):
+        if not isinstance(forward_weights_grad, torch.Tensor):
             raise TypeError("Expecting a tensor object "
-                            "for self.forwardWeightsGrad")
-        if not isinstance(forwardBiasGrad, torch.Tensor):
+                            "for self.forward_weights_grad")
+        if not isinstance(forward_bias_grad, torch.Tensor):
             raise TypeError("Expecting a tensor object for "
-                            "self.forwardBiasGrad")
-        if hf.containsNaNs(forwardWeightsGrad):
-            raise ValueError("forwardWeightsGrad contains NaNs")
-        if hf.containsNaNs(forwardBiasGrad):
-            raise ValueError("forwardBias contains NaNs")
-        if not forwardWeightsGrad.shape == self.forwardWeightsGrad.shape:
-            raise ValueError("forwardWeightsGrad has not the correct shape")
-        if not forwardBiasGrad.shape == self.forwardBiasGrad.shape:
-            raise ValueError("forwardBiasGrad has not the correct shape")
+                            "self.forward_bias_grad")
+        if hf.contains_nans(forward_weights_grad):
+            raise ValueError("forward_weights_grad contains NaNs")
+        if hf.contains_nans(forward_bias_grad):
+            raise ValueError("forward_bias contains NaNs")
+        if not forward_weights_grad.shape == self.forward_weights_grad.shape:
+            raise ValueError("forward_weights_grad has not the correct shape")
+        if not forward_bias_grad.shape == self.forward_bias_grad.shape:
+            raise ValueError("forward_bias_grad has not the correct shape")
 
-        if torch.max(torch.abs(forwardWeightsGrad))> 1e3:
-            print('forwardWeightsGrad of {} have gone unbounded'.format(
+        if torch.max(torch.abs(forward_weights_grad)) > 1e3:
+            print('forward_weights_grad of {} have gone unbounded'.format(
                 self.name))
-        if torch.max(torch.abs(forwardBiasGrad)) > 1e3:
+        if torch.max(torch.abs(forward_bias_grad)) > 1e3:
             print('forwardBiasesGrad of {} have gone unbounded'.format(
                 self.name))
-        self.forwardWeightsGrad = forwardWeightsGrad
-        self.forwardBiasGrad = forwardBiasGrad
+        self.forward_weights_grad = forward_weights_grad
+        self.forward_bias_grad = forward_bias_grad
 
-    def setForwardOutput(self, forwardOutput):
-        if not isinstance(forwardOutput, torch.Tensor):
-            raise TypeError("Expecting a tensor object for self.forwardOutput")
-        if not forwardOutput.size(-2) == self.layer_dim:
+    def set_forward_output(self, forward_output):
+        if not isinstance(forward_output, torch.Tensor):
+            raise TypeError("Expecting a tensor object for self.forward_output")
+        if not forward_output.size(-2) == self.layer_dim:
             raise ValueError("Expecting same dimension as layer_dim")
-        if not forwardOutput.size(-1) == 1:
+        if not forward_output.size(-1) == 1:
             raise ValueError("Expecting same dimension as layer_dim")
-        self.forwardOutput = forwardOutput
+        self.forward_output = forward_output
 
-    def setForwardLinearActivation(self, forwardLinearActivation):
-        if not isinstance(forwardLinearActivation, torch.Tensor):
+    def set_forward_linear_activation(self, forward_linear_activation):
+        if not isinstance(forward_linear_activation, torch.Tensor):
             raise TypeError("Expecting a tensor object for "
-                            "self.forwardLinearActivation")
-        if not forwardLinearActivation.size(-2) == self.layer_dim:
+                            "self.forward_linear_activation")
+        if not forward_linear_activation.size(-2) == self.layer_dim:
             raise ValueError("Expecting same dimension as layer_dim")
-        if not forwardLinearActivation.size(-1) == 1:
+        if not forward_linear_activation.size(-1) == 1:
             raise ValueError("Expecting same dimension as layer_dim")
-        self.forwardLinearActivation = forwardLinearActivation
+        self.forward_linear_activation = forward_linear_activation
 
-    def setBackwardOutput(self, backwardOutput):
-        if not isinstance(backwardOutput, torch.Tensor):
-            raise TypeError("Expecting a tensor object for self.backwardOutput")
-        if not backwardOutput.size(-2) == self.layer_dim:
+    def set_backward_output(self, backward_output):
+        if not isinstance(backward_output, torch.Tensor):
+            raise TypeError(
+                "Expecting a tensor object for self.backward_output")
+        if not backward_output.size(-2) == self.layer_dim:
             raise ValueError("Expecting same dimension as layer_dim")
-        if not backwardOutput.size(-1) == 1:
+        if not backward_output.size(-1) == 1:
             raise ValueError("Expecting same dimension as layer_dim")
-        self.backwardOutput = backwardOutput
-        if torch.max(torch.abs(backwardOutput))> 1e2:
+        self.backward_output = backward_output
+        if torch.max(torch.abs(backward_output)) > 1e2:
             print('backwardOutputs of {} have gone unbounded: {}'.format(
-                self.name, torch.max(torch.abs(backwardOutput))))
+                self.name, torch.max(torch.abs(backward_output))))
 
-
-    def initForwardParameters(self):
+    def init_forward_parameters(self):
         """ Initializes the layer parameters when the layer is created.
         This method should only be used when creating
         a new layer. Use set_forward_parameters to update the parameters and
         computeGradient to update the gradients"""
-        self.forwardWeights = hf.get_invertible_random_matrix(self.layer_dim,
-                                                              self.in_dim)
-        U,S,V = torch.svd(self.forwardWeights)
+        self.forward_weights = hf.get_invertible_random_matrix(self.layer_dim,
+                                                               self.in_dim)
+        U, S, V = torch.svd(self.forward_weights)
         print('{}/forwardWeights_s_min: {}'.format(self.name, S[-1]))
-        self.forwardBias = torch.zeros(self.layer_dim, 1)
-        self.forwardWeightsGrad = torch.zeros(self.layer_dim, self.in_dim)
-        self.forwardBiasGrad = torch.zeros(self.layer_dim, 1)
+        self.forward_bias = torch.zeros(self.layer_dim, 1)
+        self.forward_weights_grad = torch.zeros(self.layer_dim, self.in_dim)
+        self.forward_bias_grad = torch.zeros(self.layer_dim, 1)
         self.save_initial_state()
 
-    def initVelocities(self):
+    def init_velocities(self):
         """ Initializes the velocities of the gradients. This should only be
         called when an optimizer with momentum
         is used, otherwise these attributes will not be used"""
-        self.forwardWeightsVel = torch.zeros(self.layer_dim, self.in_dim)
-        self.forwardBiasVel = torch.zeros(self.layer_dim, 1)
+        self.forward_weights_vel = torch.zeros(self.layer_dim, self.in_dim)
+        self.forward_bias_vel = torch.zeros(self.layer_dim, 1)
 
-    def setForwardVelocities(self, forwardWeightsVel, forwardBiasVel):
-        if not isinstance(forwardWeightsVel, torch.Tensor):
+    def set_forward_velocities(self, forward_weights_vel, forward_bias_vel):
+        if not isinstance(forward_weights_vel, torch.Tensor):
             raise TypeError("Expecting a tensor object for "
-                            "self.forwardWeightsVel")
-        if not isinstance(forwardBiasVel, torch.Tensor):
-            raise TypeError("Expecting a tensor object for self.forwardBiasVel")
-        if hf.containsNaNs(forwardWeightsVel):
-            raise ValueError("forwardWeightsVel contains NaNs")
-        if hf.containsNaNs(forwardBiasVel):
-            raise ValueError("forwardBiasVel contains NaNs")
-        if not forwardWeightsVel.shape == self.forwardWeightsVel.shape:
-            raise ValueError("forwardWeightsVel has not the correct shape")
-        if not forwardBiasVel.shape == self.forwardBiasVel.shape:
-            raise ValueError("forwardBiasVel has not the correct shape")
+                            "self.forward_weights_vel")
+        if not isinstance(forward_bias_vel, torch.Tensor):
+            raise TypeError(
+                "Expecting a tensor object for self.forward_bias_vel")
+        if hf.contains_nans(forward_weights_vel):
+            raise ValueError("forward_weights_vel contains NaNs")
+        if hf.contains_nans(forward_bias_vel):
+            raise ValueError("forward_bias_vel contains NaNs")
+        if not forward_weights_vel.shape == self.forward_weights_vel.shape:
+            raise ValueError("forward_weights_vel has not the correct shape")
+        if not forward_bias_vel.shape == self.forward_bias_vel.shape:
+            raise ValueError("forward_bias_vel has not the correct shape")
 
-        self.forwardWeightsVel = forwardWeightsVel
-        self.forwardBiasVel = forwardBiasVel
+        self.forward_weights_vel = forward_weights_vel
+        self.forward_bias_vel = forward_bias_vel
 
-    def zeroGrad(self):
+    def zero_grad(self):
         """ Set the gradients of the layer parameters to zero """
-        self.forwardWeightsGrad = torch.zeros(self.layer_dim, self.in_dim)
-        self.forwardBiasGrad = torch.zeros(self.layer_dim, 1)
+        self.forward_weights_grad = torch.zeros(self.layer_dim, self.in_dim)
+        self.forward_bias_grad = torch.zeros(self.layer_dim, 1)
 
-    def updateForwardParameters(self, learningRate):
+    def update_forward_parameters(self, learning_rate):
         """
         Update the forward weights and bias of the layer
         using the computed gradients.
-        :param learningRate: Learning rate of the layer
+        :param learning_rate: Learning rate of the layer
         """
-        if not isinstance(learningRate, float):
-            raise TypeError("Expecting a float number as learningRate")
-        if learningRate <= 0.:
-            raise ValueError("Expecting a strictly positive learningRate")
+        if not isinstance(learning_rate, float):
+            raise TypeError("Expecting a float number as learning_rate")
+        if learning_rate <= 0.:
+            raise ValueError("Expecting a strictly positive learning_rate")
 
-        forwardWeights = self.forwardWeights \
-                         - torch.mul(self.forwardWeightsGrad, learningRate)
-        forwardBias = self.forwardBias \
-                      - torch.mul(self.forwardBiasGrad, learningRate)
-        self.set_forward_parameters(forwardWeights, forwardBias)
+        forward_weights = self.forward_weights \
+                          - torch.mul(self.forward_weights_grad, learning_rate)
+        forward_bias = self.forward_bias \
+                       - torch.mul(self.forward_bias_grad, learning_rate)
+        self.set_forward_parameters(forward_weights, forward_bias)
 
-    def propagateForward(self, lowerLayer):
+    def propagate_forward(self, lower_layer):
         """
-        :param lowerLayer: The first layer upstream of the layer 'self'
-        :type lowerLayer: Layer
-        :return saves the computed output of the layer to self.forwardOutput.
-                forwardOutput is a 3D tensor of size
+        :param lower_layer: The first layer upstream of the layer 'self'
+        :type lower_layer: Layer
+        :return saves the computed output of the layer to self.forward_output.
+                forward_output is a 3D tensor of size
                 batchDimension x layerDimension x 1
         """
-        if not isinstance(lowerLayer, Layer):
+        if not isinstance(lower_layer, Layer):
             raise TypeError("Expecting a Layer object as "
-                            "argument for propagateForward")
-        if not lowerLayer.layer_dim == self.in_dim:
+                            "argument for propagate_forward")
+        if not lower_layer.layer_dim == self.in_dim:
             raise ValueError("Layer sizes are not compatible for "
                              "propagating forward")
 
-        self.forwardInput = lowerLayer.forwardOutput
-        forwardLinearActivation = torch.matmul(self.forwardWeights,
-                                             self.forwardInput) + \
-                                self.forwardBias
-        self.setForwardLinearActivation(forwardLinearActivation)
-        forwardOutput = self.forwardNonlinearity(self.forwardLinearActivation)
-        self.setForwardOutput(forwardOutput)
-        if torch.max(torch.abs(forwardOutput))> 1e3:
+        self.forward_input = lower_layer.forward_output
+        forward_linear_activation = torch.matmul(self.forward_weights,
+                                                 self.forward_input) + \
+                                    self.forward_bias
+        self.set_forward_linear_activation(forward_linear_activation)
+        forward_output = self.forward_nonlinearity(
+            self.forward_linear_activation)
+        self.set_forward_output(forward_output)
+        if torch.max(torch.abs(forward_output)) > 1e3:
             print('forwardOutputs of {} have gone unbounded'.format(
                 self.name))
 
-    def forwardNonlinearity(self, linearActivation):
+    def forward_nonlinearity(self, linear_activation):
         """ This method should be always overwritten by the children"""
-        raise NetworkError("The method forwardNonlinearity should always be "
+        raise NetworkError("The method forward_nonlinearity should always be "
                            "overwritten by children of Layer. Layer on itself "
                            "cannot be used in a network")
 
-    def computeForwardGradients(self, lowerLayer):
+    def compute_forward_gradients(self, lower_layer):
         """
-        :param lowerLayer: first layer upstream of the layer self
-        :type lowerLayer: Layer
+        :param lower_layer: first layer upstream of the layer self
+        :type lower_layer: Layer
         :return: saves the gradients of the cost function to the layer
         parameters for all the batch samples
 
         """
 
-        weight_gradients = torch.matmul(self.backwardOutput, torch.transpose(
-            lowerLayer.forwardOutput, -1, -2))
-        bias_gradients = self.backwardOutput
-        self.setForwardGradients(torch.mean(weight_gradients, 0), torch.mean(
+        weight_gradients = torch.matmul(self.backward_output, torch.transpose(
+            lower_layer.forward_output, -1, -2))
+        bias_gradients = self.backward_output
+        self.set_forward_gradients(torch.mean(weight_gradients, 0), torch.mean(
             bias_gradients, 0))
 
-    def computeForwardGradientVelocities(self, lowerLayer, momentum,
-                                       learningRate):
+    def compute_forward_gradient_velocities(self, lower_layer, momentum,
+                                            learning_rate):
         """ Used for optimizers with momentum. """
         if not isinstance(momentum, float):
             raise TypeError("Expecting float number for momentum, "
@@ -272,29 +276,24 @@ class Layer(object):
             raise ValueError("Expecting momentum in [0;1), got {}".format(
                 momentum))
 
-        # weight_gradients = torch.mean(torch.matmul(self.backwardOutput,
-        #                                            torch.transpose(
-        #                                              lowerLayer.forwardOutput,
-        #                                                -1, -2)), 0)
-        # bias_gradients = torch.mean(self.backwardOutput, 0)
-        weight_gradients = self.forwardWeightsGrad
-        bias_gradients = self.forwardBiasGrad
-        weight_velocities = torch.mul(self.forwardWeightsVel, momentum) + \
-                            torch.mul(weight_gradients, learningRate)
-        bias_velocities = torch.mul(self.forwardBiasVel, momentum) + \
-                          torch.mul(bias_gradients, learningRate)
-        self.setForwardVelocities(weight_velocities, bias_velocities)
+        weight_gradients = self.forward_weights_grad
+        bias_gradients = self.forward_bias_grad
+        weight_velocities = torch.mul(self.forward_weights_vel, momentum) + \
+                            torch.mul(weight_gradients, learning_rate)
+        bias_velocities = torch.mul(self.forward_bias_vel, momentum) + \
+                          torch.mul(bias_gradients, learning_rate)
+        self.set_forward_velocities(weight_velocities, bias_velocities)
 
-    def updateForwardParametersWithVelocity(self):
+    def update_forward_parameters_with_velocity(self):
         """ Update the forward parameters with the gradient velocities
-        computed in computeForwardGradientVelocities"""
-        forwardWeights = self.forwardWeights \
-                         - self.forwardWeightsVel
-        forwardBias = self.forwardBias \
-                      - self.forwardBiasVel
+        computed in compute_forward_gradient_velocities"""
+        forwardWeights = self.forward_weights \
+                         - self.forward_weights_vel
+        forwardBias = self.forward_bias \
+                      - self.forward_bias_vel
         self.set_forward_parameters(forwardWeights, forwardBias)
 
-    def propagateBackward(self, upperLayer):
+    def propagate_backward(self, upper_layer):
         raise NetworkError('This method has to be overwritten by child classes')
 
     def save_state(self):
@@ -304,7 +303,6 @@ class Layer(object):
         self.save_activations()
         self.save_forward_weights()
         self.save_forward_weight_gradients()
-
 
     def save_state_histograms(self):
         """ The histograms (specified by the arguments) are saved to
@@ -317,7 +315,7 @@ class Layer(object):
     def save_activations(self):
         """ Separate function to save the activations. This method will
         be used in save_state"""
-        activations_norm = torch.norm(self.forwardOutput)
+        activations_norm = torch.norm(self.forward_output)
         self.writer.add_scalar(tag='{}/forward_activations'
                                    '_norm'.format(self.name),
                                scalar_value=activations_norm,
@@ -327,13 +325,13 @@ class Layer(object):
         self.writer.add_histogram(tag='{}/forward_activations_'
                                       'hist'.format(
             self.name),
-            values=self.forwardOutput,
+            values=self.forward_output,
             global_step=self.global_step)
 
     def save_forward_weights(self):
-        weight_norm = torch.norm(self.forwardWeights)
-        bias_norm = torch.norm(self.forwardBias)
-        U, S, V = torch.svd(self.forwardWeights)
+        weight_norm = torch.norm(self.forward_weights)
+        bias_norm = torch.norm(self.forward_bias)
+        U, S, V = torch.svd(self.forward_weights)
         s_max = S[0]
         s_min = S[-1]
         self.writer.add_scalar(tag='{}/forward_weights'
@@ -352,8 +350,8 @@ class Layer(object):
                                global_step=self.global_step)
 
     def save_forward_weight_gradients(self):
-        gradient_norm = torch.norm(self.forwardWeightsGrad)
-        gradient_bias_norm = torch.norm(self.forwardBiasGrad)
+        gradient_norm = torch.norm(self.forward_weights_grad)
+        gradient_bias_norm = torch.norm(self.forward_bias_grad)
 
         self.writer.add_scalar(tag='{}/forward_weights_gradient'
                                    '_norm'.format(self.name),
@@ -368,196 +366,197 @@ class Layer(object):
         self.writer.add_histogram(tag='{}/forward_weights_'
                                       'gradient_hist'.format(
             self.name),
-            values=self.forwardWeightsGrad,
+            values=self.forward_weights_grad,
             global_step=self.global_step
         )
         self.writer.add_histogram(tag='{}/forward_bias_'
                                       'gradient_hist'.format(
             self.name),
-            values=self.forwardBiasGrad,
+            values=self.forward_bias_grad,
             global_step=self.global_step
         )
 
     def save_forward_weights_hist(self):
         self.writer.add_histogram(tag='{}/forward_weights_'
                                       'hist'.format(self.name),
-            values=self.forwardWeights,
-            global_step=self.global_step)
+                                  values=self.forward_weights,
+                                  global_step=self.global_step)
         self.writer.add_histogram(tag='{}/forward_bias_'
                                       'hist'.format(
             self.name),
-            values=self.forwardBias,
+            values=self.forward_bias,
             global_step=self.global_step)
 
     def save_initial_state(self):
         self.writer.add_histogram(tag='{}/forward_weights_initial_'
                                       'hist'.format(
             self.name),
-            values=self.forwardWeights,
+            values=self.forward_weights,
             global_step=0)
         self.writer.add_histogram(tag='{}/forward_bias_initial_'
                                       'hist'.format(
             self.name),
-            values=self.forwardBias,
+            values=self.forward_bias,
             global_step=0)
-
 
 
 class ReluLayer(Layer):
     """ Layer of a neural network with a RELU activation function"""
 
-    def forwardNonlinearity(self, linearActivation):
+    def forward_nonlinearity(self, linear_activation):
         """ Returns the nonlinear activation of the layer"""
-        return F.relu(linearActivation)
+        return F.relu(linear_activation)
 
-    def propagateBackward(self, upperLayer):
+    def propagate_backward(self, upper_layer):
         """
-        :param upperLayer: the layer one step downstream of the layer 'self'
-        :type upperLayer: Layer
-        :return: saves the backwards output in self. backwardOutput is of
+        :param upper_layer: the layer one step downstream of the layer 'self'
+        :type upper_layer: Layer
+        :return: saves the backwards output in self. backward_output is of
         size batchDimension x layerdimension  x 1
         """
-        if not isinstance(upperLayer, Layer):
+        if not isinstance(upper_layer, Layer):
             raise TypeError("Expecting a Layer object as argument for "
-                            "propagateBackward")
-        if not upperLayer.in_dim == self.layer_dim:
+                            "propagate_backward")
+        if not upper_layer.in_dim == self.layer_dim:
             raise ValueError("Layer sizes are not compatible for propagating "
                              "backwards")
 
-        self.backwardInput = upperLayer.backwardOutput
+        self.backward_input = upper_layer.backward_output
         # Construct vectorized Jacobian for all batch samples.
-        activationDer = torch.tensor(
-            [[[1.] if self.forwardLinearActivation[i, j, 0] > 0
+        activation_der = torch.tensor(
+            [[[1.] if self.forward_linear_activation[i, j, 0] > 0
               else [0.]
-              for j in range(self.forwardLinearActivation.size(1))]
-             for i in range(self.forwardLinearActivation.size(0))])
-        backwardOutput = torch.mul(torch.matmul(torch.transpose(
-            upperLayer.forwardWeights, -1, -2), self.backwardInput),
-            activationDer)
-        self.setBackwardOutput(backwardOutput)
-        if torch.max(torch.abs(backwardOutput))> 1e3:
+              for j in range(self.forward_linear_activation.size(1))]
+             for i in range(self.forward_linear_activation.size(0))])
+        backward_output = torch.mul(torch.matmul(torch.transpose(
+            upper_layer.forward_weights, -1, -2), self.backward_input),
+            activation_der)
+        self.set_backward_output(backward_output)
+        if torch.max(torch.abs(backward_output)) > 1e3:
             print('backwardOutputs of {} have gone unbounded'.format(
                 self.name))
-            print('max backwardInput: {}'.format(torch.max(torch.abs(
-                self.backwardInput))))
+            print('max backward_input: {}'.format(torch.max(torch.abs(
+                self.backward_input))))
             print('upper layer max forward weights: {}'.format(
-                torch.max(torch.abs(upperLayer.forwardWeights))
+                torch.max(torch.abs(upper_layer.forward_weights))
             ))
             # print('Jacobian:')
-            # print(activationDer)
+            # print(activation_der)
+
 
 class LeakyReluLayer(Layer):
     """ Layer of a neural network with a Leaky RELU activation function"""
-    def __init__(self, negativeSlope, in_dim, layer_dim, writer,
+
+    def __init__(self, negative_slope, in_dim, layer_dim, writer,
                  name='leaky_ReLU_layer'):
         super().__init__(in_dim, layer_dim, writer, name=name)
-        self.setNegativeSlope(negativeSlope)
+        self.set_negative_slope(negative_slope)
 
-    def setNegativeSlope(self, negativeSlope):
+    def set_negative_slope(self, negativeSlope):
         """ Set the negative slope of the leaky ReLU activation function"""
-        if not isinstance(negativeSlope,float):
-            raise TypeError("Expecting a float number for negativeSlope, "
+        if not isinstance(negativeSlope, float):
+            raise TypeError("Expecting a float number for negative_slope, "
                             "got {}".format(type(negativeSlope)))
         if negativeSlope <= 0:
             raise ValueError("Expecting a strictly positive float number for "
-                             "negativeSlope, got {}".format(negativeSlope))
+                             "negative_slope, got {}".format(negativeSlope))
 
-        self.negativeSlope = negativeSlope
+        self.negative_slope = negativeSlope
 
-    def forwardNonlinearity(self, linearActivation):
-        activationFunction = nn.LeakyReLU(self.negativeSlope)
-        return activationFunction(linearActivation)
+    def forward_nonlinearity(self, linear_activation):
+        activationFunction = nn.LeakyReLU(self.negative_slope)
+        return activationFunction(linear_activation)
 
-
-    def propagateBackward(self, upperLayer):
+    def propagate_backward(self, upper_layer):
         """
-        :param upperLayer: the layer one step downstream of the layer 'self'
-        :type upperLayer: Layer
-        :return: saves the backwards output in self. backwardOutput is of
+        :param upper_layer: the layer one step downstream of the layer 'self'
+        :type upper_layer: Layer
+        :return: saves the backwards output in self. backward_output is of
         size batchDimension x layerdimension  x 1
         """
-        if not isinstance(upperLayer, Layer):
+        if not isinstance(upper_layer, Layer):
             raise TypeError("Expecting a Layer object as argument for "
-                            "propagateBackward")
-        if not upperLayer.in_dim == self.layer_dim:
+                            "propagate_backward")
+        if not upper_layer.in_dim == self.layer_dim:
             raise ValueError("Layer sizes are not compatible for propagating "
                              "backwards")
 
-        self.backwardInput = upperLayer.backwardOutput
+        self.backward_input = upper_layer.backward_output
         # Construct vectorized Jacobian for all batch samples.
-        activationDer = torch.tensor(
-            [[[1.] if self.forwardLinearActivation[i, j, 0] > 0
-              else [self.negativeSlope]
-              for j in range(self.forwardLinearActivation.size(1))]
-             for i in range(self.forwardLinearActivation.size(0))])
-        backwardOutput = torch.mul(torch.matmul(torch.transpose(
-            upperLayer.forwardWeights, -1, -2), self.backwardInput),
-            activationDer)
-        self.setBackwardOutput(backwardOutput)
+        activation_der = torch.tensor(
+            [[[1.] if self.forward_linear_activation[i, j, 0] > 0
+              else [self.negative_slope]
+              for j in range(self.forward_linear_activation.size(1))]
+             for i in range(self.forward_linear_activation.size(0))])
+        backward_output = torch.mul(torch.matmul(torch.transpose(
+            upper_layer.forward_weights, -1, -2), self.backward_input),
+            activation_der)
+        self.set_backward_output(backward_output)
+
 
 class SoftmaxLayer(Layer):
     """ Layer of a neural network with a Softmax activation function"""
 
-    def forwardNonlinearity(self, linearActivation):
+    def forward_nonlinearity(self, linear_activation):
         """ Returns the nonlinear activation of the layer"""
         softmax = torch.nn.Softmax(1)
-        return softmax(linearActivation)
+        return softmax(linear_activation)
 
-    def propagateBackward(self, upperLayer):
+    def propagate_backward(self, upper_layer):
         """
-        :param upperLayer: the layer one step downstream of the layer 'self'
-        :type upperLayer: Layer
-        :return: saves the backwards output in self. backwardOutput is of
+        :param upper_layer: the layer one step downstream of the layer 'self'
+        :type upper_layer: Layer
+        :return: saves the backwards output in self. backward_output is of
         size batchDimension x layerdimension  x 1
         """
-        if not isinstance(upperLayer, Layer):
+        if not isinstance(upper_layer, Layer):
             raise TypeError("Expecting a Layer object as argument for  "
-                            "propagateBackward")
-        if not upperLayer.in_dim == self.layer_dim:
+                            "propagate_backward")
+        if not upper_layer.in_dim == self.layer_dim:
             raise ValueError("Layer sizes are not compatible for "
                              "propagating backwards")
 
-        self.backwardInput = upperLayer.backwardOutput
+        self.backward_input = upper_layer.backward_output
         # Construct Jacobian for all batch samples.
-        softmaxActivations = self.forwardOutput
-        jacobian = torch.tensor([[[softmaxActivations[i, j, 0] *
-                                   (hf.kronecker(j, k) - softmaxActivations[
+        softmax_activations = self.forward_output
+        jacobian = torch.tensor([[[softmax_activations[i, j, 0] *
+                                   (hf.kronecker(j, k) - softmax_activations[
                                        i, k, 0])
-                                   for k in range(softmaxActivations.size(1))]
-                                  for j in range(softmaxActivations.size(1))]
-                                 for i in range(softmaxActivations.size(0))])
-        backwardOutput = torch.matmul(torch.transpose(jacobian, -1, -2),
+                                   for k in range(softmax_activations.size(1))]
+                                  for j in range(softmax_activations.size(1))]
+                                 for i in range(softmax_activations.size(0))])
+        backward_output = torch.matmul(torch.transpose(jacobian, -1, -2),
                                       torch.matmul(torch.transpose(
-                                          upperLayer.forwardWeights, -1, -2)
-                                          , self.backwardInput))
-        self.setBackwardOutput(backwardOutput)
+                                          upper_layer.forward_weights, -1, -2)
+                                          , self.backward_input))
+        self.set_backward_output(backward_output)
 
 
 class LinearLayer(Layer):
     """ Layer of a neural network with a linear activation function"""
 
-    def forwardNonlinearity(self, linearActivation):
+    def forward_nonlinearity(self, linear_activation):
         """ Returns the nonlinear activation of the layer"""
-        return linearActivation
+        return linear_activation
 
-    def propagateBackward(self, upperLayer):
+    def propagate_backward(self, upper_layer):
         """
-        :param upperLayer: the layer one step downstream of the layer 'self'
-        :type upperLayer: Layer
-        :return: saves the backwards output in self. backwardOutput is of
+        :param upper_layer: the layer one step downstream of the layer 'self'
+        :type upper_layer: Layer
+        :return: saves the backwards output in self. backward_output is of
         size batchDimension x layerdimension  x 1
         """
-        if not isinstance(upperLayer, Layer):
+        if not isinstance(upper_layer, Layer):
             raise TypeError("Expecting a Layer object as "
-                            "argument for propagateBackward")
-        if not upperLayer.in_dim == self.layer_dim:
+                            "argument for propagate_backward")
+        if not upper_layer.in_dim == self.layer_dim:
             raise ValueError("Layer sizes are not compatible "
                              "for propagating backwards")
 
-        self.backwardInput = upperLayer.backwardOutput
-        backwardOutput = torch.matmul(torch.transpose(
-            upperLayer.forwardWeights, -1, -2), self.backwardInput)
-        self.setBackwardOutput(backwardOutput)
+        self.backward_input = upper_layer.backward_output
+        backward_output = torch.matmul(torch.transpose(
+            upper_layer.forward_weights, -1, -2), self.backward_input)
+        self.set_backward_output(backward_output)
 
 
 class InputLayer(Layer):
@@ -568,19 +567,19 @@ class InputLayer(Layer):
         """ InputLayer has only a layer_dim and a
         forward activation that can be set,
          no input dimension nor parameters"""
-        super().__init__(in_dim= None, layer_dim=layer_dim, writer=writer,
+        super().__init__(in_dim=None, layer_dim=layer_dim, writer=writer,
                          name=name)
 
-    def propagateForward(self, lowerLayer):
+    def propagate_forward(self, lower_layer):
         """ This function should never be called for an input layer,
-        the forwardOutput should be directly set
+        the forward_output should be directly set
         to the input values of the network (e.g. the pixel values of a picture)
         """
-        raise NetworkError("The forwardOutput should be directly set "
+        raise NetworkError("The forward_output should be directly set "
                            "to the input values of the network for "
                            "an InputLayer")
 
-    def propagateBackward(self, upperLayer):
+    def propagate_backward(self, upper_layer):
         """ This function should never be called for an input layer,
         there is no point in having a backward output
          here, as this layer has no parameters to update"""
@@ -588,14 +587,16 @@ class InputLayer(Layer):
                            "an input layer, there is no point in having "
                            "a backward output here, as this layer has no "
                            "parameters to update")
-    def initForwardParameters(self):
+
+    def init_forward_parameters(self):
         """ InputLayer has no forward parameters"""
         pass
 
-    def initVelocities(self):
+    def init_velocities(self):
         """ InputLayer has no forward parameters"""
         raise RuntimeWarning("InputLayer has no forward parameters, so cannot "
                              "initialize velocities")
+
     def save_state(self):
         self.save_activations()
 
@@ -608,7 +609,7 @@ class OutputLayer(Layer):
     This layer has a loss as extra attribute and some extra
     methods as explained below. """
 
-    def __init__(self, in_dim, layer_dim, lossFunction, writer,
+    def __init__(self, in_dim, layer_dim, loss_function, writer,
                  name='output_layer'):
         """
         :param in_dim: input dimension of the layer,
@@ -618,15 +619,15 @@ class OutputLayer(Layer):
         compute the network loss
         """
         super().__init__(in_dim, layer_dim, writer, name=name)
-        self.setLossFunction(lossFunction)
+        self.set_loss_function(loss_function)
 
-    def setLossFunction(self, lossFunction):
-        if not isinstance(lossFunction, str):
+    def set_loss_function(self, loss_function):
+        if not isinstance(loss_function, str):
             raise TypeError('Expecting a string as indicator'
                             ' for the loss function')
-        if not (lossFunction == 'mse' or lossFunction == 'crossEntropy'):
+        if not (loss_function == 'mse' or loss_function == 'crossEntropy'):
             raise NetworkError('Expecting an mse or crossEntropy loss')
-        self.lossFunction = lossFunction
+        self.loss_function = loss_function
 
     def loss(self, target):
         """ Compute the loss with respect to the target
@@ -634,44 +635,46 @@ class OutputLayer(Layer):
         """
         if not isinstance(target, torch.Tensor):
             raise TypeError("Expecting a torch.Tensor object as target")
-        if not self.forwardOutput.shape == target.shape:
+        if not self.forward_output.shape == target.shape:
             raise ValueError('Expecting a tensor of dimensions: batchdimension'
                              ' x class dimension x 1. Given target'
                              'has shape' + str(target.shape))
-        if self.lossFunction == 'crossEntropy':
+        if self.loss_function == 'crossEntropy':
             # Convert output 'class probabilities' to one class per batch sample
             #  (with highest class probability)
             target_classes = hf.prob2class(target)
-            lossFunction = nn.CrossEntropyLoss()
-            forwardOutputSqueezed = torch.reshape(self.forwardOutput,
-                                                  (self.forwardOutput.shape[0],
-                                                   self.forwardOutput.shape[1]))
-            loss = lossFunction(forwardOutputSqueezed, target_classes)
-            return torch.Tensor([torch.mean(loss)])#.numpy()
-        elif self.lossFunction == 'mse':
-            lossFunction = nn.MSELoss(reduction='mean')
-            forwardOutputSqueezed = torch.reshape(self.forwardOutput,
-                                                  (self.forwardOutput.shape[0],
-                                                   self.forwardOutput.shape[1]))
-            targetSqueezed = torch.reshape(target,
-                                            (target.shape[0],
-                                             target.shape[1]))
-            loss = lossFunction(forwardOutputSqueezed, targetSqueezed)
+            loss_function = nn.CrossEntropyLoss()
+            forward_output_squeezed = torch.reshape(self.forward_output,
+                                                  (self.forward_output.shape[0],
+                                                   self.forward_output.shape[
+                                                       1]))
+            loss = loss_function(forward_output_squeezed, target_classes)
+            return torch.Tensor([torch.mean(loss)])  # .numpy()
+        elif self.loss_function == 'mse':
+            loss_function = nn.MSELoss(reduction='mean')
+            forward_output_squeezed = torch.reshape(self.forward_output,
+                                                  (self.forward_output.shape[0],
+                                                   self.forward_output.shape[
+                                                       1]))
+            target_squeezed = torch.reshape(target,
+                                           (target.shape[0],
+                                            target.shape[1]))
+            loss = loss_function(forward_output_squeezed, target_squeezed)
             loss = torch.Tensor([torch.mean(loss)])
             if loss > 1e2:
                 print('loss is bigger than 100. Loss: {}'.format(loss))
                 print('max difference: {}'.format(torch.max(torch.abs(
-                    forwardOutputSqueezed-targetSqueezed
+                    forward_output_squeezed - target_squeezed
                 ))))
 
             return loss
 
-    def propagateBackward(self, upperLayer):
+    def propagate_backward(self, upper_layer):
         """ This function should never be called for an output layer,
-        the backwardOutput should be set based on the
-        loss of the layer with computeBackwardOutput"""
+        the backward_output should be set based on the
+        loss of the layer with compute_backward_output"""
         raise NetworkError("Propagate Backward should never be called for an "
-                           "output layer, use computeBackwardOutput "
+                           "output layer, use compute_backward_output "
                            "instead")
 
 
@@ -680,34 +683,34 @@ class SoftmaxOutputLayer(OutputLayer):
     should always be combined with a crossEntropy
     loss."""
 
-    def forwardNonlinearity(self, linearActivation):
+    def forward_nonlinearity(self, linear_activation):
         """ Returns the nonlinear activation of the layer"""
         softmax = torch.nn.Softmax(1)
-        return softmax(linearActivation)
+        return softmax(linear_activation)
 
-    def computeBackwardOutput(self, target):
+    def compute_backward_output(self, target):
         """ Compute the backward output based on the derivative of the loss
         to the linear activation of this layer
         :param target: 3D tensor of size batchdimension x class dimension x 1"""
-        if not self.lossFunction == 'crossEntropy':
+        if not self.loss_function == 'crossEntropy':
             raise NetworkError("a softmax output layer should always be "
                                "combined with a cross entropy loss")
         if not isinstance(target, torch.Tensor):
             raise TypeError("Expecting a torch.Tensor object as target")
-        if not self.forwardOutput.shape == target.shape:
+        if not self.forward_output.shape == target.shape:
             raise ValueError('Expecting a tensor of dimensions: '
                              'batchdimension x class dimension x 1.'
                              ' Given target'
                              'has shape' + str(target.shape))
 
-        backwardOutput = self.forwardOutput - target
-        self.setBackwardOutput(backwardOutput)
+        backward_output = self.forward_output - target
+        self.set_backward_output(backward_output)
 
-    def propagateForward(self, lowerLayer):
+    def propagate_forward(self, lower_layer):
         """ Normal forward propagation, but on top of that, save the predicted
         classes in self."""
-        super().propagateForward(lowerLayer)
-        self.predictedClasses = hf.prob2class(self.forwardOutput)
+        super().propagate_forward(lower_layer)
+        self.predicted_classes = hf.prob2class(self.forward_output)
 
     def accuracy(self, target):
         """ Compute the accuracy if the network predictions with respect to
@@ -715,11 +718,11 @@ class SoftmaxOutputLayer(OutputLayer):
         :param target: 3D tensor of size batchdimension x class dimension x 1"""
         if not isinstance(target, torch.Tensor):
             raise TypeError("Expecting a torch.Tensor object as target")
-        if not self.forwardOutput.shape == target.shape:
+        if not self.forward_output.shape == target.shape:
             raise ValueError('Expecting a tensor of dimensions: batchdimension'
                              ' x class dimension x 1. Given target'
                              'has shape' + str(target.shape))
-        return hf.accuracy(self.predictedClasses, hf.prob2class(target))
+        return hf.accuracy(self.predicted_classes, hf.prob2class(target))
 
 
 class LinearOutputLayer(OutputLayer):
@@ -727,27 +730,24 @@ class LinearOutputLayer(OutputLayer):
     only be combined with an mse loss
     function."""
 
-    def forwardNonlinearity(self, linearActivation):
+    def forward_nonlinearity(self, linear_activation):
         """ Returns the nonlinear activation of the layer"""
-        return linearActivation
+        return linear_activation
 
-    def computeBackwardOutput(self, target):
+    def compute_backward_output(self, target):
         """ Compute the backward output based on the derivative of the loss to
         the linear activation of this layer"""
-        if not self.lossFunction == 'mse':
+        if not self.loss_function == 'mse':
             raise NetworkError("a linear output layer can only be combined "
                                "with a mse loss")
         if not isinstance(target, torch.Tensor):
             raise TypeError("Expecting a torch.Tensor object as target")
-        if not self.forwardOutput.shape == target.shape:
+        if not self.forward_output.shape == target.shape:
             raise ValueError('Expecting a tensor of dimensions: batchdimension '
                              'x class dimension x 1. Given target'
                              'has shape' + str(target.shape))
-        backwardOutput = 2 * (self.forwardOutput - target)
-        self.setBackwardOutput(backwardOutput)
-        if torch.max(torch.abs(backwardOutput)) > 1e2:
+        backward_output = 2 * (self.forward_output - target)
+        self.set_backward_output(backward_output)
+        if torch.max(torch.abs(backward_output)) > 1e2:
             print('backwardOutputs of {} have gone unbounded: {}'.format(
-            self.name, torch.max(torch.abs(backwardOutput))))
-
-
-
+                self.name, torch.max(torch.abs(backward_output))))

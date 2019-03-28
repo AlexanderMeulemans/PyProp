@@ -11,7 +11,7 @@ You may obtain a copy of the License at
 from utils.create_datasets import GenerateDatasetFromModel
 from optimizers.optimizers import SGD
 from layers.invertible_layer import InvertibleInputLayer, \
-InvertibleLeakyReluLayer, InvertibleLinearOutputLayer
+    InvertibleLeakyReluLayer, InvertibleLinearOutputLayer
 from networks.invertible_network import InvertibleNetwork
 from layers.layer import InputLayer, LeakyReluLayer, \
     LinearOutputLayer
@@ -51,25 +51,26 @@ else:
 
 input_layer_true = InputLayer(layer_dim=3, writer=writer,
                               name='input_layer_true_model')
-hidden_layer_true = LeakyReluLayer(negativeSlope=0.35, in_dim=3, layer_dim=3,
+hidden_layer_true = LeakyReluLayer(negative_slope=0.35, in_dim=3, layer_dim=3,
                                    writer=writer,
                                    name='hidden_layer_true_model')
-output_layer_true = LinearOutputLayer(inDim=3, layerDim=3,
-                                      lossFunction='mse',
+output_layer_true = LinearOutputLayer(in_dim=3, layer_dim=3,
+                                      loss_function='mse',
                                       writer=writer,
                                       name='output_layer_true_model')
 
 weights_hidden_layer = torch.Tensor([])
 weights_output_layer = torch.Tensor([])
-bias_hidden_layer = torch.zeros((3,1))
-bias_output_layer = torch.zeros((3,1))
+bias_hidden_layer = torch.zeros((3, 1))
+bias_output_layer = torch.zeros((3, 1))
 
-hidden_layer_true.set_forward_parameters(weights_hidden_layer, bias_hidden_layer)
-output_layer_true.set_forward_parameters(weights_output_layer, bias_output_layer)
-
+hidden_layer_true.set_forward_parameters(weights_hidden_layer,
+                                         bias_hidden_layer)
+output_layer_true.set_forward_parameters(weights_output_layer,
+                                         bias_output_layer)
 
 true_network = Network([input_layer_true, hidden_layer_true,
-                                  output_layer_true])
+                        output_layer_true])
 
 generator = GenerateDatasetFromModel(true_network)
 
@@ -84,40 +85,38 @@ weights, train_loss, test_loss = linear_least_squares(input_dataset,
                                                       output_dataset,
                                                       input_dataset_test,
                                                       output_dataset_test)
-print('LS train loss: '+str(train_loss))
-print('LS test loss: '+str(test_loss))
+print('LS train loss: ' + str(train_loss))
+print('LS test loss: ' + str(test_loss))
 
 # ===== Run experiment with invertible TP =======
 
 # Creating training network
-inputlayer = InvertibleInputLayer(layer_dim=5, outDim=5, lossFunction='mse',
+inputlayer = InvertibleInputLayer(layer_dim=5, out_dim=5, loss_function='mse',
                                   name='input_layer', writer=writer)
-hiddenlayer = InvertibleLeakyReluLayer(negativeSlope=0.35, in_dim=5,
-                                       layer_dim=5, outDim=5, lossFunction=
-                                        'mse',
+hiddenlayer = InvertibleLeakyReluLayer(negative_slope=0.35, in_dim=5,
+                                       layer_dim=5, out_dim=5, loss_function=
+                                       'mse',
                                        name='hidden_layer',
                                        writer=writer)
-outputlayer = InvertibleLinearOutputLayer(inDim=5, layerDim=5,
-                                              stepsize=0.01,
+outputlayer = InvertibleLinearOutputLayer(in_dim=5, layer_dim=5,
+                                          step_size=0.01,
                                           name='output_layer',
                                           writer=writer)
 
 network = InvertibleNetwork([inputlayer, hiddenlayer, outputlayer])
 
 # Initializing optimizer
-optimizer1 = SGD(network=network,threshold=0.001, initLearningRate=0.01,
-                 tau= 100,
-                finalLearningRate=0.005, computeAccuracies=False,
-                 maxEpoch=120,
+optimizer1 = SGD(network=network, threshold=0.001, init_learning_rate=0.01,
+                 tau=100,
+                 final_learning_rate=0.005, compute_accuracies=False,
+                 max_epoch=120,
                  outputfile_name='resultfile.csv')
-
-
 
 # Train on dataset
 timings = np.array([])
 start_time = time.time()
-optimizer1.runDataset(input_dataset, output_dataset, input_dataset_test,
-                      output_dataset_test)
+optimizer1.run_dataset(input_dataset, output_dataset, input_dataset_test,
+                       output_dataset_test)
 end_time = time.time()
-print('Elapsed time: {} seconds'.format(end_time-start_time))
-timings = np.append(timings, end_time-start_time)
+print('Elapsed time: {} seconds'.format(end_time - start_time))
+timings = np.append(timings, end_time - start_time)

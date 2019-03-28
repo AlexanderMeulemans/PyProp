@@ -11,7 +11,7 @@ You may obtain a copy of the License at
 from utils.create_datasets import GenerateDatasetFromModel
 from optimizers.optimizers import SGD
 from layers.invertible_layer import InvertibleInputLayer, \
-InvertibleLeakyReluLayer, InvertibleLinearOutputLayer
+    InvertibleLeakyReluLayer, InvertibleLinearOutputLayer
 from networks.invertible_network import InvertibleNetwork
 from layers.layer import InputLayer, LeakyReluLayer, \
     LinearOutputLayer
@@ -29,7 +29,6 @@ torch.manual_seed(47)
 nb_training_batches = 10000
 batch_size = 1
 testing_size = 1000
-
 
 # ======== set device ============
 if torch.cuda.is_available():
@@ -53,15 +52,15 @@ writer = SummaryWriter(log_dir=log_dir)
 
 input_layer_true = InputLayer(layer_dim=5, writer=writer,
                               name='input_layer_true_model')
-hidden_layer_true = LeakyReluLayer(negativeSlope=0.35, in_dim=5, layer_dim=5,
+hidden_layer_true = LeakyReluLayer(negative_slope=0.35, in_dim=5, layer_dim=5,
                                    writer=writer,
                                    name='hidden_layer_true_model')
-output_layer_true = LinearOutputLayer(inDim=5, layerDim=5,
-                                      lossFunction='mse',
+output_layer_true = LinearOutputLayer(in_dim=5, layer_dim=5,
+                                      loss_function='mse',
                                       writer=writer,
                                       name='output_layer_true_model')
 true_network = Network([input_layer_true, hidden_layer_true,
-                                  output_layer_true])
+                        output_layer_true])
 
 generator = GenerateDatasetFromModel(true_network)
 
@@ -76,29 +75,30 @@ weights, train_loss, test_loss = linear_least_squares(input_dataset,
                                                       output_dataset,
                                                       input_dataset_test,
                                                       output_dataset_test)
-print('LS train loss: '+str(train_loss))
-print('LS test loss: '+str(test_loss))
+print('LS train loss: ' + str(train_loss))
+print('LS test loss: ' + str(test_loss))
 
 # ===== Run experiment with shallow BP network =======
 input_layer_shallow = InputLayer(layer_dim=5, writer=writer,
                                  name='input_layer')
-output_layer_shallow = LinearOutputLayer(inDim=5, layerDim=5,
-                                      lossFunction='mse',
-                                      writer=writer,
-                                      name='output_layer')
+output_layer_shallow = LinearOutputLayer(in_dim=5, layer_dim=5,
+                                         loss_function='mse',
+                                         writer=writer,
+                                         name='output_layer')
 shallow_network = Network([input_layer_shallow, output_layer_shallow])
 
-optimizer1 = SGD(network=shallow_network,threshold=0.001, initLearningRate=0.01,
-                 tau= 100,
-                finalLearningRate=0.005, computeAccuracies=False,
-                 maxEpoch=100,
+optimizer1 = SGD(network=shallow_network, threshold=0.001,
+                 init_learning_rate=0.01,
+                 tau=100,
+                 final_learning_rate=0.005, compute_accuracies=False,
+                 max_epoch=100,
                  outputfile_name='resultfile_shallow.csv')
 
 start_time = time.time()
-optimizer1.runDataset(input_dataset, output_dataset, input_dataset_test,
-                      output_dataset_test)
+optimizer1.run_dataset(input_dataset, output_dataset, input_dataset_test,
+                       output_dataset_test)
 end_time = time.time()
-print('Elapsed time: {} seconds'.format(end_time-start_time))
+print('Elapsed time: {} seconds'.format(end_time - start_time))
 
 # ===== Run experiment with BP network ========
 log_dir = main_dir + '/BP_network'
@@ -106,55 +106,55 @@ writer = SummaryWriter(log_dir=log_dir)
 
 input_layer_BP = InputLayer(layer_dim=5, writer=writer,
                             name='input_layer')
-hidden_layer_BP= LeakyReluLayer(negativeSlope=0.35, in_dim=5, layer_dim=5,
-                                writer=writer,
-                                name='hidden_layer')
-output_layer_BP = LinearOutputLayer(inDim=5, layerDim=5,
-                                      lossFunction='mse',
-                                      writer=writer,
-                                      name='output_layer')
+hidden_layer_BP = LeakyReluLayer(negative_slope=0.35, in_dim=5, layer_dim=5,
+                                 writer=writer,
+                                 name='hidden_layer')
+output_layer_BP = LinearOutputLayer(in_dim=5, layer_dim=5,
+                                    loss_function='mse',
+                                    writer=writer,
+                                    name='output_layer')
 BP_network = Network([input_layer_BP, hidden_layer_BP,
-                                  output_layer_BP])
+                      output_layer_BP])
 
-optimizer2 = SGD(network=BP_network,threshold=0.001, initLearningRate=0.01,
-                 tau= 100,
-                finalLearningRate=0.005, computeAccuracies=False,
-                 maxEpoch=100,
+optimizer2 = SGD(network=BP_network, threshold=0.001, init_learning_rate=0.01,
+                 tau=100,
+                 final_learning_rate=0.005, compute_accuracies=False,
+                 max_epoch=100,
                  outputfile_name='resultfile_BP.csv')
 
 start_time = time.time()
-optimizer2.runDataset(input_dataset, output_dataset, input_dataset_test,
-                      output_dataset_test)
+optimizer2.run_dataset(input_dataset, output_dataset, input_dataset_test,
+                       output_dataset_test)
 end_time = time.time()
-print('Elapsed time: {} seconds'.format(end_time-start_time))
+print('Elapsed time: {} seconds'.format(end_time - start_time))
 
 # ===== Run experiment with invertible TP =======
 log_dir = main_dir + '/TP_network'
 writer = SummaryWriter(log_dir=log_dir)
 # Creating training network
-inputlayer = InvertibleInputLayer(layer_dim=5, outDim=5, lossFunction='mse',
+inputlayer = InvertibleInputLayer(layer_dim=5, out_dim=5, loss_function='mse',
                                   name='input_layer', writer=writer)
-hiddenlayer = InvertibleLeakyReluLayer(negativeSlope=0.35, in_dim=5,
-                                       layer_dim=5, outDim=5, lossFunction=
-                                        'mse',
+hiddenlayer = InvertibleLeakyReluLayer(negative_slope=0.35, in_dim=5,
+                                       layer_dim=5, out_dim=5, loss_function=
+                                       'mse',
                                        name='hidden_layer',
                                        writer=writer)
-outputlayer = InvertibleLinearOutputLayer(inDim=5, layerDim=5,
-                                              stepsize=0.01,
+outputlayer = InvertibleLinearOutputLayer(in_dim=5, layer_dim=5,
+                                          step_size=0.01,
                                           name='output_layer',
                                           writer=writer)
 
 network = InvertibleNetwork([inputlayer, hiddenlayer, outputlayer])
 
 # Initializing optimizer
-optimizer3 = SGD(network=network,threshold=0.001, initLearningRate=0.01,
-                 tau= 100,
-                finalLearningRate=0.005, computeAccuracies=False,
-                 maxEpoch=100,
+optimizer3 = SGD(network=network, threshold=0.001, init_learning_rate=0.01,
+                 tau=100,
+                 final_learning_rate=0.005, compute_accuracies=False,
+                 max_epoch=100,
                  outputfile_name='resultfile_TP.csv')
 
 start_time = time.time()
-optimizer3.runDataset(input_dataset, output_dataset, input_dataset_test,
-                      output_dataset_test)
+optimizer3.run_dataset(input_dataset, output_dataset, input_dataset_test,
+                       output_dataset_test)
 end_time = time.time()
-print('Elapsed time: {} seconds'.format(end_time-start_time))
+print('Elapsed time: {} seconds'.format(end_time - start_time))

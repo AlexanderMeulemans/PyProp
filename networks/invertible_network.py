@@ -16,12 +16,13 @@ from networks.bidirectional_network import BidirectionalNetwork
 class InvertibleNetwork(BidirectionalNetwork):
     """ Invertible Network consisting of multiple invertible layers. This class
         provides a range of methods to facilitate training of the networks """
+
     def __init__(self, layers, name=None, debug_mode=False):
-        super().__init__(layers,name)
-        self.initInverses()
+        super().__init__(layers, name)
+        self.init_inverses()
         self.debug_mode = debug_mode
 
-    def setLayers(self, layers):
+    def set_layers(self, layers):
         if not isinstance(layers, list):
             raise TypeError("Expecting a list object containing all the "
                             "layers of the network")
@@ -38,36 +39,37 @@ class InvertibleNetwork(BidirectionalNetwork):
             if not isinstance(layers[i], InvertibleLayer):
                 TypeError("All layers of the network should be of type "
                           "InvertibleLayer")
-            if not layers[i - 1].layerDim == layers[i].inDim:
+            if not layers[i - 1].layer_dim == layers[i].in_dim:
                 raise ValueError("layer_dim should match with in_dim of "
                                  "next layer")
-            if not layers[i-1].outDim == layers[i].layerDim:
-                raise ValueError("outputDim should match with layer_dim of next "
-                                 "layer")
+            if not layers[i - 1].out_dim == layers[i].layer_dim:
+                raise ValueError(
+                    "outputDim should match with layer_dim of next "
+                    "layer")
 
         self.layers = layers
 
-    def initInverses(self):
+    def init_inverses(self):
         """ Initialize the backward weights of all layers to the inverse of
         the forward weights of
         the layer on top."""
-        for i in range(0, len(self.layers)-1):
-            self.layers[i].initInverse(self.layers[i+1])
+        for i in range(0, len(self.layers) - 1):
+            self.layers[i].init_inverse(self.layers[i + 1])
 
     def save_inverse_error(self):
-        for i in range(0, len(self.layers)-1):
-            self.layers[i].save_inverse_error(self.layers[i+1])
+        for i in range(0, len(self.layers) - 1):
+            self.layers[i].save_inverse_error(self.layers[i + 1])
 
     def save_state(self, global_step):
         super().save_state(global_step)
         self.save_inverse_error()
 
-    def test_invertibility(self, inputBatch):
+    def test_invertibility(self, input_batch):
         """ Propagate an input batch forward and backward, and compute the error
         of the inversions (backpropagated targets should be equal to forward
         activations"""
-        self.propagateForward(inputBatch)
-        self.custom_propagate_backward(self.layers[-1].forwardOutput)
+        self.propagate_forward(input_batch)
+        self.custom_propagate_backward(self.layers[-1].forward_output)
         for layer in self.layers:
             layer.save_invertibility_test()
 
@@ -75,14 +77,14 @@ class InvertibleNetwork(BidirectionalNetwork):
         """
         Propagate directly the given backward_input backwards through the
         network instead of computing the output target value with
-        computeBackwardOutput().
+        compute_backward_output().
         """
-        self.layers[-1].setBackwardOutput(backward_input)
+        self.layers[-1].set_backward_output(backward_input)
         for i in range(len(self.layers) - 2, -1, -1):
-            self.layers[i].propagateBackward(self.layers[i + 1])
+            self.layers[i].propagate_backward(self.layers[i + 1])
 
     def save_state(self, global_step):
         """ Also perform an invertibiltiy test at the end of each batch
         if debug mode is on True"""
         super().save_state(global_step)
-        self.test_invertibility(self.layers[0].forwardOutput)
+        self.test_invertibility(self.layers[0].forward_output)

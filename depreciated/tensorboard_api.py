@@ -1,7 +1,6 @@
 # taken from https://becominghuman.ai/logging-in-tensorboard
 # -with-pytorch-or-any-other-library-c549163dee9e
 
-import io
 import numpy as np
 # from PIL import Image
 import tensorflow as tf
@@ -83,7 +82,6 @@ class Tensorboard:
     #     summary.value.add(tag=tag, image=img_summary)
     #     self.writer.add_summary(summary, global_step=global_step)
     #     self.writer.flush()
-
 
 # if __name__ == '__main__':
 #     tensorboard = Tensorboard('logs')

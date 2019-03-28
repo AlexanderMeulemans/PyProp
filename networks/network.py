@@ -11,6 +11,7 @@ You may obtain a copy of the License at
 import torch
 from layers.layer import Layer, InputLayer, OutputLayer
 
+
 class Network(object):
     """ Network consisting of multiple layers. This class provides a range of
     methods to facilitate training of the
@@ -23,10 +24,10 @@ class Network(object):
         to tensorboard
         """
         self.set_name(name)
-        self.setLayers(layers)
+        self.set_layers(layers)
         self.writer = self.layers[0].writer
 
-    def setLayers(self, layers):
+    def set_layers(self, layers):
         if not isinstance(layers, list):
             raise TypeError("Expecting a list object containing all the "
                             "layers of the network")
@@ -42,7 +43,7 @@ class Network(object):
         for i in range(1, len(layers)):
             if not isinstance(layers[i], Layer):
                 TypeError("All layers of the network should be of type Layer")
-            if not layers[i - 1].layerDim == layers[i].inDim:
+            if not layers[i - 1].layer_dim == layers[i].in_dim:
                 raise ValueError("layer_dim should match with in_dim of "
                                  "next layer")
 
@@ -64,21 +65,21 @@ class Network(object):
         for layer in self.layers:
             layer.set_name(self.name + '/' + layer.name)
 
-    def initVelocities(self):
+    def init_velocities(self):
         """ Initialize the gradient velocities in all the layers. Only called
         when an optimizer with momentum is used."""
         for i in range(1, len(self.layers)):
-            self.layers[i].initVelocities()
+            self.layers[i].init_velocities()
 
-    def propagateForward(self, inputBatch):
+    def propagate_forward(self, input_batch):
         """ Propagate the inputbatch forward through the network
-        :param inputBatch: Inputbatch of dimension
+        :param input_batch: Inputbatch of dimension
         batch dimension x input dimension x 1"""
-        self.layers[0].setForwardOutput(inputBatch)
+        self.layers[0].set_forward_output(input_batch)
         for i in range(1, len(self.layers)):
-            self.layers[i].propagateForward(self.layers[i - 1])
+            self.layers[i].propagate_forward(self.layers[i - 1])
 
-    def propagateBackward(self, target):
+    def propagate_backward(self, target):
         """ Propagate the gradient of the loss function with respect to the
         linear activation of each layer backward
         through the network
@@ -86,51 +87,53 @@ class Network(object):
         """
         if not isinstance(target, torch.Tensor):
             raise TypeError("Expecting a torch.Tensor object as target")
-        if not self.layers[-1].forwardOutput.shape == target.shape:
+        if not self.layers[-1].forward_output.shape == target.shape:
             raise ValueError('Expecting a tensor of dimensions: '
                              'batchdimension x class dimension x 1.'
                              ' Given target'
                              'has shape' + str(target.shape))
 
-        self.layers[-1].computeBackwardOutput(target)
+        self.layers[-1].compute_backward_output(target)
         for i in range(len(self.layers) - 2, 0, -1):
-            self.layers[i].propagateBackward(self.layers[i + 1])
+            self.layers[i].propagate_backward(self.layers[i + 1])
 
-    def computeForwardGradients(self):
+    def compute_forward_gradients(self):
         """compute the gradient of the loss function to the
         parameters of each layer"""
         for i in range(1, len(self.layers)):
-            self.layers[i].computeForwardGradients(self.layers[i - 1])
+            self.layers[i].compute_forward_gradients(self.layers[i - 1])
 
-    def computeForwardGradientVelocities(self, momentum, learningRate):
+    def compute_forward_gradient_velocities(self, momentum, learning_rate):
         """Compute the gradient velocities for each layer"""
         for i in range(1, len(self.layers)):
-            self.layers[i].computeForwardGradientVelocities(self.layers[i - 1],
-                                                     momentum, learningRate)
+            self.layers[i].compute_forward_gradient_velocities(
+                self.layers[i - 1],
+                                                               momentum,
+                                                               learning_rate)
 
-    def computeGradients(self):
-        self.computeForwardGradients()
+    def compute_gradients(self):
+        self.compute_forward_gradients()
 
-    def computeGradientVelocities(self, momentum, learningRate):
-        self.computeForwardGradientVelocities(momentum, learningRate)
+    def compute_gradient_velocities(self, momentum, learning_rate):
+        self.compute_forward_gradient_velocities(momentum, learning_rate)
 
-    def updateForwardParametersWithVelocity(self):
+    def update_forward_parameters_with_velocity(self):
         """ Update all the parameters of the network with the
                 computed gradients velocities"""
         for i in range(1, len(self.layers)):
-            self.layers[i].updateForwardParametersWithVelocity()
+            self.layers[i].update_forward_parameters_with_velocity()
 
-    def updateForwardParameters(self, learningRate):
+    def update_forward_parameters(self, learning_rate):
         """ Update all the parameters of the network with the
         computed gradients"""
         for i in range(1, len(self.layers)):
-            self.layers[i].updateForwardParameters(learningRate)
+            self.layers[i].update_forward_parameters(learning_rate)
 
-    def updateParameters(self, learningRate):
-        self.updateForwardParameters(learningRate)
+    def update_parameters(self, learning_rate):
+        self.update_forward_parameters(learning_rate)
 
-    def updateParametersWithVelocity(self):
-        self.updateForwardParametersWithVelocity()
+    def update_parameters_with_velocity(self):
+        self.update_forward_parameters_with_velocity()
 
     def loss(self, target):
         """ Return the loss of each sample in the batch compared to
@@ -138,15 +141,15 @@ class Network(object):
         :param target: 3D tensor of size batchdimension x class dimension x 1"""
         return self.layers[-1].loss(target)
 
-    def zeroGrad(self):
+    def zero_grad(self):
         """ Set all the gradients of the network to zero"""
         for layer in self.layers:
-            layer.zeroGrad()
+            layer.zero_grad()
 
-    def predict(self, inputBatch):
+    def predict(self, input_batch):
         """ Return the networks predictions on a given input batch"""
-        self.propagateForward(inputBatch)
-        return self.layers[-1].forwardOutput
+        self.propagate_forward(input_batch)
+        return self.layers[-1].forward_output
 
     def accuracy(self, targets):
         """ Return the test accuracy of network based on the given input
@@ -159,19 +162,19 @@ class Network(object):
         a softmax """
         return self.layers[-1].accuracy(targets)
 
-    def getOutput(self):
-        return self.layers[-1].forwardOutput
+    def get_output(self):
+        return self.layers[-1].forward_output
 
-    def setGlobalStep(self,global_step):
+    def set_global_step(self, global_step):
         for layer in self.layers:
             layer.global_step = global_step
 
     def save_state_histograms(self, global_step):
-        self.setGlobalStep(global_step=global_step)
+        self.set_global_step(global_step=global_step)
         for layer in self.layers:
             layer.save_state_histograms()
 
     def save_state(self, global_step):
-        self.setGlobalStep(global_step)
+        self.set_global_step(global_step)
         for layer in self.layers:
             layer.save_state()

@@ -13,101 +13,103 @@ from utils import HelperFunctions as hf
 from utils.HelperClasses import NetworkError
 from layers.layer import Layer
 
+
 class BidirectionalLayer(Layer):
     """ Layer in a neural network with feedforward weights as well as
     feedbackward weights."""
-    def __init__(self, in_dim, layer_dim, outDim, writer, lossFunction ='mse',
+
+    def __init__(self, in_dim, layer_dim, out_dim, writer, loss_function='mse',
                  name='bidirectional_layer'):
         super().__init__(in_dim, layer_dim, name=name, writer=writer)
-        if outDim is not None: # if the layer is an outputlayer, outDim is None
-            self.setOutDim(outDim)
-        self.initBackwardParameters()
-        self.setLossFunction(lossFunction)
+        if out_dim is not None:
+            # if the layer is an outputlayer, out_dim is None
+            self.set_out_dim(out_dim)
+        self.init_backward_parameters()
+        self.set_loss_function(loss_function)
 
-
-    def setOutDim(self, outDim):
-        if not isinstance(outDim, int):
+    def set_out_dim(self, out_dim):
+        if not isinstance(out_dim, int):
             raise TypeError("Expecting an integer layer dimension")
-        if outDim <= 0:
+        if out_dim <= 0:
             raise ValueError("Expecting strictly positive layer dimension")
-        self.outDim = outDim
+        self.out_dim = out_dim
 
-    def setLossFunction(self, lossFunction):
-        if not isinstance(lossFunction, str):
+    def set_loss_function(self, loss_function):
+        if not isinstance(loss_function, str):
             raise TypeError("Expecting a string to indicate loss function, "
-                            "got {}".format(type(lossFunction)))
-        if not ((lossFunction == 'mse') or (lossFunction == 'crossEntropy')):
+                            "got {}".format(type(loss_function)))
+        if not ((loss_function == 'mse') or (loss_function == 'crossEntropy')):
             raise ValueError("Only the mse or cross entropy"
                              " local loss function is defined "
-                             "yet, got {}".format(lossFunction))
-        self.lossFunction= lossFunction
+                             "yet, got {}".format(loss_function))
+        self.loss_function = loss_function
 
-    def initBackwardParameters(self):
+    def init_backward_parameters(self):
         """ Initializes the layer parameters when the layer is created.
         This method should only be used when creating
         a new layer. Use setbackwardParameters to update the parameters and
         computeGradient to update the gradients"""
-        self.backwardWeights = hf.get_invertible_random_matrix(self.layer_dim,
-                                                               self.outDim)
-        self.backwardBias = torch.zeros(self.layer_dim, 1)
-        self.backwardWeightsGrad = torch.zeros(self.layer_dim, self.outDim)
-        self.backwardBiasGrad = torch.zeros(self.layer_dim, 1)
+        self.backward_weights = hf.get_invertible_random_matrix(self.layer_dim,
+                                                                self.out_dim)
+        self.backward_bias = torch.zeros(self.layer_dim, 1)
+        self.backward_weights_grad = torch.zeros(self.layer_dim, self.out_dim)
+        self.backward_bias_grad = torch.zeros(self.layer_dim, 1)
         self.save_initial_backward_state()
 
-    def setBackwardParameters(self, backwardWeights, backwardBias):
-        if not isinstance(backwardWeights, torch.Tensor):
+    def set_backward_parameters(self, backward_weights, backward_bias):
+        if not isinstance(backward_weights, torch.Tensor):
             raise TypeError("Expecting a tensor object for "
-                            "self.backwardWeights")
-        if not isinstance(backwardBias, torch.Tensor):
-            raise TypeError("Expecting a tensor object for self.backwardBias")
-        if hf.containsNaNs(backwardWeights):
-            raise ValueError("backwardWeights contains NaNs")
-        if hf.containsNaNs(backwardBias):
-            raise ValueError("backwardBias contains NaNs")
-        if not backwardWeights.shape == self.backwardWeights.shape:
-            raise ValueError("backwardWeights has not the correct shape")
-        if not backwardBias.shape == self.backwardBias.shape:
-            raise ValueError("backwardBias has not the correct shape")
+                            "self.backward_weights")
+        if not isinstance(backward_bias, torch.Tensor):
+            raise TypeError("Expecting a tensor object for self.backward_bias")
+        if hf.contains_nans(backward_weights):
+            raise ValueError("backward_weights contains NaNs")
+        if hf.contains_nans(backward_bias):
+            raise ValueError("backward_bias contains NaNs")
+        if not backward_weights.shape == self.backward_weights.shape:
+            raise ValueError("backward_weights has not the correct shape")
+        if not backward_bias.shape == self.backward_bias.shape:
+            raise ValueError("backward_bias has not the correct shape")
 
-        self.backwardWeights = backwardWeights
-        self.backwardBias = backwardBias
+        self.backward_weights = backward_weights
+        self.backward_bias = backward_bias
 
-    def setBackwardGradients(self, backwardWeightsGrad, backwardBiasGrad):
-        if not isinstance(backwardWeightsGrad, torch.Tensor):
+    def set_backward_gradients(self, backward_weights_grad, backward_bias_grad):
+        if not isinstance(backward_weights_grad, torch.Tensor):
             raise TypeError("Expecting a tensor object "
-                            "for self.backwardWeightsGrad")
-        if not isinstance(backwardBiasGrad, torch.Tensor):
+                            "for self.backward_weights_grad")
+        if not isinstance(backward_bias_grad, torch.Tensor):
             raise TypeError("Expecting a tensor object for "
-                            "self.backwardBiasGrad")
-        if hf.containsNaNs(backwardWeightsGrad):
-            raise ValueError("backwardWeightsGrad contains NaNs")
-        if hf.containsNaNs(backwardBiasGrad):
-            raise ValueError("backwardBias contains NaNs")
-        if not backwardWeightsGrad.shape == self.backwardWeightsGrad.shape:
-            raise ValueError("backwardWeightsGrad has not the correct shape")
-        if not backwardBiasGrad.shape == self.backwardBiasGrad.shape:
-            raise ValueError("backwardBiasGrad has not the correct shape")
+                            "self.backward_bias_grad")
+        if hf.contains_nans(backward_weights_grad):
+            raise ValueError("backward_weights_grad contains NaNs")
+        if hf.contains_nans(backward_bias_grad):
+            raise ValueError("backward_bias contains NaNs")
+        if not backward_weights_grad.shape == self.backward_weights_grad.shape:
+            raise ValueError("backward_weights_grad has not the correct shape")
+        if not backward_bias_grad.shape == self.backward_bias_grad.shape:
+            raise ValueError("backward_bias_grad has not the correct shape")
 
-        self.backwardWeightsGrad = backwardWeightsGrad
-        self.backwardBiasGrad = backwardBiasGrad
+        self.backward_weights_grad = backward_weights_grad
+        self.backward_bias_grad = backward_bias_grad
 
-    def setBackwardOutput(self, backwardOutput):
-        if not isinstance(backwardOutput, torch.Tensor):
+    def set_backward_output(self, backward_output):
+        if not isinstance(backward_output, torch.Tensor):
             raise TypeError("Expecting a tensor object for "
-                            "self.backwardOutput")
-        if not backwardOutput.size(-2) == self.layer_dim:
+                            "self.backward_output")
+        if not backward_output.size(-2) == self.layer_dim:
             raise ValueError("Expecting same dimension as layer_dim")
-        if not backwardOutput.size(-1) == 1:
+        if not backward_output.size(-1) == 1:
             raise ValueError("Expecting same dimension as layer_dim")
-        self.backwardOutput = backwardOutput
+        self.backward_output = backward_output
 
-    def backwardNonlinearity(self, linearActivation):
+    def backwardNonlinearity(self, linear_activation):
         """ This method should be always overwritten by the children"""
         raise NetworkError("The method backwardNonlinearity should always be "
                            "overwritten by children of Layer. Layer on itself "
                            "cannot be used in a network")
 
-    def updateBackwardParameters(self, learningRate, upperLayer):
+    def update_backward_parameters(self, learning_rate, upper_layer):
         """ Should be implemented by the child classes"""
         raise NetworkError('This method should be overwritten by the '
                            'child classes')
@@ -119,17 +121,17 @@ class BidirectionalLayer(Layer):
         If the batch
         contains more than one sample, the average of the distances is returned.
         """
-        differences = self.forwardOutput - self.backwardOutput
+        differences = self.forward_output - self.backward_output
         distances = torch.norm(differences.view(differences.shape[0], -1),
                                p=2, dim=1)
-        forward_norm = torch.norm(self.forwardOutput.view(
-            self.forwardOutput.shape[0], -1),p=2, dim=1)
+        forward_norm = torch.norm(self.forward_output.view(
+            self.forward_output.shape[0], -1), p=2, dim=1)
         relative_distances = torch.div(distances, forward_norm)
         return torch.Tensor([torch.mean(relative_distances)])
 
     def save_backward_weights(self):
-        weight_norm = torch.norm(self.backwardWeights)
-        bias_norm = torch.norm(self.backwardBias)
+        weight_norm = torch.norm(self.backward_weights)
+        bias_norm = torch.norm(self.backward_bias)
         # print('{} backward_weights_norm: {}'.format(self.name, weight_norm))
         self.writer.add_scalar(tag='{}/backward_weights'
                                    '_norm'.format(self.name),
@@ -144,16 +146,16 @@ class BidirectionalLayer(Layer):
         self.writer.add_histogram(tag='{}/backward_weights_'
                                       'hist'.format(
             self.name),
-            values=self.backwardWeights,
+            values=self.backward_weights,
             global_step=self.global_step)
         self.writer.add_histogram(tag='{}/backward_bias_'
                                       'hist'.format(
             self.name),
-            values=self.backwardBias,
+            values=self.backward_bias,
             global_step=self.global_step)
 
     def save_backward_activations(self):
-        activations_norm = torch.norm(self.backwardOutput)
+        activations_norm = torch.norm(self.backward_output)
         self.writer.add_scalar(tag='{}/backward_activations'
                                    '_norm'.format(self.name),
                                scalar_value=activations_norm,
@@ -163,7 +165,7 @@ class BidirectionalLayer(Layer):
         self.writer.add_histogram(tag='{}/backward_activations_'
                                       'hist'.format(
             self.name),
-            values=self.backwardOutput,
+            values=self.backward_output,
             global_step=self.global_step)
 
     def save_distance_target(self):
@@ -178,9 +180,8 @@ class BidirectionalLayer(Layer):
         # print('{} invertibility test: {}'.format(self.name, mean_distance))
         self.writer.add_scalar(tag='{}/invertibility_distance'
                                .format(self.name),
-                              scalar_value=mean_distance,
-                              global_step=self.global_step)
-
+                               scalar_value=mean_distance,
+                               global_step=self.global_step)
 
     def save_state(self):
         """ Saves summary scalars (2-norm) of the gradients, weights and
@@ -207,22 +208,10 @@ class BidirectionalLayer(Layer):
         self.writer.add_histogram(tag='{}/backward_weights_initial_'
                                       'hist'.format(
             self.name),
-            values=self.backwardWeights,
+            values=self.backward_weights,
             global_step=0)
         self.writer.add_histogram(tag='{}/backward_bias_initial'
                                       'hist'.format(
             self.name),
-            values=self.backwardBias,
+            values=self.backward_bias,
             global_step=0)
-
-
-
-
-
-
-
-
-
-
-
-
