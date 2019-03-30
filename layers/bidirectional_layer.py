@@ -9,8 +9,8 @@ You may obtain a copy of the License at
 """
 
 import torch
-from utils import HelperFunctions as hf
-from utils.HelperClasses import NetworkError
+from utils import helper_functions as hf
+from utils.helper_classes import NetworkError
 from layers.layer import Layer
 
 

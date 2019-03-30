@@ -10,8 +10,8 @@ You may obtain a copy of the License at
 
 import torch
 import torch.nn as nn
-from utils import HelperFunctions as hf
-from utils.HelperClasses import NetworkError, NotImplementedError
+from utils import helper_functions as hf
+from utils.helper_classes import NetworkError, NotImplementedError
 from layers.layer import Layer
 from layers.bidirectional_layer import BidirectionalLayer
 
@@ -160,23 +160,41 @@ class InvertibleLayer(BidirectionalLayer):
         formula
         """
         # take learning rate into u to apply Sherman-morrison formula later on
-        u = torch.mul(upper_layer.u, learning_rate)
+        u = torch.mul(upper_layer.u, -learning_rate)
         v = upper_layer.v
         if u.shape[0] < v.shape[0]:
             u = torch.cat((u, torch.zeros((v.shape[0] - u.shape[0],
                                            u.shape[1]))), 0)
         # apply Sherman-morrison formula to compute inverse
 
-        denominator = 1 - torch.matmul(torch.transpose(v, -1, -2),
-                                       torch.matmul(self.backward_weights, u))
-        # if torch.abs(denominator) < 1e-3:
-        #     denominator = 1e-3*torch.sign(denominator)
-
+        d = torch.matmul(torch.transpose(v, -1, -2),
+                         torch.matmul(self.backward_weights, u))
+        denominator = 1 + d
+        self.denominator = denominator
         numerator = torch.matmul(torch.matmul(self.backward_weights, u),
                                  torch.matmul(torch.transpose(v, -1, -2),
                                               self.backward_weights))
-        backward_weights = self.backward_weights + torch.div(numerator,
+
+        # Clipping for robustness, and adjusting forward weights to keep the
+        # exact invertibility of sherman-morrison (see thesis chapter 4 for
+        # the details
+        epsilon = 0.7 # threshold
+
+        if torch.abs(denominator) < epsilon:
+            self.beta = 1/(epsilon-d)
+            backward_weights = self.backward_weights - torch.div(numerator,
+                                                                 epsilon)
+            # forward weights were already updated, so new update with (beta-1)
+            # instead of beta
+            forward_weights = upper_layer.forward_weights - \
+                              (self.beta - 1)*upper_layer.forward_weights_grad
+            upper_layer.set_forward_parameters(forward_weights,
+                                               upper_layer.forward_bias)
+        else:
+            backward_weights = self.backward_weights - torch.div(numerator,
                                                             denominator)
+            self.beta = 1.
+
         backward_bias = - torch.cat((upper_layer.forward_bias,
                                     upper_layer.forward_bias_tilde), 0)
         self.set_backward_parameters(backward_weights, backward_bias)
@@ -259,6 +277,14 @@ class InvertibleLayer(BidirectionalLayer):
         error = self.check_inverse(upper_layer)
         self.writer.add_scalar(tag='{}/inverse_error'.format(self.name),
                                scalar_value=error,
+                               global_step=self.global_step)
+
+    def save_sherman_morrison(self):
+        self.writer.add_scalar(tag='{}/SM_beta'.format(self.name),
+                               scalar_value=self.beta,
+                               global_step=self.global_step)
+        self.writer.add_scalar(tag='{}/SM_denominator'.format(self.name),
+                               scalar_value=self.denominator,
                                global_step=self.global_step)
 
 

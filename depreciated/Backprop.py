@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from utils import HelperClasses as hc, HelperFunctions as hf
+from utils import helper_classes as hc, helper_functions as hf
 
 
 class Layer():

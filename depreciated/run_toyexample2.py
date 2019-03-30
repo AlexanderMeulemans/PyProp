@@ -3,7 +3,7 @@ import time
 import numpy as np
 import torch
 
-import utils.HelperFunctions as hf
+import utils.helper_functions as hf
 from depreciated.tensorboard_api import Tensorboard
 from layers.invertible_layer import InvertibleInputLayer, \
     InvertibleLeakyReluLayer, InvertibleLinearOutputLayer, InvertibleNetwork

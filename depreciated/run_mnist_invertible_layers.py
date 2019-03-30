@@ -8,7 +8,7 @@ from layers.invertible_layer import ReluLayer, InputLayer, SoftmaxOutputLayer, \
 from optimizers.optimizers import SGD, SGDMomentum
 import torch
 import torchvision
-from utils import HelperFunctions as hf
+from utils import helper_functions as hf
 
 # Initializing network
 

@@ -60,9 +60,15 @@ class InvertibleNetwork(BidirectionalNetwork):
         for i in range(0, len(self.layers) - 1):
             self.layers[i].save_inverse_error(self.layers[i + 1])
 
+    def save_sherman_morrison(self):
+        for i in range(len(self.layers)-1):
+            self.layers[i].save_sherman_morrison()
+
     def save_state(self, global_step):
         super().save_state(global_step)
         self.save_inverse_error()
+        self.save_sherman_morrison()
+
 
     def test_invertibility(self, input_batch):
         """ Propagate an input batch forward and backward, and compute the error
@@ -83,8 +89,8 @@ class InvertibleNetwork(BidirectionalNetwork):
         for i in range(len(self.layers) - 2, -1, -1):
             self.layers[i].propagate_backward(self.layers[i + 1])
 
-    def save_state(self, global_step):
+    def save_state_histograms(self, global_step):
         """ Also perform an invertibiltiy test at the end of each batch
         if debug mode is on True"""
-        super().save_state(global_step)
+        super().save_state_histograms(global_step)
         self.test_invertibility(self.layers[0].forward_output)

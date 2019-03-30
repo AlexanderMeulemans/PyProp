@@ -9,7 +9,7 @@ You may obtain a copy of the License at
 """
 
 import torch
-from utils import HelperFunctions as hf
+from utils import helper_functions as hf
 from networks.network import Network
 import pandas as pd
 

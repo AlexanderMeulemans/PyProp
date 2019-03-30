@@ -6,7 +6,7 @@ sys.path.append(
 import torch
 import torchvision
 from Backprop import Network
-from utils import HelperFunctions as hf
+from utils import helper_functions as hf
 import numpy as np
 
 train_set = torchvision.datasets.MNIST(root='./data', train=True, download=True,
