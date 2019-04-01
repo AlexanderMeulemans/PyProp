@@ -25,3 +25,6 @@ class NetworkError(Exception):
 
 class NotImplementedError(Exception):
     pass
+
+class TestError(Exception):
+    pass

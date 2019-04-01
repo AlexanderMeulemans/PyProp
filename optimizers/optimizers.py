@@ -12,6 +12,7 @@ import torch
 from utils import helper_functions as hf
 from networks.network import Network
 import pandas as pd
+from networks.invertible_network import InvertibleNetwork
 
 
 class Optimizer(object):
@@ -254,6 +255,10 @@ class Optimizer(object):
                 target = targets[i, :, :, :]
                 if i % 100 == 0:
                     print('batch: ' + str(i))
+                if i % 1000 == 0:
+                    if type(self.network) == InvertibleNetwork:
+                        self.network.init_inverses
+                        print('recomputing inverses')
                 self.step(data, target)
             self.save_train_results_epoch()
             epoch_loss = self.epoch_losses[-1]

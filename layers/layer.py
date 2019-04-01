@@ -217,6 +217,7 @@ class Layer(object):
         forward_bias = self.forward_bias \
                        - torch.mul(self.forward_bias_grad, learning_rate)
         self.set_forward_parameters(forward_weights, forward_bias)
+        self.forward_learning_rate = learning_rate
 
     def propagate_forward(self, lower_layer):
         """

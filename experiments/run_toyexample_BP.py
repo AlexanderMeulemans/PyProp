@@ -22,8 +22,8 @@ import os
 torch.manual_seed(47)
 
 # ======== User variables ============
-nb_training_batches = 1000
-batch_size = 10
+nb_training_batches = 10000
+batch_size = 1
 testing_size = 1000
 CPU = True
 
@@ -91,9 +91,9 @@ network_backprop = Network([inputlayer, hiddenlayer, outputlayer])
 
 # Initializing optimizer
 optimizer4 = SGD(network=network_backprop, threshold=0.0001,
-                 init_learning_rate=0.01,
+                 init_learning_rate=0.001,
                  tau=100,
-                 final_learning_rate=0.005, compute_accuracies=False,
+                 final_learning_rate=0.0005, compute_accuracies=False,
                  max_epoch=100,
                  outputfile_name='resultfile_BP.csv')
 

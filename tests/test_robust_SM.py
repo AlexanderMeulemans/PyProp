@@ -15,12 +15,12 @@ plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
 
 # User variables
-plot_s_d = True
-plot_a_b = True
+plot_s_d = False
+plot_a_b = False
 plot_s_min_robust = True
-plot_s_eps = True
+plot_s_eps = False
 matrix_size = 5
-threshold = 0.8
+threshold = 0.1
 
 
 
@@ -119,7 +119,7 @@ if plot_s_min_robust:
     n = matrix_size
     epsilon = threshold
 
-    for i in range(5000):
+    for i in range(20000):
         A = 5 * hf.get_invertible_random_matrix(n,n)
         u = 0.5 * torch.randn(n, 1)
         v = 0.5 * torch.randn(n, 1)
@@ -160,15 +160,17 @@ if plot_s_min_robust:
             s_max = S[0]
             s_min = S[-1]
             s_mins = np.append(s_mins, s_min)
+            betas = np.append(betas, 1.)
 
 
 
 
         ds = np.append(ds, torch.abs(1+d))
 
-    errors_robust = errors_robust/(n^2)
-    errors_notrobust = errors_notrobust/(n^2)
-    errors = errors/(n^2)
+    errors_robust = errors_robust/(n)
+    errors_notrobust = errors_notrobust/(n)
+    errors = errors/(n)
+    errors_total = errors_total/(n)
 
     plt.figure()
     plt.loglog(ds,s_mins,'*')
@@ -182,14 +184,19 @@ if plot_s_min_robust:
     plt.title(r'$\beta$')
     plt.show()
 
-    plt.figure()
-    plt.hist(alphas, bins=30)
-    plt.title(r'$\alpha$')
-    plt.show()
+    # plt.figure()
+    # plt.hist(alphas, bins=30)
+    # plt.title(r'$\alpha$')
+    # plt.show()
 
     plt.figure()
     plt.hist(errors, bins=30)
     plt.title('errors normal SM')
+    plt.show()
+
+    plt.figure()
+    plt.hist(errors_total * s_mins*np.sqrt(n), bins=50)
+    plt.title('inverse error times $s_{min}$')
     plt.show()
 
     plt.figure()
@@ -201,6 +208,10 @@ if plot_s_min_robust:
     plt.hist(errors_notrobust, bins=30)
     plt.title('errors not robust SM')
     plt.show()
+
+    plt.figure()
+    plt.hist(errors_total, bins=30)
+    plt.title('total errors')
 
     plt.figure()
     plt.loglog(ds, errors_total, '*')

@@ -20,7 +20,7 @@ class InvertibleLayer(BidirectionalLayer):
     """ Layer that is invertible to make it able to propagate exact targets."""
 
     def __init__(self, in_dim, layer_dim, out_dim, writer, loss_function='mse',
-                 name='invertible_layer'):
+                 name='invertible_layer', epsilon=0.001):
         if in_dim is not None:
             if in_dim < layer_dim:
                 raise ValueError(
@@ -36,6 +36,7 @@ class InvertibleLayer(BidirectionalLayer):
                          name=name,
                          writer=writer)
         self.init_forward_parameters_tilde()
+        self.set_epsilon(epsilon)
 
     def init_forward_parameters_tilde(self):
         """ Initializes the layer parameters that connect the current layer
@@ -75,6 +76,9 @@ class InvertibleLayer(BidirectionalLayer):
     #                                         self.forward_weights_tilde), 0)
     #     self.forwardBiasBar = torch.cat((self.forward_bias,
     #                                      self.forward_bias_tilde), 0)
+
+    def set_epsilon(self, epsilon):
+        self.epsilon = epsilon
 
     def set_forward_output_tilde(self, forward_output_tilde):
         if not isinstance(forward_output_tilde, torch.Tensor):
@@ -169,6 +173,7 @@ class InvertibleLayer(BidirectionalLayer):
 
         d = torch.matmul(torch.transpose(v, -1, -2),
                          torch.matmul(self.backward_weights, u))
+        self.d = d
         denominator = 1 + d
         self.denominator = denominator
         numerator = torch.matmul(torch.matmul(self.backward_weights, u),
@@ -178,7 +183,7 @@ class InvertibleLayer(BidirectionalLayer):
         # Clipping for robustness, and adjusting forward weights to keep the
         # exact invertibility of sherman-morrison (see thesis chapter 4 for
         # the details
-        epsilon = 0.7 # threshold
+        epsilon = self.epsilon # threshold
 
         if torch.abs(denominator) < epsilon:
             self.beta = 1/(epsilon-d)
@@ -187,6 +192,7 @@ class InvertibleLayer(BidirectionalLayer):
             # forward weights were already updated, so new update with (beta-1)
             # instead of beta
             forward_weights = upper_layer.forward_weights - \
+                              upper_layer.forward_learning_rate*\
                               (self.beta - 1)*upper_layer.forward_weights_grad
             upper_layer.set_forward_parameters(forward_weights,
                                                upper_layer.forward_bias)
