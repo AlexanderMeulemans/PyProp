@@ -9,7 +9,7 @@ You may obtain a copy of the License at
 """
 
 from utils.create_datasets import GenerateDatasetFromModel
-from optimizers.optimizers import SGD
+from optimizers.optimizers import SGD, SGDInvertible
 from layers.invertible_layer import InvertibleInputLayer, \
     InvertibleLeakyReluLayer, InvertibleLinearOutputLayer
 from networks.invertible_network import InvertibleNetwork
@@ -24,6 +24,7 @@ from utils.LLS import linear_least_squares
 import os
 import random
 
+# good results for seed 32, no good results for seed 47
 seed = 47
 torch.manual_seed(seed)
 torch.cuda.manual_seed(seed)
@@ -33,7 +34,7 @@ random.seed(seed)
 # torch.backends.cudnn.benchmark = False
 
 # ======== User variables ============
-nb_training_batches = 10000
+nb_training_batches = 2000
 batch_size = 1
 testing_size = 1000
 n = 3
@@ -102,23 +103,26 @@ hiddenlayer = InvertibleLeakyReluLayer(negative_slope=0.35, in_dim=n,
                                        name='hidden_layer',
                                        writer=writer)
 outputlayer = InvertibleLinearOutputLayer(in_dim=n, layer_dim=n,
-                                          step_size=0.01,
+                                          step_size=0.001,
                                           name='output_layer',
                                           writer=writer)
 
 network = InvertibleNetwork([inputlayer, hiddenlayer, outputlayer])
 
 # Initializing optimizer
-optimizer1 = SGD(network=network, threshold=0.001, init_learning_rate=0.5,
+optimizer1 = SGD(network=network, threshold=0.0001, init_learning_rate=0.5,
                  tau=100,
-                 final_learning_rate=0.05, compute_accuracies=False,
+                 final_learning_rate=0.005, compute_accuracies=False,
                  max_epoch=120,
                  outputfile_name='resultfile.csv')
-
+optimizer2 = SGDInvertible(network=network, threshold=0.001,
+                           init_step_size=0.003, tau=100,
+                           final_step_size=0.0001,
+                           learning_rate=0.5, max_epoch=120)
 # Train on dataset
 timings = np.array([])
 start_time = time.time()
-optimizer1.run_dataset(input_dataset, output_dataset, input_dataset_test,
+optimizer2.run_dataset(input_dataset, output_dataset, input_dataset_test,
                        output_dataset_test)
 end_time = time.time()
 print('Elapsed time: {} seconds'.format(end_time - start_time))

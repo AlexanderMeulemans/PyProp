@@ -164,7 +164,7 @@ class Layer(object):
         self.forward_weights = hf.get_invertible_random_matrix(self.layer_dim,
                                                                self.in_dim)
         U, S, V = torch.svd(self.forward_weights)
-        print('{}/forwardWeights_s_min: {}'.format(self.name, S[-1]))
+        # print('{}/forwardWeights_s_min: {}'.format(self.name, S[-1]))
         self.forward_bias = torch.zeros(self.layer_dim, 1)
         self.forward_weights_grad = torch.zeros(self.layer_dim, self.in_dim)
         self.forward_bias_grad = torch.zeros(self.layer_dim, 1)
@@ -626,49 +626,17 @@ class OutputLayer(Layer):
         if not isinstance(loss_function, str):
             raise TypeError('Expecting a string as indicator'
                             ' for the loss function')
-        if not (loss_function == 'mse' or loss_function == 'crossEntropy'):
+        if not (loss_function == 'mse' or loss_function == 'crossEntropy'
+                or loss_function == 'capsule_loss'):
             raise NetworkError('Expecting an mse or crossEntropy loss')
         self.loss_function = loss_function
 
     def loss(self, target):
-        """ Compute the loss with respect to the target
-        :param target: 3D tensor of size batchdimension x class dimension x 1
         """
-        if not isinstance(target, torch.Tensor):
-            raise TypeError("Expecting a torch.Tensor object as target")
-        if not self.forward_output.shape == target.shape:
-            raise ValueError('Expecting a tensor of dimensions: batchdimension'
-                             ' x class dimension x 1. Given target'
-                             'has shape' + str(target.shape))
-        if self.loss_function == 'crossEntropy':
-            # Convert output 'class probabilities' to one class per batch sample
-            #  (with highest class probability)
-            target_classes = hf.prob2class(target)
-            loss_function = nn.CrossEntropyLoss()
-            forward_output_squeezed = torch.reshape(self.forward_output,
-                                                  (self.forward_output.shape[0],
-                                                   self.forward_output.shape[
-                                                       1]))
-            loss = loss_function(forward_output_squeezed, target_classes)
-            return torch.Tensor([torch.mean(loss)])  # .numpy()
-        elif self.loss_function == 'mse':
-            loss_function = nn.MSELoss(reduction='mean')
-            forward_output_squeezed = torch.reshape(self.forward_output,
-                                                  (self.forward_output.shape[0],
-                                                   self.forward_output.shape[
-                                                       1]))
-            target_squeezed = torch.reshape(target,
-                                           (target.shape[0],
-                                            target.shape[1]))
-            loss = loss_function(forward_output_squeezed, target_squeezed)
-            loss = torch.Tensor([torch.mean(loss)])
-            if loss > 1e2:
-                print('loss is bigger than 100. Loss: {}'.format(loss))
-                print('max difference: {}'.format(torch.max(torch.abs(
-                    forward_output_squeezed - target_squeezed
-                ))))
+        Should be overwritten by its children
+        """
+        raise NotImplementedError
 
-            return loss
 
     def propagate_backward(self, upper_layer):
         """ This function should never be called for an output layer,
@@ -679,7 +647,31 @@ class OutputLayer(Layer):
                            "instead")
 
 
-class SoftmaxOutputLayer(OutputLayer):
+class ClassificationOutputLayer(OutputLayer):
+    """
+    Parent class for all output layers used for classification.
+    """
+    def propagate_forward(self, lower_layer):
+        """ Normal forward propagation, but on top of that, save the predicted
+        classes in self."""
+        super().propagate_forward(lower_layer)
+        self.predicted_classes = hf.prob2class(self.forward_output)
+
+    def accuracy(self, target):
+        """ Compute the accuracy if the network predictions with respect to
+        the given true targets.
+        :param target: 3D tensor of size batchdimension x class dimension x 1"""
+        if not isinstance(target, torch.Tensor):
+            raise TypeError("Expecting a torch.Tensor object as target")
+        if not isinstance(self, CapsuleOutputLayer):
+            if not self.forward_output.shape == target.shape:
+                raise ValueError('Expecting a tensor of dimensions: batchdimension'
+                                 ' x class dimension x 1. Given target'
+                                 'has shape' + str(target.shape))
+        return hf.accuracy(self.predicted_classes, hf.prob2class(target))
+
+
+class SoftmaxOutputLayer(ClassificationOutputLayer):
     """ Output layer with a softmax activation function. This layer
     should always be combined with a crossEntropy
     loss."""
@@ -707,23 +699,30 @@ class SoftmaxOutputLayer(OutputLayer):
         backward_output = self.forward_output - target
         self.set_backward_output(backward_output)
 
-    def propagate_forward(self, lower_layer):
-        """ Normal forward propagation, but on top of that, save the predicted
-        classes in self."""
-        super().propagate_forward(lower_layer)
-        self.predicted_classes = hf.prob2class(self.forward_output)
 
-    def accuracy(self, target):
-        """ Compute the accuracy if the network predictions with respect to
-        the given true targets.
-        :param target: 3D tensor of size batchdimension x class dimension x 1"""
+    def loss(self, target):
         if not isinstance(target, torch.Tensor):
             raise TypeError("Expecting a torch.Tensor object as target")
         if not self.forward_output.shape == target.shape:
             raise ValueError('Expecting a tensor of dimensions: batchdimension'
                              ' x class dimension x 1. Given target'
                              'has shape' + str(target.shape))
-        return hf.accuracy(self.predicted_classes, hf.prob2class(target))
+        if self.loss_function == 'crossEntropy':
+            # Convert output 'class probabilities' to one class per batch sample
+            #  (with highest class probability)
+            target_classes = hf.prob2class(target)
+            loss_function = nn.CrossEntropyLoss()
+            forward_output_squeezed = torch.reshape(self.forward_output,
+                                                  (self.forward_output.shape[0],
+                                                   self.forward_output.shape[
+                                                       1]))
+            loss = loss_function(forward_output_squeezed, target_classes)
+            return torch.Tensor([torch.mean(loss)])  # .numpy()
+
+        else:
+            raise NetworkError('Only crossEntropy loss defined for a soft max'
+                               'output layer, got {}'.format(
+                self.loss_function))
 
 
 class LinearOutputLayer(OutputLayer):
@@ -749,6 +748,175 @@ class LinearOutputLayer(OutputLayer):
                              'has shape' + str(target.shape))
         backward_output = 2 * (self.forward_output - target)
         self.set_backward_output(backward_output)
-        if torch.max(torch.abs(backward_output)) > 1e2:
+        if torch.max(torch.abs(backward_output)) > 1e3:
             print('backwardOutputs of {} have gone unbounded: {}'.format(
                 self.name, torch.max(torch.abs(backward_output))))
+
+    def loss(self, target):
+        """ Compute the loss with respect to the target
+                :param target: 3D tensor of size
+                 batchdimension x class dimension x 1
+                """
+        if not isinstance(target, torch.Tensor):
+            raise TypeError("Expecting a torch.Tensor object as target")
+        if not self.forward_output.shape == target.shape:
+            raise ValueError('Expecting a tensor of dimensions: batchdimension'
+                             ' x class dimension x 1. Given target'
+                             'has shape' + str(target.shape))
+
+        if self.loss_function == 'mse':
+            loss_function = nn.MSELoss(reduction='mean')
+            forward_output_squeezed = torch.reshape(self.forward_output,
+                                                    (self.forward_output.shape[
+                                                         0],
+                                                     self.forward_output.shape[
+                                                         1]))
+            target_squeezed = torch.reshape(target,
+                                            (target.shape[0],
+                                             target.shape[1]))
+            loss = loss_function(forward_output_squeezed, target_squeezed)
+            loss = torch.Tensor([torch.mean(loss)])
+            if loss > 1e2:
+                print('loss is bigger than 100. Loss: {}'.format(loss))
+                print('max difference: {}'.format(torch.max(torch.abs(
+                    forward_output_squeezed - target_squeezed
+                ))))
+
+            return loss
+
+        else:
+            raise NetworkError('Only mse loss function defined for a linear'
+                               'output layer, got {}'.format(
+                self.loss_function))
+
+
+class CapsuleOutputLayer(ClassificationOutputLayer):
+    def __init__(self, in_dim, layer_dim, nb_classes, writer,
+                 loss_function='capsule_loss',
+                 name='output_layer'):
+        """
+        :param in_dim: input dimension of the layer,
+        equal to the layer dimension of the second last layer in the network
+        :param layer_dim: Layer dimension
+        :param loss: string indicating which loss function is used to
+        compute the network loss
+        """
+        super().__init__(in_dim=in_dim, layer_dim=layer_dim,
+                         loss_function=loss_function, writer=writer,
+                         name=name)
+        self.set_nb_classes(nb_classes)
+        self.set_capsule_indices()
+        self.m_plus = 0.9
+        self.m_min = 0.1
+        self.l = 0.5
+
+    def set_nb_classes(self, nb_classes):
+        if not isinstance(nb_classes, int):
+            raise TypeError('expecting an integer type for nb_classes, '
+                            'got {}'.format(type(nb_classes)))
+        if nb_classes <= 0:
+            raise ValueError('expecting positive integer for nb_classes,'
+                             'got {}'.format(nb_classes))
+        self.nb_classes = nb_classes
+
+    def set_capsule_indices(self):
+        if not self.layer_dim % self.nb_classes == 0:
+            raise NetworkError('Layer dimension should be divisible by the '
+                               'number of classes')
+        capsule_size = int(self.layer_dim/self.nb_classes)
+        self.capsule_size = capsule_size
+        self.capsule_indices = {}
+        for capsule in range(self.nb_classes):
+            self.capsule_indices[capsule]=(capsule*capsule_size,
+                                           (capsule+1)*capsule_size)
+
+    def propagate_forward(self, lower_layer):
+        """ Normal forward propagation, but on top of that, save the predicted
+        classes in self."""
+        super(ClassificationOutputLayer, self).propagate_forward(lower_layer)
+        self.compute_capsules()
+        self.predicted_classes = hf.prob2class(self.capsule_squashed)
+
+    def forward_nonlinearity(self, linear_activation):
+        return linear_activation
+
+    def compute_capsules(self):
+        linear_activation = self.forward_linear_activation
+        self.capsule_magnitudes = torch.empty((linear_activation.shape[0],
+                                               self.nb_classes, 1))
+        self.capsules = torch.empty((linear_activation.shape[0],
+                                               self.nb_classes,
+                                     self.capsule_size))
+        for k in range(self.nb_classes):
+            self.capsules[:,k,:] = linear_activation[:,
+                                     self.capsule_indices[k][0]:
+                                     self.capsule_indices[k][1], 0]
+            self.capsule_magnitudes[:, k, 0] = torch.norm(
+            self.capsules[:,k,:], dim=1)
+
+        self.capsule_squashed = self.capsule_magnitudes ** 2 / (
+                1 + self.capsule_magnitudes) ** 2
+
+    def loss(self, target):
+        if self.loss_function == 'capsule_loss':
+            # see Hinton - Dynamic routing between capsules
+            l = self.l
+            m_plus = self.m_plus
+            m_min = self.m_min
+            L_k = target*torch.max(torch.stack([m_plus-self.capsule_squashed,
+                torch.zeros(self.capsule_squashed.shape)]), dim=0)[0]**2 + \
+                l*(1-target)*torch.max(torch.stack([self.capsule_squashed-m_min,
+                torch.zeros(self.capsule_squashed.shape)]), dim=0)[0]**2
+            loss = torch.sum(L_k, dim=1)
+            loss = torch.Tensor([torch.mean(loss)])
+            return loss
+        else:
+            raise NetworkError('Only capsule_loss is defined for a capsule'
+                               'output layer, got {}'.format(
+                self.loss_function))
+
+    def compute_backward_output(self, target):
+        """ Compute the backward output based on the derivative of the loss to
+        the linear activation of this layer"""
+        if not self.loss_function == 'capsule_loss':
+            raise NetworkError("Only capsule_loss is defined for a capsule"
+                               "output layer, got {}".format(
+                self.loss_function))
+        if not isinstance(target, torch.Tensor):
+            raise TypeError("Expecting a torch.Tensor object as target")
+        if not self.capsule_squashed.shape == target.shape:
+            raise ValueError('Expecting a tensor of dimensions: batchdimension '
+                             'x class dimension x 1. Given target'
+                             'has shape' + str(target.shape))
+        m_min = self.m_min
+        m_plus = self.m_plus
+        l = self.l
+        Lk_vk = -target*torch.max(torch.stack([m_plus-self.capsule_squashed,
+                torch.zeros(self.capsule_squashed.shape)]), dim=0)[0]+ \
+                l*(1-target)*torch.max(torch.stack([self.capsule_squashed-m_min,
+                torch.zeros(self.capsule_squashed.shape)]), dim=0)[0]
+        vk_sk = 1/(1 + self.capsule_magnitudes ** 2) ** 2 * 2 * self.capsules
+        backward_output = torch.empty(self.forward_linear_activation.shape)
+        for k in range(self.nb_classes):
+            start = self.capsule_indices[k][0]
+            stop = self.capsule_indices[k][1]
+
+            backward_output[:, start:stop, 0] = Lk_vk[:,k,:]*vk_sk[:,k,:]
+
+        self.set_backward_output(backward_output)
+
+    def init_forward_parameters(self):
+        """ Initializes the layer parameters when the layer is created.
+                This method should only be used when creating
+                a new layer. Use set_forward_parameters to update the parameters and
+                computeGradient to update the gradients"""
+        super().init_forward_parameters()
+        self.forward_weights = self.forward_weights / float(self.layer_dim)**0.5
+
+
+
+
+
+
+
+

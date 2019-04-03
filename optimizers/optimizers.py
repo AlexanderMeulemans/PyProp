@@ -212,7 +212,7 @@ class Optimizer(object):
         print('Epoch: ' + str(self.epoch) + ' ------------------------')
         while epoch_loss > self.threshold and self.epoch < self.max_epoch:
             for batch_idx, (data, target) in enumerate(train_loader):
-                if batch_idx % 5 == 0:
+                if batch_idx % 50 == 0:
                     print('batch: ' + str(batch_idx))
                 data = data.view(-1, 28 * 28, 1)
                 target = hf.one_hot(target, 10)
@@ -367,6 +367,81 @@ class SGD(Optimizer):
         self.network.update_parameters(self.learning_rate)
         self.save_results(targets)
         self.global_step += 1
+
+class SGDInvertible(SGD):
+    """ Stochastic Gradient Descent, customized for networks trained by target
+    propagation with invertible layers"""
+
+    def __init__(self, network, threshold, init_step_size, tau=100,
+                 final_step_size=None, learning_rate=0.5,
+                 compute_accuracies=False, max_epoch=150,
+                 outputfile_name='resultfile.csv'):
+        """
+        :param threshold: the optimizer will run until the network loss is
+        below this threshold
+        :param init_learning_rate: initial learning rate
+        :param network: network to train
+        :param compute_accuracies: True if the optimizer should also save the
+        accuracies. Only possible with
+        classification problems
+        :param tau: used to update the learningrate according to
+        learningrate = (1-epoch/tau)*init_learning_rate +
+                    epoch/tau* final_learning_rate
+        :param final_learning_rate: see tau
+        :type network: Network
+        """
+        super().__init__(network=network,threshold=threshold,
+                         init_learning_rate=learning_rate,
+                         tau=tau,final_learning_rate=learning_rate,
+                         compute_accuracies=compute_accuracies,
+                         max_epoch=max_epoch, outputfile_name=outputfile_name)
+        self.set_init_step_size(init_step_size)
+        self.set_step_size(init_step_size)
+        self.set_tau(tau)
+        if final_step_size is None:
+            self.set_final_step_size(0.01 * self.init_step_size)
+        else:
+            self.set_final_step_size(final_step_size)
+
+    def set_init_step_size(self, init_step_size):
+        if not isinstance(init_step_size, float):
+            raise TypeError("Expecting float number for "
+                            "init_learning_rate, got "
+                            "{}".format(type(init_step_size)))
+        if init_step_size <= 0:
+            raise ValueError("Expecting strictly positive float, got "
+                             "{}".format(init_step_size))
+        self.init_step_size = init_step_size
+
+    def set_final_step_size(self, final_step_size):
+        if not isinstance(final_step_size, float):
+            raise TypeError("Expecting float number for "
+                            "init_learning_rate, got "
+                            "{}".format(type(final_step_size)))
+        if final_step_size <= 0:
+            raise ValueError("Expecting strictly positive float, got "
+                             "{}".format(final_step_size))
+        self.final_step_size = final_step_size
+
+    def set_step_size(self, step_size):
+        if not isinstance(step_size, float):
+            raise TypeError("Expecting float number for "
+                            "step_size, got "
+                            "{}".format(type(step_size)))
+        if step_size <= 0:
+            raise ValueError("Expecting strictly positive float, got "
+                             "{}".format(step_size))
+        self.network.layers[-1].step_size = step_size
+
+    def update_learning_rate(self):
+        if self.epoch <= self.tau:
+            alpha = float(self.epoch) / float(self.tau)
+            step_size = (1. - alpha) * self.init_step_size + \
+                            alpha * self.final_step_size
+            self.set_step_size(step_size)
+        else:
+            pass
+
 
 
 class SGDMomentum(SGD):

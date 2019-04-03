@@ -114,3 +114,24 @@ def get_invertible_random_matrix(rows, cols, threshold=0.4, max_iter=300):
                                  'checking the singular values')
 
     return m
+
+def get_invertible_neighbourhood_matrix(matrix, distance, threshold=0.4):
+    m = torch.randn(matrix.shape[0], matrix.shape[1])
+    norm = torch.norm(m)
+    m = distance/norm*m
+    matrix_n = matrix + m
+    U, S, V = torch.svd(matrix_n)
+    s_max = S[0]
+    s_min = S[-1]
+    iter = 0
+    while s_max * s_min < threshold:
+        m = torch.randn(matrix.shape[0], matrix.shape[1])
+        norm = torch.norm(m)
+        m = distance / norm * m
+        matrix_n = matrix + m
+        U, S, V = torch.svd(matrix_n)
+        s_max = S[0]
+        s_min = S[-1]
+        iter += 1
+
+    return matrix_n

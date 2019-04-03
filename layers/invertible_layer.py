@@ -20,7 +20,7 @@ class InvertibleLayer(BidirectionalLayer):
     """ Layer that is invertible to make it able to propagate exact targets."""
 
     def __init__(self, in_dim, layer_dim, out_dim, writer, loss_function='mse',
-                 name='invertible_layer', epsilon=0.001):
+                 name='invertible_layer', epsilon=0.5):
         if in_dim is not None:
             if in_dim < layer_dim:
                 raise ValueError(
