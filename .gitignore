@@ -2,5 +2,7 @@
 *.pyc
 **/logs
 **/.idea
+**/experiments/data
+
 
 
