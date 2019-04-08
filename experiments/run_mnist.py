@@ -21,7 +21,7 @@ batch_size = 128
 # Initializing network
 
 # ======== set log directory ==========
-log_dir = '../logs/MNIST_BP_500n'
+log_dir = '../logs/MNIST_BP'
 writer = SummaryWriter(log_dir=log_dir)
 
 # ======== set device ============

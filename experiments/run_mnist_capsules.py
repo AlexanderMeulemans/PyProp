@@ -21,7 +21,7 @@ batch_size = 128
 # Initializing network
 
 # ======== set log directory ==========
-log_dir = '../logs/MNIST_BP_500n'
+log_dir = '../logs/MNIST_BP_capsule'
 writer = SummaryWriter(log_dir=log_dir)
 
 # ======== set device ============
@@ -39,11 +39,13 @@ else:
 
 # ======== Design network =============
 
-inputlayer = InputLayer(layer_dim=28 * 28, writer=writer, name='input_layer_BP')
+inputlayer = InputLayer(layer_dim=28 * 28, writer=writer, name='input_layer_BP',
+                        debug_mode=True)
 hiddenlayer = ReluLayer(in_dim=28 * 28, layer_dim=100, writer=writer,
-                        name='hidden_layer_BP')
+                        name='hidden_layer_BP', debug_mode=True)
 outputlayer = CapsuleOutputLayer(in_dim=100, layer_dim=100, nb_classes=10,
-                                 writer=writer, name='output_layer_BP')
+                                 writer=writer, name='output_layer_BP',
+                                 debug_mode=True)
 
 network = Network([inputlayer, hiddenlayer, outputlayer])
 # if torch.cuda.is_available():
@@ -76,9 +78,9 @@ test_loader = torch.utils.data.DataLoader(
     shuffle=False)
 
 # Initializing optimizer
-optimizer1 = SGD(network=network, threshold=1.2, init_learning_rate=0.1,
+optimizer1 = SGD(network=network, threshold=1.2, init_learning_rate=3.0,
                  tau=100,
-                 final_learning_rate=0.005,
+                 final_learning_rate=0.05,
                  compute_accuracies=True, max_epoch=120)
 optimizer2 = SGDMomentum(network=network, threshold=1.2, init_learning_rate=0.1,
                          tau=100, final_learning_rate=0.005,

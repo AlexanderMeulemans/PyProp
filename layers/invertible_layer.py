@@ -20,7 +20,7 @@ class InvertibleLayer(BidirectionalLayer):
     """ Layer that is invertible to make it able to propagate exact targets."""
 
     def __init__(self, in_dim, layer_dim, out_dim, writer, loss_function='mse',
-                 name='invertible_layer', epsilon=0.5):
+                 name='invertible_layer', epsilon=0.5, debug_mode=True):
         if in_dim is not None:
             if in_dim < layer_dim:
                 raise ValueError(
@@ -34,7 +34,8 @@ class InvertibleLayer(BidirectionalLayer):
         super().__init__(in_dim, layer_dim, out_dim,
                          loss_function=loss_function,
                          name=name,
-                         writer=writer)
+                         writer=writer,
+                         debug_mode=debug_mode)
         self.init_forward_parameters_tilde()
         self.set_epsilon(epsilon)
 
@@ -301,11 +302,13 @@ class InvertibleLeakyReluLayer(InvertibleLayer):
     def __init__(self, negative_slope, in_dim, layer_dim,
                  out_dim, writer,
                  loss_function='mse',
-                 name='invertible_leaky_ReLU_layer'):
+                 name='invertible_leaky_ReLU_layer',
+                 debug_mode=True):
         super().__init__(in_dim, layer_dim, out_dim,
                          writer=writer,
                          loss_function=loss_function,
-                         name=name)
+                         name=name,
+                         debug_mode=debug_mode)
         self.setNegativeSlope(negative_slope)
 
     def setNegativeSlope(self, negative_slope):
@@ -369,11 +372,13 @@ class InvertibleOutputLayer(InvertibleLayer):
 
     def __init__(self, in_dim, layer_dim, writer, step_size,
                  loss_function='mse',
-                 name='invertible_output_layer'):
+                 name='invertible_output_layer',
+                 debug_mode=True):
         super().__init__(in_dim, layer_dim, writer=writer,
                          out_dim=None,
                          loss_function=loss_function,
-                         name=name)
+                         name=name,
+                         debug_mode=debug_mode)
         self.set_stepsize(step_size)
 
     def set_stepsize(self, step_size):
@@ -499,12 +504,14 @@ class InvertibleSoftmaxOutputLayer(InvertibleOutputLayer):
 
     def __init__(self, in_dim, layer_dim, writer, step_size,
                  loss_function='crossEntropy',
-                 name='invertible_softmax_output_layer'):
+                 name='invertible_softmax_output_layer',
+                 debug_mode=True):
         super().__init__(in_dim, layer_dim,
                          writer=writer,
                          step_size=step_size,
                          loss_function=loss_function,
-                         name=name)
+                         name=name,
+                         debug_mode=debug_mode)
         self.normalization_constant = None
 
     def forward_nonlinearity(self, linear_activation):
@@ -595,12 +602,14 @@ class InvertibleInputLayer(InvertibleLayer):
 
     def __init__(self, layer_dim, out_dim, writer,
                  loss_function='mse',
-                 name='invertible_input_layer'):
+                 name='invertible_input_layer',
+                 debug_mode=True):
         super().__init__(in_dim=None, layer_dim=layer_dim,
                          out_dim=out_dim,
                          writer=writer,
                          loss_function=loss_function,
-                         name=name)
+                         name=name,
+                         debug_mode=debug_mode)
 
     def init_forward_parameters(self):
         """ InputLayer has no forward parameters"""

@@ -23,7 +23,8 @@ class Layer(object):
     # create class variable of existing layer names
     all_layer_names = []
 
-    def __init__(self, in_dim, layer_dim, writer, name='layer'):
+    def __init__(self, in_dim, layer_dim, writer, name='layer',
+                 debug_mode=True):
         """
         Initializes the Layer object
         :param in_dim: input dimension of the layer (equal
@@ -38,6 +39,7 @@ class Layer(object):
         self.set_writer(writer=writer)
         self.init_forward_parameters()
         self.global_step = 0  # needed for making plots with tensorboard
+        self.debug_mode = debug_mode
 
     def set_writer(self, writer):
         if not isinstance(writer, SummaryWriter):
@@ -161,10 +163,9 @@ class Layer(object):
         This method should only be used when creating
         a new layer. Use set_forward_parameters to update the parameters and
         computeGradient to update the gradients"""
-        self.forward_weights = hf.get_invertible_random_matrix(self.layer_dim,
-                                                               self.in_dim)
-        U, S, V = torch.svd(self.forward_weights)
-        # print('{}/forwardWeights_s_min: {}'.format(self.name, S[-1]))
+        # self.forward_weights = hf.get_invertible_random_matrix(self.layer_dim,
+        #                                                        self.in_dim)
+        self.forward_weights = torch.randn(self.layer_dim, self.in_dim)
         self.forward_bias = torch.zeros(self.layer_dim, 1)
         self.forward_weights_grad = torch.zeros(self.layer_dim, self.in_dim)
         self.forward_bias_grad = torch.zeros(self.layer_dim, 1)
@@ -332,9 +333,7 @@ class Layer(object):
     def save_forward_weights(self):
         weight_norm = torch.norm(self.forward_weights)
         bias_norm = torch.norm(self.forward_bias)
-        U, S, V = torch.svd(self.forward_weights)
-        s_max = S[0]
-        s_min = S[-1]
+
         self.writer.add_scalar(tag='{}/forward_weights'
                                    '_norm'.format(self.name),
                                scalar_value=weight_norm,
@@ -343,12 +342,18 @@ class Layer(object):
                                    '_norm'.format(self.name),
                                scalar_value=bias_norm,
                                global_step=self.global_step)
-        self.writer.add_scalar(tag='{}/forward_weights_s_max'.format(self.name),
-                               scalar_value=s_max,
-                               global_step=self.global_step)
-        self.writer.add_scalar(tag='{}/forward_weights_s_min'.format(self.name),
-                               scalar_value=s_min,
-                               global_step=self.global_step)
+        if self.debug_mode:
+            U, S, V = torch.svd(self.forward_weights)
+            s_max = S[0]
+            s_min = S[-1]
+            self.writer.add_scalar(
+                tag='{}/forward_weights_s_max'.format(self.name),
+                scalar_value=s_max,
+                global_step=self.global_step)
+            self.writer.add_scalar(
+                tag='{}/forward_weights_s_min'.format(self.name),
+                scalar_value=s_min,
+                global_step=self.global_step)
 
     def save_forward_weight_gradients(self):
         gradient_norm = torch.norm(self.forward_weights_grad)
@@ -449,8 +454,9 @@ class LeakyReluLayer(Layer):
     """ Layer of a neural network with a Leaky RELU activation function"""
 
     def __init__(self, negative_slope, in_dim, layer_dim, writer,
-                 name='leaky_ReLU_layer'):
-        super().__init__(in_dim, layer_dim, writer, name=name)
+                 name='leaky_ReLU_layer', debug_mode=True):
+        super().__init__(in_dim, layer_dim, writer, name=name,
+                         debug_mode=debug_mode)
         self.set_negative_slope(negative_slope)
 
     def set_negative_slope(self, negativeSlope):
@@ -564,12 +570,13 @@ class InputLayer(Layer):
     """ Input layer of the neural network,
     e.g. the pixelvalues of a picture. """
 
-    def __init__(self, layer_dim, writer, name='input_layer'):
+    def __init__(self, layer_dim, writer, name='input_layer',
+                 debug_mode=True):
         """ InputLayer has only a layer_dim and a
         forward activation that can be set,
          no input dimension nor parameters"""
         super().__init__(in_dim=None, layer_dim=layer_dim, writer=writer,
-                         name=name)
+                         name=name, debug_mode=debug_mode)
 
     def propagate_forward(self, lower_layer):
         """ This function should never be called for an input layer,
@@ -611,7 +618,7 @@ class OutputLayer(Layer):
     methods as explained below. """
 
     def __init__(self, in_dim, layer_dim, loss_function, writer,
-                 name='output_layer'):
+                 name='output_layer', debug_mode=True):
         """
         :param in_dim: input dimension of the layer,
         equal to the layer dimension of the second last layer in the network
@@ -619,7 +626,8 @@ class OutputLayer(Layer):
         :param loss: string indicating which loss function is used to
         compute the network loss
         """
-        super().__init__(in_dim, layer_dim, writer, name=name)
+        super().__init__(in_dim, layer_dim, writer, name=name,
+                         debug_mode=debug_mode)
         self.set_loss_function(loss_function)
 
     def set_loss_function(self, loss_function):
@@ -765,7 +773,7 @@ class LinearOutputLayer(OutputLayer):
                              'has shape' + str(target.shape))
 
         if self.loss_function == 'mse':
-            loss_function = nn.MSELoss(reduction='mean')
+            loss_function = nn.MSELoss(reduction='sum')
             forward_output_squeezed = torch.reshape(self.forward_output,
                                                     (self.forward_output.shape[
                                                          0],
@@ -793,7 +801,7 @@ class LinearOutputLayer(OutputLayer):
 class CapsuleOutputLayer(ClassificationOutputLayer):
     def __init__(self, in_dim, layer_dim, nb_classes, writer,
                  loss_function='capsule_loss',
-                 name='output_layer'):
+                 name='output_layer', debug_mode=True):
         """
         :param in_dim: input dimension of the layer,
         equal to the layer dimension of the second last layer in the network
@@ -803,7 +811,7 @@ class CapsuleOutputLayer(ClassificationOutputLayer):
         """
         super().__init__(in_dim=in_dim, layer_dim=layer_dim,
                          loss_function=loss_function, writer=writer,
-                         name=name)
+                         name=name, debug_mode=debug_mode)
         self.set_nb_classes(nb_classes)
         self.set_capsule_indices()
         self.m_plus = 0.9
@@ -855,7 +863,7 @@ class CapsuleOutputLayer(ClassificationOutputLayer):
             self.capsules[:,k,:], dim=1)
 
         self.capsule_squashed = self.capsule_magnitudes ** 2 / (
-                1 + self.capsule_magnitudes) ** 2
+                1 + self.capsule_magnitudes ** 2)
 
     def loss(self, target):
         if self.loss_function == 'capsule_loss':
@@ -868,7 +876,7 @@ class CapsuleOutputLayer(ClassificationOutputLayer):
                 l*(1-target)*torch.max(torch.stack([self.capsule_squashed-m_min,
                 torch.zeros(self.capsule_squashed.shape)]), dim=0)[0]**2
             loss = torch.sum(L_k, dim=1)
-            loss = torch.Tensor([torch.mean(loss)])
+            loss = torch.Tensor([torch.sum(loss)])
             return loss
         else:
             raise NetworkError('Only capsule_loss is defined for a capsule'
@@ -891,11 +899,12 @@ class CapsuleOutputLayer(ClassificationOutputLayer):
         m_min = self.m_min
         m_plus = self.m_plus
         l = self.l
-        Lk_vk = -target*torch.max(torch.stack([m_plus-self.capsule_squashed,
+        Lk_vk = -2*target*torch.max(torch.stack([m_plus-self.capsule_squashed,
                 torch.zeros(self.capsule_squashed.shape)]), dim=0)[0]+ \
-                l*(1-target)*torch.max(torch.stack([self.capsule_squashed-m_min,
+                2*l*(1-target)*torch.max(torch.stack([self.capsule_squashed \
+                                                      -m_min,
                 torch.zeros(self.capsule_squashed.shape)]), dim=0)[0]
-        vk_sk = 1/(1 + self.capsule_magnitudes ** 2) ** 2 * 2 * self.capsules
+        vk_sk = 1/((1 + self.capsule_magnitudes ** 2) ** 2) * 2 * self.capsules
         backward_output = torch.empty(self.forward_linear_activation.shape)
         for k in range(self.nb_classes):
             start = self.capsule_indices[k][0]

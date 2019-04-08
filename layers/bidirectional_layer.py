@@ -19,8 +19,9 @@ class BidirectionalLayer(Layer):
     feedbackward weights."""
 
     def __init__(self, in_dim, layer_dim, out_dim, writer, loss_function='mse',
-                 name='bidirectional_layer'):
-        super().__init__(in_dim, layer_dim, name=name, writer=writer)
+                 name='bidirectional_layer', debug_mode=True):
+        super().__init__(in_dim, layer_dim, name=name, writer=writer,
+                         debug_mode=debug_mode)
         if out_dim is not None:
             # if the layer is an outputlayer, out_dim is None
             self.set_out_dim(out_dim)
