@@ -165,12 +165,9 @@ class Layer(object):
         This method should only be used when creating
         a new layer. Use set_forward_parameters to update the parameters and
         computeGradient to update the gradients"""
-        if True:
-            self.forward_weights = hf.get_invertible_random_matrix(
-                self.layer_dim,
-                self.in_dim)
-        else:
-            self.forward_weights = torch.randn(self.layer_dim, self.in_dim)
+        self.forward_weights = hf.get_invertible_random_matrix(
+            self.layer_dim,
+            self.in_dim)
         self.forward_bias = torch.zeros(self.layer_dim, 1)
         self.forward_weights_grad = torch.zeros(self.layer_dim, self.in_dim)
         self.forward_bias_grad = torch.zeros(self.layer_dim, 1)

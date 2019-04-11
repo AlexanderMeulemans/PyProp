@@ -120,7 +120,11 @@ def get_invertible_random_matrix(rows, cols, threshold=0.4, max_iter=300):
     return m.to(device)
 
 def get_invertible_neighbourhood_matrix(matrix, distance, threshold=0.4):
+    cpu = torch.device('cpu')
     m = torch.randn(matrix.shape[0], matrix.shape[1])
+    device = m.device
+    m = m.to(cpu)
+    matrix = matrix.to(cpu)
     norm = torch.norm(m)
     m = distance/norm*m
     matrix_n = matrix + m
@@ -130,6 +134,7 @@ def get_invertible_neighbourhood_matrix(matrix, distance, threshold=0.4):
     iter = 0
     while s_max * s_min < threshold:
         m = torch.randn(matrix.shape[0], matrix.shape[1])
+        m.to(cpu)
         norm = torch.norm(m)
         m = distance / norm * m
         matrix_n = matrix + m
@@ -138,4 +143,4 @@ def get_invertible_neighbourhood_matrix(matrix, distance, threshold=0.4):
         s_min = S[-1]
         iter += 1
 
-    return matrix_n
+    return matrix_n.to(device)
