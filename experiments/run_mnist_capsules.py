@@ -8,7 +8,7 @@ You may obtain a copy of the License at
    http://www.apache.org/licenses/LICENSE-2.0
 """
 import sys
-sys.path.append('..')
+sys.path.append('.')
 from layers.layer import ReluLayer, InputLayer, CapsuleOutputLayer
 from networks.network import Network
 from optimizers.optimizers import SGD, SGDMomentum
@@ -30,6 +30,7 @@ random.seed(seed)
 # User variables
 batch_size = 1
 dim = 28*28
+cpu = True
 
 # Initializing network
 
@@ -38,17 +39,21 @@ log_dir = '../logs/MNIST_BP_capsule'
 writer = SummaryWriter(log_dir=log_dir)
 
 # ======== set device ============
-if torch.cuda.is_available():
-    gpu_idx = 0
-    device = torch.device("cuda:{}".format(gpu_idx))
-    # IMPORTANT: set_default_tensor_type uses automatically device 0,
-    # untill now, I did not find a fix for this
-    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-    torch.set_default_tensor_type('torch.cuda.FloatTensor')
-    print('using GPU')
-else:
+if cpu:
     device = torch.device("cpu")
     print('using CPU')
+else:
+    if torch.cuda.is_available():
+        gpu_idx = 0
+        device = torch.device("cuda:{}".format(gpu_idx))
+        # IMPORTANT: set_default_tensor_type uses automatically device 0,
+        # untill now, I did not find a fix for this
+        os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+        torch.set_default_tensor_type('torch.cuda.FloatTensor')
+        print('using GPU')
+    else:
+        device = torch.device("cpu")
+        print('using CPU')
 
 # ======== Design network =============
 
