@@ -165,7 +165,7 @@ class Layer(object):
         This method should only be used when creating
         a new layer. Use set_forward_parameters to update the parameters and
         computeGradient to update the gradients"""
-        if True:
+        if self.debug_mode:
             self.forward_weights = hf.get_invertible_random_matrix(
                 self.layer_dim,
                 self.in_dim)
