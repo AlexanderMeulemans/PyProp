@@ -24,11 +24,11 @@ class BidirectionalNetwork(Network):
         """
         if not isinstance(target, torch.Tensor):
             raise TypeError("Expecting a torch.Tensor object as target")
-        if not self.layers[-1].forward_output.shape == target.shape:
-            raise ValueError('Expecting a tensor of dimensions: '
-                             'batchdimension x class dimension x 1.'
-                             ' Given target'
-                             'has shape' + str(target.shape))
+        # if not self.layers[-1].forward_output.shape == target.shape:
+        #     raise ValueError('Expecting a tensor of dimensions: '
+        #                      'batchdimension x class dimension x 1.'
+        #                      ' Given target'
+        #                      'has shape' + str(target.shape))
 
         self.layers[-1].compute_backward_output(target)
         for i in range(len(self.layers) - 2, -1, -1):

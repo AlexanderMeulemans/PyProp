@@ -464,6 +464,35 @@ class InvertibleOutputLayer(InvertibleLayer):
         self.save_activations_hist()
         self.save_backward_activations_hist()
 
+    def compute_forward_gradients(self, lower_layer):
+        """
+        :param lower_layer: first layer upstream of the layer self
+        :type lower_layer: Layer
+        :return: saves the gradients of the local cost function to the layer
+        parameters for all the batch samples
+
+        """
+        if lower_layer.forward_output.shape[0] > 1:
+            raise NetworkError('only batch sizes of size 1 are allowed,'
+                               ' as otherwise the '
+                               'inverse computation with sherman-morrisson'
+                               ' is not possible')
+
+        local_loss_der = self.loss_gradient
+
+
+        vectorized_jacobian = self.compute_vectorized_jacobian()
+        u = torch.mul(vectorized_jacobian, local_loss_der)
+        v = lower_layer.forward_output
+
+        weight_gradients = torch.matmul(u, torch.transpose(v, -1, -2))
+
+        bias_gradients = u
+        self.set_weight_update_u(torch.reshape(u, (u.shape[-2], u.shape[-1])))
+        self.set_weight_update_v(torch.reshape(v, (v.shape[-2], v.shape[-1])))
+        self.set_forward_gradients(torch.mean(weight_gradients, 0), torch.mean(
+            bias_gradients, 0))
+
 
 class InvertibleLinearOutputLayer(InvertibleOutputLayer):
     """ Invertible output layer with a linear activation function. This layer
@@ -650,3 +679,195 @@ class InvertibleInputLayer(InvertibleLayer):
         self.save_activations_hist()
         self.save_backward_activations_hist()
         self.save_backward_weights_hist()
+
+
+class InvertibleClassificationOutoputLayer(InvertibleOutputLayer):
+    """
+        Parent class for all output layers used for classification.
+        """
+
+    def propagate_forward(self, lower_layer):
+        """ Normal forward propagation, but on top of that, save the predicted
+        classes in self."""
+        super().propagate_forward(lower_layer)
+        self.predicted_classes = hf.prob2class(self.forward_output)
+
+    def accuracy(self, target):
+        """ Compute the accuracy if the network predictions with respect to
+        the given true targets.
+        :param target: 3D tensor of size batchdimension x class dimension x 1"""
+        if not isinstance(target, torch.Tensor):
+            raise TypeError("Expecting a torch.Tensor object as target")
+        if not isinstance(self, CapsuleOutputLayer):
+            if not self.forward_output.shape == target.shape:
+                raise ValueError(
+                    'Expecting a tensor of dimensions: batchdimension'
+                    ' x class dimension x 1. Given target'
+                    'has shape' + str(target.shape))
+        return hf.accuracy(self.predicted_classes, hf.prob2class(target))
+
+class InvertibleCapsuleOutputLayer(InvertibleClassificationOutoputLayer):
+    """ Output layer with capsule loss for an invertible network. """
+    def __init__(self, in_dim, layer_dim, nb_classes, writer, step_size,
+                 loss_function='capsule_loss',
+                 name='invertible_capsule_output_layer',
+                 debug_mode=True):
+        super().__init__(in_dim, layer_dim,
+                         writer=writer,
+                         step_size=step_size,
+                         loss_function=loss_function,
+                         name=name,
+                         debug_mode=debug_mode)
+        self.set_nb_classes(nb_classes)
+        self.set_capsule_indices()
+        self.m_plus = 0.9
+        self.m_min = 0.1
+        self.l = 0.5
+
+    def set_nb_classes(self, nb_classes):
+        if not isinstance(nb_classes, int):
+            raise TypeError('expecting an integer type for nb_classes, '
+                            'got {}'.format(type(nb_classes)))
+        if nb_classes <= 0:
+            raise ValueError('expecting positive integer for nb_classes,'
+                             'got {}'.format(nb_classes))
+        self.nb_classes = nb_classes
+
+    def set_capsule_indices(self):
+        if not self.layer_dim % self.nb_classes == 0:
+            print('Warning: number of output neurons is not divisible by'
+                  'number of classes. Capsules of unequal lenght are used.')
+        self.excess = self.layer_dim % self.nb_classes
+        self.capsule_base_size = int(self.layer_dim / self.nb_classes)
+        if self.excess == 0:
+            self.capsule_size = self.capsule_base_size
+        else:
+            self.capsule_size = self.capsule_base_size + 1
+        self.capsule_indices = {}
+        start = 0
+        for capsule in range(self.nb_classes):
+            # capsules with index below excess will have 1 element extra
+            if capsule < self.excess:
+                stop = start + self.capsule_base_size + 1
+            else:
+                stop = start + self.capsule_base_size
+            self.capsule_indices[capsule] = (start, stop)
+            start = stop
+
+    def propagate_forward(self, lower_layer):
+        """ Normal forward propagation, but on top of that, save the predicted
+        classes in self."""
+        super(InvertibleClassificationOutoputLayer, self).propagate_forward(
+            lower_layer)
+        self.compute_capsules()
+        self.predicted_classes = hf.prob2class(self.capsule_squashed)
+
+    def forward_nonlinearity(self, linear_activation):
+        return linear_activation
+
+    def inverse_nonlinearity(self, input):
+        return input
+
+    def compute_vectorized_jacobian(self):
+        return torch.ones(self.forward_output.shape)
+
+    def compute_capsules(self):
+        linear_activation = self.forward_linear_activation
+        self.capsule_magnitudes = torch.empty((linear_activation.shape[0],
+                                               self.nb_classes, 1))
+        self.capsules = torch.zeros((linear_activation.shape[0],
+                                     self.nb_classes,
+                                     self.capsule_size))
+        for k in range(self.nb_classes):
+            if k < self.excess:
+                self.capsules[:, k, 0:self.capsule_size] = linear_activation[:,
+                                     self.capsule_indices[k][0]:
+                                     self.capsule_indices[k][1], 0]
+            else:
+                self.capsules[:, k, 0:self.capsule_base_size] = \
+                    linear_activation[:, self.capsule_indices[k][0]:
+                                      self.capsule_indices[k][1], 0]
+            self.capsule_magnitudes[:, k, 0] = torch.norm(
+                self.capsules[:, k, :], dim=1)
+
+        self.capsule_squashed = self.capsule_magnitudes ** 2 / (
+                1 + self.capsule_magnitudes ** 2)
+
+    def loss(self, target):
+        if self.loss_function == 'capsule_loss':
+            # see Hinton - Dynamic routing between capsules
+            l = self.l
+            m_plus = self.m_plus
+            m_min = self.m_min
+            L_k = target * \
+                  torch.max(torch.stack([m_plus - self.capsule_squashed,
+                                         torch.zeros(
+                                             self.capsule_squashed.shape)]),
+                            dim=0)[0] ** 2 + \
+                  l * (1 - target) * \
+                  torch.max(torch.stack([self.capsule_squashed - m_min,
+                                         torch.zeros(
+                                             self.capsule_squashed.shape)]),
+                            dim=0)[0] ** 2
+            loss = torch.sum(L_k, dim=1)
+            loss = torch.Tensor([torch.mean(loss)])
+            return loss
+        else:
+            raise NetworkError('Only capsule_loss is defined for a capsule'
+                               'output layer, got {}'.format(
+                self.loss_function))
+
+    def compute_backward_output(self, target):
+        """ Compute the backward output based on the derivative of the loss to
+        the linear activation of this layer"""
+        if not self.loss_function == 'capsule_loss':
+            raise NetworkError("Only capsule_loss is defined for a capsule"
+                               "output layer, got {}".format(
+                self.loss_function))
+        if not isinstance(target, torch.Tensor):
+            raise TypeError("Expecting a torch.Tensor object as target")
+        if not self.capsule_squashed.shape == target.shape:
+            raise ValueError(
+                'Expecting a tensor of dimensions: batchdimension '
+                'x class dimension x 1. Given target'
+                'has shape' + str(target.shape))
+        m_min = self.m_min
+        m_plus = self.m_plus
+        l = self.l
+        Lk_vk = -2 * target * \
+                torch.max(torch.stack([m_plus - self.capsule_squashed,
+                                       torch.zeros(
+                                           self.capsule_squashed.shape)]),
+                          dim=0)[0] + \
+                2 * l * (1 - target) * \
+                torch.max(torch.stack([self.capsule_squashed \
+                                       - m_min,
+                                       torch.zeros(
+                                           self.capsule_squashed.shape)]),
+                          dim=0)[0]
+        vk_sk = 1 / ((
+                                 1 + self.capsule_magnitudes ** 2) ** 2) * \
+                2 * self.capsules
+        backward_output = torch.empty(self.forward_linear_activation.shape)
+        for k in range(self.nb_classes):
+            start = self.capsule_indices[k][0]
+            stop = self.capsule_indices[k][1]
+
+            if k < self.excess:
+                backward_output[:, start:stop, 0] = Lk_vk[:, k, :] * vk_sk[:, k,
+                                                                 :]
+            else:
+                backward_output[:, start:stop, 0] = Lk_vk[:, k,
+                                                    0:self.capsule_base_size]*\
+                vk_sk[:, k, 0:self.capsule_base_size]
+        backward_output = self.forward_output - torch.mul(backward_output,
+                                                               self.step_size)
+        self.set_backward_output(backward_output)
+
+    def init_forward_parameters(self):
+        """ Initializes the layer parameters when the layer is created.
+                This method should only be used when creating
+                a new layer. Use set_forward_parameters to update the parameters and
+                computeGradient to update the gradients"""
+        super().init_forward_parameters()
+        # self.forward_weights = self.forward_weights / float(self.layer_dim)**0.5

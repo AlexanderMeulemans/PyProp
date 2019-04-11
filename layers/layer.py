@@ -33,13 +33,14 @@ class Layer(object):
         :param layer_dim: Layer dimension
         """
         self.set_layer_dim(layer_dim)
+        self.debug_mode = debug_mode
         if in_dim is not None:  # in_dim is None when layer is inputlayer
             self.set_in_dim(in_dim)
         self.set_name(name)
         self.set_writer(writer=writer)
         self.init_forward_parameters()
         self.global_step = 0  # needed for making plots with tensorboard
-        self.debug_mode = debug_mode
+
 
     def set_writer(self, writer):
         if not isinstance(writer, SummaryWriter):
@@ -65,17 +66,18 @@ class Layer(object):
     def set_name(self, name):
         if not isinstance(name, str):
             raise TypeError("Expecting a string as name for the layer")
-        if not name in self.__class__.all_layer_names:
-            self.name = name
-            self.__class__.all_layer_names.append(name)
-        else:
-            new_name = name
-            i = 1
-            while new_name in self.__class__.all_layer_names:
-                new_name = name + '_' + str(i)
-                i += 1
-            self.name = new_name
-            self.__class__.all_layer_names.append(name)
+        self.name = name
+        # if not name in self.__class__.all_layer_names:
+        #     self.name = name
+        #     self.__class__.all_layer_names.append(name)
+        # else:
+        #     new_name = name
+        #     i = 1
+        #     while new_name in self.__class__.all_layer_names:
+        #         new_name = name + '_' + str(i)
+        #         i += 1
+        #     self.name = new_name
+        #     self.__class__.all_layer_names.append(name)
 
     def set_forward_parameters(self, forward_weights, forward_bias):
         if not isinstance(forward_weights, torch.Tensor):
@@ -163,9 +165,12 @@ class Layer(object):
         This method should only be used when creating
         a new layer. Use set_forward_parameters to update the parameters and
         computeGradient to update the gradients"""
-        # self.forward_weights = hf.get_invertible_random_matrix(self.layer_dim,
-        #                                                        self.in_dim)
-        self.forward_weights = torch.randn(self.layer_dim, self.in_dim)
+        if self.debug_mode:
+            self.forward_weights = hf.get_invertible_random_matrix(
+                self.layer_dim,
+                self.in_dim)
+        else:
+            self.forward_weights = torch.randn(self.layer_dim, self.in_dim)
         self.forward_bias = torch.zeros(self.layer_dim, 1)
         self.forward_weights_grad = torch.zeros(self.layer_dim, self.in_dim)
         self.forward_bias_grad = torch.zeros(self.layer_dim, 1)
@@ -876,7 +881,7 @@ class CapsuleOutputLayer(ClassificationOutputLayer):
                 l*(1-target)*torch.max(torch.stack([self.capsule_squashed-m_min,
                 torch.zeros(self.capsule_squashed.shape)]), dim=0)[0]**2
             loss = torch.sum(L_k, dim=1)
-            loss = torch.Tensor([torch.sum(loss)])
+            loss = torch.Tensor([torch.mean(loss)])
             return loss
         else:
             raise NetworkError('Only capsule_loss is defined for a capsule'
@@ -920,7 +925,7 @@ class CapsuleOutputLayer(ClassificationOutputLayer):
                 a new layer. Use set_forward_parameters to update the parameters and
                 computeGradient to update the gradients"""
         super().init_forward_parameters()
-        self.forward_weights = self.forward_weights / float(self.layer_dim)**0.5
+        # self.forward_weights = self.forward_weights / float(self.layer_dim)**0.5
 
 
 

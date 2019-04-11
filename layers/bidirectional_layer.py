@@ -39,10 +39,6 @@ class BidirectionalLayer(Layer):
         if not isinstance(loss_function, str):
             raise TypeError("Expecting a string to indicate loss function, "
                             "got {}".format(type(loss_function)))
-        if not ((loss_function == 'mse') or (loss_function == 'crossEntropy')):
-            raise ValueError("Only the mse or cross entropy"
-                             " local loss function is defined "
-                             "yet, got {}".format(loss_function))
         self.loss_function = loss_function
 
     def init_backward_parameters(self):
