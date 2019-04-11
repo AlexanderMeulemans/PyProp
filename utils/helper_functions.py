@@ -95,7 +95,10 @@ def init_logdir(dr):
 
 
 def get_invertible_random_matrix(rows, cols, threshold=0.4, max_iter=300):
+    cpu = torch.device('cpu')
     m = torch.randn(rows, cols)
+    device = m.device
+    m = m.to(cpu)
     U, S, V = torch.svd(m)
     s_max = S[0]
     s_min = S[-1]
@@ -103,6 +106,7 @@ def get_invertible_random_matrix(rows, cols, threshold=0.4, max_iter=300):
 
     while s_max * s_min < threshold:
         m = torch.randn(rows, cols)
+        m = m.to(cpu)
         U, S, V = torch.svd(m)
         s_max = S[0]
         s_min = S[-1]
@@ -113,7 +117,7 @@ def get_invertible_random_matrix(rows, cols, threshold=0.4, max_iter=300):
                                  'random matrix returned without '
                                  'checking the singular values')
 
-    return m
+    return m.to(device)
 
 def get_invertible_neighbourhood_matrix(matrix, distance, threshold=0.4):
     m = torch.randn(matrix.shape[0], matrix.shape[1])

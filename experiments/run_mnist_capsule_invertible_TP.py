@@ -93,13 +93,15 @@ train_set = torchvision.datasets.MNIST(root='./data', train=True, download=True,
                                            [
                                                torchvision.transforms.ToTensor(),
                                                torchvision.transforms.Normalize(
-                                                   (0.1307,), (0.3081,))
+                                                   (0.1307,),
+                                                   (0.3081,))
                                            ]))
 test_set = torchvision.datasets.MNIST(root='./data', train=False, download=True,
                                       transform=torchvision.transforms.Compose([
                                           torchvision.transforms.ToTensor(),
                                           torchvision.transforms.Normalize(
-                                              (0.1307,), (0.3081,))
+                                              (0.1307,),
+                                              (0.3081,))
                                       ]))
 
 
@@ -114,9 +116,9 @@ test_loader = torch.utils.data.DataLoader(
     shuffle=False)
 
 # Initializing optimizer
-optimizer1 = SGD(network=network, threshold=0.0001, init_learning_rate=1.0,
+optimizer1 = SGD(network=network, threshold=0.0001, init_learning_rate=0.1,
                  tau=100,
-                 final_learning_rate=0.05,
+                 final_learning_rate=0.005,
                  compute_accuracies=True, max_epoch=120)
 optimizer2 = SGDMomentum(network=network, threshold=0.0001, init_learning_rate=1.0,
                          tau=100, final_learning_rate=0.05,
@@ -125,11 +127,11 @@ optimizer3 = SGDInvertible(
     network=network,
     threshold=0.001,
     init_step_size=0.2,
-    tau=100,
+    tau=200,
     final_step_size=0.01,
     learning_rate=0.5,
     compute_accuracies=True,
-    max_epoch=150
+    max_epoch=250
 )
 
 # Train on MNIST
