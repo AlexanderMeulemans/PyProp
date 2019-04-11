@@ -372,6 +372,7 @@ class InvertibleOutputLayer(InvertibleLayer):
 
     def __init__(self, in_dim, layer_dim, writer, step_size,
                  loss_function='mse',
+                 output_loss_function='mse',
                  name='invertible_output_layer',
                  debug_mode=True):
         super().__init__(in_dim, layer_dim, writer=writer,
@@ -380,6 +381,12 @@ class InvertibleOutputLayer(InvertibleLayer):
                          name=name,
                          debug_mode=debug_mode)
         self.set_stepsize(step_size)
+        self.set_output_loss_function(output_loss_function)
+
+    def set_output_loss_function(self, output_loss_function):
+        if not isinstance(output_loss_function, str):
+            raise TypeError('Expecting string for output_loss_function')
+        self.output_loss_function = output_loss_function
 
     def set_stepsize(self, step_size):
         if not isinstance(step_size, float):
@@ -402,7 +409,7 @@ class InvertibleOutputLayer(InvertibleLayer):
             raise ValueError('Expecting a tensor of dimensions: batchdimension'
                              ' x class dimension x 1. Given target'
                              'has shape' + str(target.shape))
-        if self.loss_function == 'crossEntropy':
+        if self.output_loss_function == 'crossEntropy':
             # Convert output 'class probabilities' to one class per batch sample
             #  (with highest class probability)
             target_classes = hf.prob2class(target)
@@ -413,7 +420,7 @@ class InvertibleOutputLayer(InvertibleLayer):
                                                        1]))
             loss = loss_function(forward_output_squeezed, target_classes)
             return torch.Tensor([torch.mean(loss)])
-        elif self.loss_function == 'mse':
+        elif self.output_loss_function == 'mse':
             loss_function = nn.MSELoss()
             forward_output_squeezed = torch.reshape(self.forward_output,
                                                   (self.forward_output.shape[0],
@@ -464,35 +471,6 @@ class InvertibleOutputLayer(InvertibleLayer):
         self.save_activations_hist()
         self.save_backward_activations_hist()
 
-    def compute_forward_gradients(self, lower_layer):
-        """
-        :param lower_layer: first layer upstream of the layer self
-        :type lower_layer: Layer
-        :return: saves the gradients of the local cost function to the layer
-        parameters for all the batch samples
-
-        """
-        if lower_layer.forward_output.shape[0] > 1:
-            raise NetworkError('only batch sizes of size 1 are allowed,'
-                               ' as otherwise the '
-                               'inverse computation with sherman-morrisson'
-                               ' is not possible')
-
-        local_loss_der = self.loss_gradient
-
-
-        vectorized_jacobian = self.compute_vectorized_jacobian()
-        u = torch.mul(vectorized_jacobian, local_loss_der)
-        v = lower_layer.forward_output
-
-        weight_gradients = torch.matmul(u, torch.transpose(v, -1, -2))
-
-        bias_gradients = u
-        self.set_weight_update_u(torch.reshape(u, (u.shape[-2], u.shape[-1])))
-        self.set_weight_update_v(torch.reshape(v, (v.shape[-2], v.shape[-1])))
-        self.set_forward_gradients(torch.mean(weight_gradients, 0), torch.mean(
-            bias_gradients, 0))
-
 
 class InvertibleLinearOutputLayer(InvertibleOutputLayer):
     """ Invertible output layer with a linear activation function. This layer
@@ -512,7 +490,7 @@ class InvertibleLinearOutputLayer(InvertibleOutputLayer):
         """ Compute the backward output based on a small move from the
         forward output in the direction of the negative gradient of the loss
         function."""
-        if not self.loss_function == 'mse':
+        if not self.output_loss_function == 'mse':
             raise NetworkError("a linear output layer can only be combined "
                                "with a mse loss")
         if not isinstance(target, torch.Tensor):
@@ -532,13 +510,15 @@ class InvertibleSoftmaxOutputLayer(InvertibleOutputLayer):
     function."""
 
     def __init__(self, in_dim, layer_dim, writer, step_size,
-                 loss_function='crossEntropy',
+                 loss_function='mse',
+                 output_loss_function='crossEntropy',
                  name='invertible_softmax_output_layer',
                  debug_mode=True):
         super().__init__(in_dim, layer_dim,
                          writer=writer,
                          step_size=step_size,
                          loss_function=loss_function,
+                         output_loss_function=output_loss_function,
                          name=name,
                          debug_mode=debug_mode)
         self.normalization_constant = None
@@ -564,7 +544,7 @@ class InvertibleSoftmaxOutputLayer(InvertibleOutputLayer):
         """ Compute the backward output based on a small move from the
         forward output in the direction of the negative gradient of the loss
         function."""
-        if not self.loss_function == 'crossEntropy':
+        if not self.output_loss_function == 'crossEntropy':
             raise NetworkError("a softmax output layer can only be combined "
                                "with a crossEntropy loss")
         if not isinstance(target, torch.Tensor):
@@ -608,10 +588,10 @@ class InvertibleSoftmaxOutputLayer(InvertibleOutputLayer):
                                ' as otherwise the '
                                'inverse computation with sherman-morrisson'
                                ' is not possible')
-        if not self.loss_function == 'crossEntropy':
-            raise NetworkError('softmax ouptput layer should always be'
-                               'combined with crossEntropy loss, now got {}'
-                               'instead'.format(self.loss_function))
+        if not self.loss_function == 'mse':
+            raise NetworkError('only mse loss function is defined as a '
+                               'local layer costfuntion. Now got'
+                               ' {}'.format(self.loss_function))
 
         u = self.forward_output - self.backward_output
         v = lower_layer.forward_output
@@ -681,7 +661,7 @@ class InvertibleInputLayer(InvertibleLayer):
         self.save_backward_weights_hist()
 
 
-class InvertibleClassificationOutoputLayer(InvertibleOutputLayer):
+class InvertibleClassificationOutputLayer(InvertibleOutputLayer):
     """
         Parent class for all output layers used for classification.
         """
@@ -698,7 +678,7 @@ class InvertibleClassificationOutoputLayer(InvertibleOutputLayer):
         :param target: 3D tensor of size batchdimension x class dimension x 1"""
         if not isinstance(target, torch.Tensor):
             raise TypeError("Expecting a torch.Tensor object as target")
-        if not isinstance(self, CapsuleOutputLayer):
+        if not isinstance(self, InvertibleCapsuleOutputLayer):
             if not self.forward_output.shape == target.shape:
                 raise ValueError(
                     'Expecting a tensor of dimensions: batchdimension'
@@ -706,16 +686,18 @@ class InvertibleClassificationOutoputLayer(InvertibleOutputLayer):
                     'has shape' + str(target.shape))
         return hf.accuracy(self.predicted_classes, hf.prob2class(target))
 
-class InvertibleCapsuleOutputLayer(InvertibleClassificationOutoputLayer):
+class InvertibleCapsuleOutputLayer(InvertibleClassificationOutputLayer):
     """ Output layer with capsule loss for an invertible network. """
     def __init__(self, in_dim, layer_dim, nb_classes, writer, step_size,
-                 loss_function='capsule_loss',
+                 output_loss_function='capsule_loss',
+                 loss_function='mse',
                  name='invertible_capsule_output_layer',
                  debug_mode=True):
         super().__init__(in_dim, layer_dim,
                          writer=writer,
                          step_size=step_size,
                          loss_function=loss_function,
+                         output_loss_function=output_loss_function,
                          name=name,
                          debug_mode=debug_mode)
         self.set_nb_classes(nb_classes)
@@ -757,7 +739,7 @@ class InvertibleCapsuleOutputLayer(InvertibleClassificationOutoputLayer):
     def propagate_forward(self, lower_layer):
         """ Normal forward propagation, but on top of that, save the predicted
         classes in self."""
-        super(InvertibleClassificationOutoputLayer, self).propagate_forward(
+        super(InvertibleClassificationOutputLayer, self).propagate_forward(
             lower_layer)
         self.compute_capsules()
         self.predicted_classes = hf.prob2class(self.capsule_squashed)
@@ -794,7 +776,7 @@ class InvertibleCapsuleOutputLayer(InvertibleClassificationOutoputLayer):
                 1 + self.capsule_magnitudes ** 2)
 
     def loss(self, target):
-        if self.loss_function == 'capsule_loss':
+        if self.output_loss_function == 'capsule_loss':
             # see Hinton - Dynamic routing between capsules
             l = self.l
             m_plus = self.m_plus
@@ -815,15 +797,15 @@ class InvertibleCapsuleOutputLayer(InvertibleClassificationOutoputLayer):
         else:
             raise NetworkError('Only capsule_loss is defined for a capsule'
                                'output layer, got {}'.format(
-                self.loss_function))
+                self.output_loss_function))
 
     def compute_backward_output(self, target):
         """ Compute the backward output based on the derivative of the loss to
         the linear activation of this layer"""
-        if not self.loss_function == 'capsule_loss':
+        if not self.output_loss_function == 'capsule_loss':
             raise NetworkError("Only capsule_loss is defined for a capsule"
                                "output layer, got {}".format(
-                self.loss_function))
+                self.output_loss_function))
         if not isinstance(target, torch.Tensor):
             raise TypeError("Expecting a torch.Tensor object as target")
         if not self.capsule_squashed.shape == target.shape:

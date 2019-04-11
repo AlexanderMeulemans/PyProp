@@ -121,9 +121,9 @@ optimizer2 = SGDMomentum(network=network, threshold=0.0001, init_learning_rate=1
 optimizer3 = SGDInvertible(
     network=network,
     threshold=0.001,
-    init_step_size=2.0,
+    init_step_size=0.2,
     tau=100,
-    final_step_size=0.1,
+    final_step_size=0.01,
     learning_rate=0.5,
     compute_accuracies=True,
     max_epoch=150

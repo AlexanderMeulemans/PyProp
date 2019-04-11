@@ -30,7 +30,7 @@ random.seed(seed)
 # User variables
 batch_size = 1
 dim = 28*28
-cpu = True
+cpu = False
 
 # Initializing network
 
@@ -96,9 +96,9 @@ test_loader = torch.utils.data.DataLoader(
     shuffle=False)
 
 # Initializing optimizer
-optimizer1 = SGD(network=network, threshold=0.0001, init_learning_rate=1.0,
+optimizer1 = SGD(network=network, threshold=0.0001, init_learning_rate=0.1,
                  tau=200,
-                 final_learning_rate=0.05,
+                 final_learning_rate=0.005,
                  compute_accuracies=True, max_epoch=250)
 optimizer2 = SGDMomentum(network=network, threshold=0.0001, init_learning_rate=1.0,
                          tau=100, final_learning_rate=0.05,
