@@ -7,6 +7,9 @@ You may obtain a copy of the License at
 
    http://www.apache.org/licenses/LICENSE-2.0
 """
+
+import sys
+sys.path.append('.')
 from layers.invertible_layer import InvertibleLeakyReluLayer
 from layers.invertible_layer import InvertibleInputLayer
 from layers.invertible_layer import InvertibleCapsuleOutputLayer
