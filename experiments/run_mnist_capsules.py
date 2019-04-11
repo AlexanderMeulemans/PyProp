@@ -7,6 +7,8 @@ You may obtain a copy of the License at
 
    http://www.apache.org/licenses/LICENSE-2.0
 """
+import sys
+sys.path.append('..')
 from layers.layer import ReluLayer, InputLayer, CapsuleOutputLayer
 from networks.network import Network
 from optimizers.optimizers import SGD, SGDMomentum
