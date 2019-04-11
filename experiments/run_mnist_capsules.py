@@ -27,6 +27,7 @@ random.seed(seed)
 
 # User variables
 batch_size = 1
+dim = 28*28
 
 # Initializing network
 
@@ -51,9 +52,9 @@ else:
 
 inputlayer = InputLayer(layer_dim=28 * 28, writer=writer, name='input_layer_BP',
                         debug_mode=False)
-hiddenlayer = ReluLayer(in_dim=28 * 28, layer_dim=100, writer=writer,
+hiddenlayer = ReluLayer(in_dim=28 * 28, layer_dim=dim, writer=writer,
                         name='hidden_layer_BP', debug_mode=False)
-outputlayer = CapsuleOutputLayer(in_dim=100, layer_dim=100, nb_classes=10,
+outputlayer = CapsuleOutputLayer(in_dim=dim, layer_dim=dim, nb_classes=10,
                                  writer=writer, name='output_layer_BP',
                                  debug_mode=False)
 

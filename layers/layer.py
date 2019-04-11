@@ -94,12 +94,12 @@ class Layer(object):
         if not forward_bias.shape == self.forward_bias.shape:
             raise ValueError("forward_bias has not the correct shape")
 
-        if torch.max(torch.abs(forward_weights)) > 1e3:
-            print('forward_weights of {} have gone unbounded'.format(
-                self.name))
-        if torch.max(torch.abs(forward_bias)) > 1e3:
-            print('forwardBiases of {} have gone unbounded'.format(
-                self.name))
+        # if torch.max(torch.abs(forward_weights)) > 1e3:
+        #     print('forward_weights of {} have gone unbounded'.format(
+        #         self.name))
+        # if torch.max(torch.abs(forward_bias)) > 1e3:
+        #     print('forwardBiases of {} have gone unbounded'.format(
+        #         self.name))
         self.forward_weights = forward_weights
         self.forward_bias = forward_bias
 
@@ -119,12 +119,12 @@ class Layer(object):
         if not forward_bias_grad.shape == self.forward_bias_grad.shape:
             raise ValueError("forward_bias_grad has not the correct shape")
 
-        if torch.max(torch.abs(forward_weights_grad)) > 1e3:
-            print('forward_weights_grad of {} have gone unbounded'.format(
-                self.name))
-        if torch.max(torch.abs(forward_bias_grad)) > 1e3:
-            print('forwardBiasesGrad of {} have gone unbounded'.format(
-                self.name))
+        # if torch.max(torch.abs(forward_weights_grad)) > 1e3:
+        #     print('forward_weights_grad of {} have gone unbounded'.format(
+        #         self.name))
+        # if torch.max(torch.abs(forward_bias_grad)) > 1e3:
+        #     print('forwardBiasesGrad of {} have gone unbounded'.format(
+        #         self.name))
         self.forward_weights_grad = forward_weights_grad
         self.forward_bias_grad = forward_bias_grad
 
@@ -156,9 +156,9 @@ class Layer(object):
         if not backward_output.size(-1) == 1:
             raise ValueError("Expecting same dimension as layer_dim")
         self.backward_output = backward_output
-        if torch.max(torch.abs(backward_output)) > 1e2:
-            print('backwardOutputs of {} have gone unbounded: {}'.format(
-                self.name, torch.max(torch.abs(backward_output))))
+        # if torch.max(torch.abs(backward_output)) > 1e2:
+        #     print('backwardOutputs of {} have gone unbounded: {}'.format(
+        #         self.name, torch.max(torch.abs(backward_output))))
 
     def init_forward_parameters(self):
         """ Initializes the layer parameters when the layer is created.
@@ -248,9 +248,9 @@ class Layer(object):
         forward_output = self.forward_nonlinearity(
             self.forward_linear_activation)
         self.set_forward_output(forward_output)
-        if torch.max(torch.abs(forward_output)) > 1e3:
-            print('forwardOutputs of {} have gone unbounded'.format(
-                self.name))
+        # if torch.max(torch.abs(forward_output)) > 1e3:
+        #     print('forwardOutputs of {} have gone unbounded'.format(
+        #         self.name))
 
     def forward_nonlinearity(self, linear_activation):
         """ This method should be always overwritten by the children"""
@@ -443,14 +443,14 @@ class ReluLayer(Layer):
             upper_layer.forward_weights, -1, -2), self.backward_input),
             activation_der)
         self.set_backward_output(backward_output)
-        if torch.max(torch.abs(backward_output)) > 1e3:
-            print('backwardOutputs of {} have gone unbounded'.format(
-                self.name))
-            print('max backward_input: {}'.format(torch.max(torch.abs(
-                self.backward_input))))
-            print('upper layer max forward weights: {}'.format(
-                torch.max(torch.abs(upper_layer.forward_weights))
-            ))
+        # if torch.max(torch.abs(backward_output)) > 1e3:
+            # print('backwardOutputs of {} have gone unbounded'.format(
+            #     self.name))
+            # print('max backward_input: {}'.format(torch.max(torch.abs(
+            #     self.backward_input))))
+            # print('upper layer max forward weights: {}'.format(
+            #     torch.max(torch.abs(upper_layer.forward_weights))
+            # ))
             # print('Jacobian:')
             # print(activation_der)
 
@@ -761,9 +761,9 @@ class LinearOutputLayer(OutputLayer):
                              'has shape' + str(target.shape))
         backward_output = 2 * (self.forward_output - target)
         self.set_backward_output(backward_output)
-        if torch.max(torch.abs(backward_output)) > 1e3:
-            print('backwardOutputs of {} have gone unbounded: {}'.format(
-                self.name, torch.max(torch.abs(backward_output))))
+        # if torch.max(torch.abs(backward_output)) > 1e3:
+        #     print('backwardOutputs of {} have gone unbounded: {}'.format(
+        #         self.name, torch.max(torch.abs(backward_output))))
 
     def loss(self, target):
         """ Compute the loss with respect to the target
@@ -789,11 +789,11 @@ class LinearOutputLayer(OutputLayer):
                                              target.shape[1]))
             loss = loss_function(forward_output_squeezed, target_squeezed)
             loss = torch.Tensor([torch.mean(loss)])
-            if loss > 1e2:
-                print('loss is bigger than 100. Loss: {}'.format(loss))
-                print('max difference: {}'.format(torch.max(torch.abs(
-                    forward_output_squeezed - target_squeezed
-                ))))
+            # if loss > 1e2:
+            #     # print('loss is bigger than 100. Loss: {}'.format(loss))
+            #     # print('max difference: {}'.format(torch.max(torch.abs(
+            #     #     forward_output_squeezed - target_squeezed
+            #     # ))))
 
             return loss
 
@@ -806,17 +806,13 @@ class LinearOutputLayer(OutputLayer):
 class CapsuleOutputLayer(ClassificationOutputLayer):
     def __init__(self, in_dim, layer_dim, nb_classes, writer,
                  loss_function='capsule_loss',
-                 name='output_layer', debug_mode=True):
-        """
-        :param in_dim: input dimension of the layer,
-        equal to the layer dimension of the second last layer in the network
-        :param layer_dim: Layer dimension
-        :param loss: string indicating which loss function is used to
-        compute the network loss
-        """
-        super().__init__(in_dim=in_dim, layer_dim=layer_dim,
-                         loss_function=loss_function, writer=writer,
-                         name=name, debug_mode=debug_mode)
+                 name='invertible_capsule_output_layer',
+                 debug_mode=True):
+        super().__init__(in_dim, layer_dim,
+                         writer=writer,
+                         loss_function=loss_function,
+                         name=name,
+                         debug_mode=debug_mode)
         self.set_nb_classes(nb_classes)
         self.set_capsule_indices()
         self.m_plus = 0.9
@@ -834,14 +830,24 @@ class CapsuleOutputLayer(ClassificationOutputLayer):
 
     def set_capsule_indices(self):
         if not self.layer_dim % self.nb_classes == 0:
-            raise NetworkError('Layer dimension should be divisible by the '
-                               'number of classes')
-        capsule_size = int(self.layer_dim/self.nb_classes)
-        self.capsule_size = capsule_size
+            print('Warning: number of output neurons is not divisible by'
+                  'number of classes. Capsules of unequal lenght are used.')
+        self.excess = self.layer_dim % self.nb_classes
+        self.capsule_base_size = int(self.layer_dim / self.nb_classes)
+        if self.excess == 0:
+            self.capsule_size = self.capsule_base_size
+        else:
+            self.capsule_size = self.capsule_base_size + 1
         self.capsule_indices = {}
+        start = 0
         for capsule in range(self.nb_classes):
-            self.capsule_indices[capsule]=(capsule*capsule_size,
-                                           (capsule+1)*capsule_size)
+            # capsules with index below excess will have 1 element extra
+            if capsule < self.excess:
+                stop = start + self.capsule_base_size + 1
+            else:
+                stop = start + self.capsule_base_size
+            self.capsule_indices[capsule] = (start, stop)
+            start = stop
 
     def propagate_forward(self, lower_layer):
         """ Normal forward propagation, but on top of that, save the predicted
@@ -857,15 +863,22 @@ class CapsuleOutputLayer(ClassificationOutputLayer):
         linear_activation = self.forward_linear_activation
         self.capsule_magnitudes = torch.empty((linear_activation.shape[0],
                                                self.nb_classes, 1))
-        self.capsules = torch.empty((linear_activation.shape[0],
-                                               self.nb_classes,
+        self.capsules = torch.zeros((linear_activation.shape[0],
+                                     self.nb_classes,
                                      self.capsule_size))
         for k in range(self.nb_classes):
-            self.capsules[:,k,:] = linear_activation[:,
-                                     self.capsule_indices[k][0]:
-                                     self.capsule_indices[k][1], 0]
+            if k < self.excess:
+                self.capsules[:, k, 0:self.capsule_size] = linear_activation[:,
+                                                           self.capsule_indices[
+                                                               k][0]:
+                                                           self.capsule_indices[
+                                                               k][1], 0]
+            else:
+                self.capsules[:, k, 0:self.capsule_base_size] = \
+                    linear_activation[:, self.capsule_indices[k][0]:
+                                         self.capsule_indices[k][1], 0]
             self.capsule_magnitudes[:, k, 0] = torch.norm(
-            self.capsules[:,k,:], dim=1)
+                self.capsules[:, k, :], dim=1)
 
         self.capsule_squashed = self.capsule_magnitudes ** 2 / (
                 1 + self.capsule_magnitudes ** 2)
@@ -876,10 +889,16 @@ class CapsuleOutputLayer(ClassificationOutputLayer):
             l = self.l
             m_plus = self.m_plus
             m_min = self.m_min
-            L_k = target*torch.max(torch.stack([m_plus-self.capsule_squashed,
-                torch.zeros(self.capsule_squashed.shape)]), dim=0)[0]**2 + \
-                l*(1-target)*torch.max(torch.stack([self.capsule_squashed-m_min,
-                torch.zeros(self.capsule_squashed.shape)]), dim=0)[0]**2
+            L_k = target * \
+                  torch.max(torch.stack([m_plus - self.capsule_squashed,
+                                         torch.zeros(
+                                             self.capsule_squashed.shape)]),
+                            dim=0)[0] ** 2 + \
+                  l * (1 - target) * \
+                  torch.max(torch.stack([self.capsule_squashed - m_min,
+                                         torch.zeros(
+                                             self.capsule_squashed.shape)]),
+                            dim=0)[0] ** 2
             loss = torch.sum(L_k, dim=1)
             loss = torch.Tensor([torch.mean(loss)])
             return loss
@@ -898,24 +917,40 @@ class CapsuleOutputLayer(ClassificationOutputLayer):
         if not isinstance(target, torch.Tensor):
             raise TypeError("Expecting a torch.Tensor object as target")
         if not self.capsule_squashed.shape == target.shape:
-            raise ValueError('Expecting a tensor of dimensions: batchdimension '
-                             'x class dimension x 1. Given target'
-                             'has shape' + str(target.shape))
+            raise ValueError(
+                'Expecting a tensor of dimensions: batchdimension '
+                'x class dimension x 1. Given target'
+                'has shape' + str(target.shape))
         m_min = self.m_min
         m_plus = self.m_plus
         l = self.l
-        Lk_vk = -2*target*torch.max(torch.stack([m_plus-self.capsule_squashed,
-                torch.zeros(self.capsule_squashed.shape)]), dim=0)[0]+ \
-                2*l*(1-target)*torch.max(torch.stack([self.capsule_squashed \
-                                                      -m_min,
-                torch.zeros(self.capsule_squashed.shape)]), dim=0)[0]
-        vk_sk = 1/((1 + self.capsule_magnitudes ** 2) ** 2) * 2 * self.capsules
+        Lk_vk = -2 * target * \
+                torch.max(torch.stack([m_plus - self.capsule_squashed,
+                                       torch.zeros(
+                                           self.capsule_squashed.shape)]),
+                          dim=0)[0] + \
+                2 * l * (1 - target) * \
+                torch.max(torch.stack([self.capsule_squashed \
+                                       - m_min,
+                                       torch.zeros(
+                                           self.capsule_squashed.shape)]),
+                          dim=0)[0]
+        vk_sk = 1 / ((
+                             1 + self.capsule_magnitudes ** 2) ** 2) * \
+                2 * self.capsules
         backward_output = torch.empty(self.forward_linear_activation.shape)
         for k in range(self.nb_classes):
             start = self.capsule_indices[k][0]
             stop = self.capsule_indices[k][1]
 
-            backward_output[:, start:stop, 0] = Lk_vk[:,k,:]*vk_sk[:,k,:]
+            if k < self.excess:
+                backward_output[:, start:stop, 0] = Lk_vk[:, k, :] * vk_sk[:, k,
+                                                                     :]
+            else:
+                backward_output[:, start:stop, 0] = Lk_vk[:, k,
+                                                    0:self.capsule_base_size] * \
+                                                    vk_sk[:, k,
+                                                    0:self.capsule_base_size]
 
         self.set_backward_output(backward_output)
 
