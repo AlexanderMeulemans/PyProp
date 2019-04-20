@@ -21,7 +21,7 @@ class InvertibleLayer(BidirectionalLayer):
 
     def __init__(self, in_dim, layer_dim, out_dim, writer, loss_function='mse',
                  name='invertible_layer', epsilon=0.5, debug_mode=True,
-                 weight_decay=0.0):
+                 weight_decay=0.0, fixed=False):
         if in_dim is not None:
             if in_dim < layer_dim:
                 raise ValueError(
@@ -37,7 +37,8 @@ class InvertibleLayer(BidirectionalLayer):
                          name=name,
                          writer=writer,
                          debug_mode=debug_mode,
-                         weight_decay=weight_decay)
+                         weight_decay=weight_decay,
+                         fixed=fixed)
         self.init_forward_parameters_tilde()
         self.set_epsilon(epsilon)
 
@@ -306,13 +307,15 @@ class InvertibleLeakyReluLayer(InvertibleLayer):
                  loss_function='mse',
                  name='invertible_leaky_ReLU_layer',
                  debug_mode=True,
-                 weight_decay=0.0):
+                 weight_decay=0.0,
+                 fixed=False):
         super().__init__(in_dim, layer_dim, out_dim,
                          writer=writer,
                          loss_function=loss_function,
                          name=name,
                          debug_mode=debug_mode,
-                         weight_decay=weight_decay)
+                         weight_decay=weight_decay,
+                         fixed=fixed)
         self.setNegativeSlope(negative_slope)
 
     def setNegativeSlope(self, negative_slope):
@@ -379,13 +382,15 @@ class InvertibleOutputLayer(InvertibleLayer):
                  output_loss_function='mse',
                  name='invertible_output_layer',
                  debug_mode=True,
-                 weight_decay=0.0):
+                 weight_decay=0.0,
+                 fixed=False):
         super().__init__(in_dim, layer_dim, writer=writer,
                          out_dim=None,
                          loss_function=loss_function,
                          name=name,
                          debug_mode=debug_mode,
-                         weight_decay=weight_decay)
+                         weight_decay=weight_decay,
+                         fixed=fixed)
         self.set_stepsize(step_size)
         self.set_output_loss_function(output_loss_function)
 
@@ -520,7 +525,8 @@ class InvertibleSoftmaxOutputLayer(InvertibleOutputLayer):
                  output_loss_function='crossEntropy',
                  name='invertible_softmax_output_layer',
                  debug_mode=True,
-                 weight_decay=0.0):
+                 weight_decay=0.0,
+                 fixed=False):
         super().__init__(in_dim, layer_dim,
                          writer=writer,
                          step_size=step_size,
@@ -528,7 +534,8 @@ class InvertibleSoftmaxOutputLayer(InvertibleOutputLayer):
                          output_loss_function=output_loss_function,
                          name=name,
                          debug_mode=debug_mode,
-                         weight_decay=weight_decay)
+                         weight_decay=weight_decay,
+                         fixed=fixed)
         self.normalization_constant = None
 
     def forward_nonlinearity(self, linear_activation):
@@ -621,14 +628,16 @@ class InvertibleInputLayer(InvertibleLayer):
                  loss_function='mse',
                  name='invertible_input_layer',
                  debug_mode=True,
-                 weight_decay=0.0):
+                 weight_decay=0.0,
+                 fixed=False):
         super().__init__(in_dim=None, layer_dim=layer_dim,
                          out_dim=out_dim,
                          writer=writer,
                          loss_function=loss_function,
                          name=name,
                          debug_mode=debug_mode,
-                         weight_decay=weight_decay)
+                         weight_decay=weight_decay,
+                         fixed=fixed)
 
     def init_forward_parameters(self):
         """ InputLayer has no forward parameters"""
@@ -703,7 +712,8 @@ class InvertibleCapsuleOutputLayer(InvertibleClassificationOutputLayer):
                  loss_function='mse',
                  name='invertible_capsule_output_layer',
                  debug_mode=True,
-                 weight_decay=0.0):
+                 weight_decay=0.0,
+                 fixed=False):
         super().__init__(in_dim, layer_dim,
                          writer=writer,
                          step_size=step_size,
@@ -711,7 +721,8 @@ class InvertibleCapsuleOutputLayer(InvertibleClassificationOutputLayer):
                          output_loss_function=output_loss_function,
                          name=name,
                          debug_mode=debug_mode,
-                         weight_decay=weight_decay)
+                         weight_decay=weight_decay,
+                         fixed=fixed)
         self.set_nb_classes(nb_classes)
         self.set_capsule_indices()
         self.m_plus = 0.9

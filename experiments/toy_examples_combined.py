@@ -39,10 +39,11 @@ nb_training_batches = 2000
 batch_size = 1
 testing_size = 1000
 n = 3
-distance = 0.5
-max_epoch = 10
+distance = 1.5
+max_epoch = 18
 CPU = True
-main_dir = '../logs/debug'
+main_dir = '../logs/combined_figure_toy_example15'
+tau = 30
 
 
 
@@ -110,17 +111,22 @@ writer = SummaryWriter(log_dir=log_dir)
 
 input_layer = InputLayer(layer_dim=n, writer=writer,
                                  name='input_layer')
+hidden_layer_fixed = LeakyReluLayer(negative_slope=0.35, in_dim=n, layer_dim=n,
+                                 writer=writer,
+                                 name='hidden_layer',
+                              fixed=True)
 output_layer = LinearOutputLayer(in_dim=n, layer_dim=n,
                                          loss_function='mse',
                                          writer=writer,
                                          name='output_layer')
 
 output_layer.set_forward_parameters(output_weights, output_layer.forward_bias)
-shallow_network = Network([input_layer, output_layer])
+hidden_layer_fixed.set_forward_parameters(hidden_weights, hidden_layer_fixed.forward_bias)
+shallow_network = Network([input_layer, hidden_layer_fixed, output_layer])
 
-optimizer1 = SGD(network=shallow_network, threshold=0.0001,
+optimizer1 = SGD(network=shallow_network, threshold=0.000001,
                  init_learning_rate=0.0015,
-                 tau=100,
+                 tau=tau,
                  final_learning_rate=0.0005, compute_accuracies=False,
                  max_epoch=max_epoch,
                  outputfile_name='resultfile_shallow.csv')
@@ -152,10 +158,10 @@ output_layer.set_forward_parameters(output_weights, output_layer.forward_bias)
 BP_network = Network([input_layer, hidden_layer,
                       output_layer])
 
-optimizer2 = SGD(network=BP_network, threshold=0.0001,
-                 init_learning_rate=0.0015,
-                 tau=100,
-                 final_learning_rate=0.0005, compute_accuracies=False,
+optimizer2 = SGD(network=BP_network, threshold=0.000001,
+                 init_learning_rate=0.014,
+                 tau=tau,
+                 final_learning_rate=0.008, compute_accuracies=False,
                  max_epoch=max_epoch,
                  outputfile_name='resultfile_BP.csv')
 
@@ -187,9 +193,9 @@ output_layer.set_forward_parameters(output_weights, output_layer.forward_bias)
 network = InvertibleNetwork([input_layer, hidden_layer, output_layer])
 
 # Initializing optimizer
-optimizer3 = SGDInvertible(network=network, threshold=0.0001,
-                           init_step_size=0.003, tau=100,
-                           final_step_size=0.0001,
+optimizer3 = SGDInvertible(network=network, threshold=0.000001,
+                           init_step_size=0.02, tau=tau,
+                           final_step_size=0.018,
                            learning_rate=0.5, max_epoch=max_epoch)
 
 start_time = time.time()

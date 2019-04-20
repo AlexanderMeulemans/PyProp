@@ -20,10 +20,11 @@ class BidirectionalLayer(Layer):
 
     def __init__(self, in_dim, layer_dim, out_dim, writer, loss_function='mse',
                  name='bidirectional_layer', debug_mode=True,
-                 weight_decay=0.0):
+                 weight_decay=0.0, fixed=False):
         super().__init__(in_dim, layer_dim, name=name, writer=writer,
                          debug_mode=debug_mode,
-                         weight_decay=weight_decay)
+                         weight_decay=weight_decay,
+                         fixed=fixed)
         if out_dim is not None:
             # if the layer is an outputlayer, out_dim is None
             self.set_out_dim(out_dim)

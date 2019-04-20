@@ -95,25 +95,21 @@ print('LS test loss: ' + str(test_loss))
 # ===== Run experiment with invertible TP =======
 
 # Creating training network
-inputlayer = InvertibleInputLayer(layer_dim=n, out_dim=n, loss_function='mse',
-                                  name='input_layer', writer=writer)
-hiddenlayer = InvertibleLeakyReluLayer(negative_slope=0.35, in_dim=n,
-                                       layer_dim=n, out_dim=n, loss_function=
-                                       'mse',
-                                       name='hidden_layer',
-                                       writer=writer)
-outputlayer = InvertibleLinearOutputLayer(in_dim=n, layer_dim=n,
-                                          step_size=0.001,
-                                          name='output_layer',
-                                          writer=writer)
+inputlayer = InputLayer(layer_dim=6, writer=writer, name='input_layer_BP')
+hiddenlayer = LeakyReluLayer(negative_slope=0.35,
+                             in_dim=6, layer_dim=10, writer=writer,
+                             name='hidden_layer_BP')
+outputlayer = LinearOutputLayer(in_dim=10, layer_dim=4, loss_function='mse',
+                                name='output_layer_BP',
+                                writer=writer)
 
 network = InvertibleNetwork([inputlayer, hiddenlayer, outputlayer])
 
 # Initializing optimizer
-optimizer1 = SGD(network=network, threshold=0.0001, init_learning_rate=0.5,
+optimizer1 = SGD(network=network, threshold=0.0001, init_learning_rate=0.015,
                  tau=100,
                  final_learning_rate=0.005, compute_accuracies=False,
-                 max_epoch=120,
+                 max_epoch=50,
                  outputfile_name='resultfile.csv')
 optimizer2 = SGDInvertible(network=network, threshold=0.001,
                            init_step_size=0.003, tau=100,
@@ -122,7 +118,7 @@ optimizer2 = SGDInvertible(network=network, threshold=0.001,
 # Train on dataset
 timings = np.array([])
 start_time = time.time()
-optimizer2.run_dataset(input_dataset, output_dataset, input_dataset_test,
+optimizer1.run_dataset(input_dataset, output_dataset, input_dataset_test,
                        output_dataset_test)
 end_time = time.time()
 print('Elapsed time: {} seconds'.format(end_time - start_time))

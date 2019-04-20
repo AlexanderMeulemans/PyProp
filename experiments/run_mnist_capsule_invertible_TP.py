@@ -12,7 +12,7 @@ import sys
 sys.path.append('.')
 from layers.invertible_layer import InvertibleLeakyReluLayer
 from layers.invertible_layer import InvertibleInputLayer
-from layers.invertible_layer import InvertibleCapsuleOutputLayer
+from layers.invertible_layer import InvertibleSoftmaxOutputLayer
 from networks.invertible_network import InvertibleNetwork
 from optimizers.optimizers import SGD, SGDMomentum, SGDInvertible
 import torch
@@ -59,7 +59,7 @@ else:
 
 input_layer = InvertibleInputLayer(
     layer_dim=28 * 28,
-    out_dim=n,
+    out_dim=100,
     writer=writer,
     name='input_layer',
     debug_mode=debug_mode
@@ -67,16 +67,15 @@ input_layer = InvertibleInputLayer(
 hidden_layer = InvertibleLeakyReluLayer(
     negative_slope=negative_slope,
     in_dim=28 * 28,
-    layer_dim=n,
-    out_dim=n,
+    layer_dim=100,
+    out_dim=10,
     writer=writer,
     name='hidden_layer',
     debug_mode=debug_mode
 )
-output_layer = InvertibleCapsuleOutputLayer(
-    in_dim=n,
-    layer_dim=n,
-    nb_classes=10,
+output_layer = InvertibleSoftmaxOutputLayer(
+    in_dim=100,
+    layer_dim=10,
     writer=writer,
     step_size=0.01,
     name='output_layer',

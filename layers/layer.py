@@ -24,13 +24,14 @@ class Layer(object):
     all_layer_names = []
 
     def __init__(self, in_dim, layer_dim, writer, name='layer',
-                 debug_mode=True, weight_decay=0.0):
+                 debug_mode=True, weight_decay=0.0, fixed=False):
         """
         Initializes the Layer object
         :param in_dim: input dimension of the layer (equal
         to the layer dimension
         of the previous layer in the network)
         :param layer_dim: Layer dimension
+        :param fixed: wether layer weights should be kept fixed
         """
         self.set_layer_dim(layer_dim)
         self.debug_mode = debug_mode
@@ -41,6 +42,7 @@ class Layer(object):
         self.init_forward_parameters()
         self.global_step = 0  # needed for making plots with tensorboard
         self.weight_decay = weight_decay
+        self.fixed = fixed
 
 
     def set_writer(self, writer):
@@ -211,18 +213,19 @@ class Layer(object):
         using the computed gradients.
         :param learning_rate: Learning rate of the layer
         """
-        if not isinstance(learning_rate, float):
-            raise TypeError("Expecting a float number as learning_rate")
-        if learning_rate <= 0.:
-            raise ValueError("Expecting a strictly positive learning_rate")
+        if not self.fixed:
+            if not isinstance(learning_rate, float):
+                raise TypeError("Expecting a float number as learning_rate")
+            if learning_rate <= 0.:
+                raise ValueError("Expecting a strictly positive learning_rate")
 
-        forward_weights = (1-self.weight_decay*learning_rate) * \
-                          self.forward_weights \
-                          - torch.mul(self.forward_weights_grad, learning_rate)
-        forward_bias = self.forward_bias \
-                       - torch.mul(self.forward_bias_grad, learning_rate)
-        self.set_forward_parameters(forward_weights, forward_bias)
-        self.forward_learning_rate = learning_rate
+            forward_weights = (1-self.weight_decay*learning_rate) * \
+                              self.forward_weights \
+                              - torch.mul(self.forward_weights_grad, learning_rate)
+            forward_bias = self.forward_bias \
+                           - torch.mul(self.forward_bias_grad, learning_rate)
+            self.set_forward_parameters(forward_weights, forward_bias)
+            self.forward_learning_rate = learning_rate
 
     def propagate_forward(self, lower_layer):
         """
@@ -293,11 +296,12 @@ class Layer(object):
     def update_forward_parameters_with_velocity(self):
         """ Update the forward parameters with the gradient velocities
         computed in compute_forward_gradient_velocities"""
-        forwardWeights = self.forward_weights \
-                         - self.forward_weights_vel
-        forwardBias = self.forward_bias \
-                      - self.forward_bias_vel
-        self.set_forward_parameters(forwardWeights, forwardBias)
+        if not self.fixed:
+            forwardWeights = self.forward_weights \
+                             - self.forward_weights_vel
+            forwardBias = self.forward_bias \
+                          - self.forward_bias_vel
+            self.set_forward_parameters(forwardWeights, forwardBias)
 
     def propagate_backward(self, upper_layer):
         raise NetworkError('This method has to be overwritten by child classes')
@@ -459,10 +463,11 @@ class LeakyReluLayer(Layer):
 
     def __init__(self, negative_slope, in_dim, layer_dim, writer,
                  name='leaky_ReLU_layer', debug_mode=True,
-                 weight_decay=0.0):
+                 weight_decay=0.0, fixed=False):
         super().__init__(in_dim, layer_dim, writer, name=name,
                          debug_mode=debug_mode,
-                         weight_decay=weight_decay)
+                         weight_decay=weight_decay,
+                         fixed=fixed)
         self.set_negative_slope(negative_slope)
 
     def set_negative_slope(self, negativeSlope):
@@ -577,13 +582,14 @@ class InputLayer(Layer):
     e.g. the pixelvalues of a picture. """
 
     def __init__(self, layer_dim, writer, name='input_layer',
-                 debug_mode=True, weight_decay=0.0):
+                 debug_mode=True, weight_decay=0.0, fixed=False):
         """ InputLayer has only a layer_dim and a
         forward activation that can be set,
          no input dimension nor parameters"""
         super().__init__(in_dim=None, layer_dim=layer_dim, writer=writer,
                          name=name, debug_mode=debug_mode,
-                         weight_decay=weight_decay)
+                         weight_decay=weight_decay,
+                         fixed=fixed)
 
     def propagate_forward(self, lower_layer):
         """ This function should never be called for an input layer,
@@ -626,7 +632,7 @@ class OutputLayer(Layer):
 
     def __init__(self, in_dim, layer_dim, loss_function, writer,
                  name='output_layer', debug_mode=True,
-                 weight_decay=0.0):
+                 weight_decay=0.0, fixed=False):
         """
         :param in_dim: input dimension of the layer,
         equal to the layer dimension of the second last layer in the network
@@ -636,7 +642,8 @@ class OutputLayer(Layer):
         """
         super().__init__(in_dim, layer_dim, writer, name=name,
                          debug_mode=debug_mode,
-                         weight_decay=weight_decay)
+                         weight_decay=weight_decay,
+                         fixed=fixed)
         self.set_loss_function(loss_function)
 
     def set_loss_function(self, loss_function):
@@ -812,13 +819,15 @@ class CapsuleOutputLayer(ClassificationOutputLayer):
                  loss_function='capsule_loss',
                  name='invertible_capsule_output_layer',
                  debug_mode=True,
-                 weight_decay=0.0):
+                 weight_decay=0.0,
+                 fixed=False):
         super().__init__(in_dim, layer_dim,
                          writer=writer,
                          loss_function=loss_function,
                          name=name,
                          debug_mode=debug_mode,
-                         weight_decay=weight_decay)
+                         weight_decay=weight_decay,
+                         fixed=fixed)
         self.set_nb_classes(nb_classes)
         self.set_capsule_indices()
         self.m_plus = 0.9
