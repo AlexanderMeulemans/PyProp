@@ -17,15 +17,23 @@ class Network(object):
     methods to facilitate training of the
     networks """
 
-    def __init__(self, layers, name=None):
+    def __init__(self, layers, log=True, name=None):
         """
         :param layers: list of all the layers in the network
         :param writer: SummaryWriter object to save states of the layer
+        :param log: save logs to tensorboard
         to tensorboard
         """
         self.set_name(name)
         self.set_layers(layers)
         self.writer = self.layers[0].writer
+        self.set_log(log)
+
+    def set_log(self, log):
+        if not isinstance(log, bool):
+            raise TypeError('Expecting a bool for variable log. '
+                            'Got {}'.format(type(log)))
+        self.log = log
 
     def set_layers(self, layers):
         if not isinstance(layers, list):
@@ -172,11 +180,13 @@ class Network(object):
             layer.global_step = global_step
 
     def save_state_histograms(self, global_step):
-        self.set_global_step(global_step=global_step)
-        for layer in self.layers:
-            layer.save_state_histograms()
+        if self.log:
+            self.set_global_step(global_step=global_step)
+            for layer in self.layers:
+                layer.save_state_histograms()
 
     def save_state(self, global_step):
-        self.set_global_step(global_step)
-        for layer in self.layers:
-            layer.save_state()
+        if self.log:
+            self.set_global_step(global_step)
+            for layer in self.layers:
+                layer.save_state()

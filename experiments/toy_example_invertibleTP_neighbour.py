@@ -39,8 +39,10 @@ nb_training_batches = 2000
 batch_size = 1
 testing_size = 1000
 n = 3
-distance = 2.
+distance = 0.5
 CPU = True
+debug = False
+weight_decay = 0.0000
 
 # ======== set log directory ==========
 log_dir = '../logs/debug_TP'
@@ -66,14 +68,20 @@ else:
 # ======== Create toy model dataset =============
 
 input_layer_true = InputLayer(layer_dim=n, writer=writer,
-                              name='input_layer_true_model')
+                              name='input_layer_true_model',
+                              debug_mode=debug,
+                              weight_decay=weight_decay)
 hidden_layer_true = LeakyReluLayer(negative_slope=0.35, in_dim=n, layer_dim=n,
                                    writer=writer,
-                                   name='hidden_layer_true_model')
+                                   name='hidden_layer_true_model',
+                                   debug_mode=debug,
+                                   weight_decay=weight_decay)
 output_layer_true = LinearOutputLayer(in_dim=n, layer_dim=n,
                                       loss_function='mse',
                                       writer=writer,
-                                      name='output_layer_true_model')
+                                      name='output_layer_true_model',
+                                      debug_mode=debug,
+                                      weight_decay=weight_decay)
 true_network = Network([input_layer_true, hidden_layer_true,
                         output_layer_true])
 
@@ -107,16 +115,22 @@ hidden_weights = hf.get_invertible_neighbourhood_matrix(hidden_weights_true,
 
 # Creating training network
 inputlayer = InvertibleInputLayer(layer_dim=n, out_dim=n, loss_function='mse',
-                                  name='input_layer', writer=writer)
+                                  name='input_layer', writer=writer,
+                                  debug_mode=debug,
+                                  weight_decay=weight_decay)
 hiddenlayer = InvertibleLeakyReluLayer(negative_slope=0.35, in_dim=n,
                                        layer_dim=n, out_dim=n, loss_function=
                                        'mse',
                                        name='hidden_layer',
-                                       writer=writer)
+                                       writer=writer,
+                                       debug_mode=debug,
+                                       weight_decay=weight_decay)
 outputlayer = InvertibleLinearOutputLayer(in_dim=n, layer_dim=n,
                                           step_size=0.001,
                                           name='output_layer',
-                                          writer=writer)
+                                          writer=writer,
+                                          debug_mode=debug,
+                                          weight_decay=weight_decay)
 hiddenlayer.set_forward_parameters(hidden_weights, hiddenlayer.forward_bias)
 outputlayer.set_forward_parameters(output_weights, outputlayer.forward_bias)
 

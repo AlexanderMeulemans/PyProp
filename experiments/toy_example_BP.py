@@ -29,9 +29,9 @@ random.seed(seed)
 
 # ======== User variables ============
 nb_training_batches = 10000
-batch_size = 1
+batch_size = 64
 testing_size = 1000
-CPU = True
+CPU = False
 
 # ======== set log directory ==========
 log_dir = '../logs/toyexample_BP'

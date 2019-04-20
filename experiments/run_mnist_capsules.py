@@ -28,9 +28,10 @@ random.seed(seed)
 # torch.backends.cudnn.benchmark = False
 
 # User variables
-batch_size = 1
+batch_size = 128
 dim = 28*28
 cpu = False
+log = False
 
 # Initializing network
 
@@ -65,7 +66,7 @@ outputlayer = CapsuleOutputLayer(in_dim=dim, layer_dim=dim, nb_classes=10,
                                  writer=writer, name='output_layer_BP',
                                  debug_mode=False)
 
-network = Network([inputlayer, hiddenlayer, outputlayer])
+network = Network([inputlayer, hiddenlayer, outputlayer], log=log)
 # if torch.cuda.is_available():
 #     network.cuda(device)
 

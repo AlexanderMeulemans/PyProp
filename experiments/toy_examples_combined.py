@@ -39,10 +39,10 @@ nb_training_batches = 2000
 batch_size = 1
 testing_size = 1000
 n = 3
-distance = 9.5
-max_epoch = 20
+distance = 0.5
+max_epoch = 10
 CPU = True
-main_dir = '../logs/toy_example_combined_95'
+main_dir = '../logs/debug'
 
 
 

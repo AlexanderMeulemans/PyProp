@@ -212,7 +212,7 @@ class Optimizer(object):
         print('Epoch: ' + str(self.epoch) + ' ------------------------')
         while epoch_loss > self.threshold and self.epoch < self.max_epoch:
             for batch_idx, (data, target) in enumerate(train_loader):
-                if batch_idx % 5000 == 0:
+                if batch_idx % 200 == 0:
                     print('batch: ' + str(batch_idx))
                 data = data.view(-1, 28 * 28, 1)
                 target = hf.one_hot(target, 10)

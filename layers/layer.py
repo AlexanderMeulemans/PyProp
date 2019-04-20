@@ -24,7 +24,7 @@ class Layer(object):
     all_layer_names = []
 
     def __init__(self, in_dim, layer_dim, writer, name='layer',
-                 debug_mode=True):
+                 debug_mode=True, weight_decay=0.0):
         """
         Initializes the Layer object
         :param in_dim: input dimension of the layer (equal
@@ -40,6 +40,7 @@ class Layer(object):
         self.set_writer(writer=writer)
         self.init_forward_parameters()
         self.global_step = 0  # needed for making plots with tensorboard
+        self.weight_decay = weight_decay
 
 
     def set_writer(self, writer):
@@ -215,7 +216,8 @@ class Layer(object):
         if learning_rate <= 0.:
             raise ValueError("Expecting a strictly positive learning_rate")
 
-        forward_weights = self.forward_weights \
+        forward_weights = (1-self.weight_decay*learning_rate) * \
+                          self.forward_weights \
                           - torch.mul(self.forward_weights_grad, learning_rate)
         forward_bias = self.forward_bias \
                        - torch.mul(self.forward_bias_grad, learning_rate)
@@ -456,9 +458,11 @@ class LeakyReluLayer(Layer):
     """ Layer of a neural network with a Leaky RELU activation function"""
 
     def __init__(self, negative_slope, in_dim, layer_dim, writer,
-                 name='leaky_ReLU_layer', debug_mode=True):
+                 name='leaky_ReLU_layer', debug_mode=True,
+                 weight_decay=0.0):
         super().__init__(in_dim, layer_dim, writer, name=name,
-                         debug_mode=debug_mode)
+                         debug_mode=debug_mode,
+                         weight_decay=weight_decay)
         self.set_negative_slope(negative_slope)
 
     def set_negative_slope(self, negativeSlope):
@@ -573,12 +577,13 @@ class InputLayer(Layer):
     e.g. the pixelvalues of a picture. """
 
     def __init__(self, layer_dim, writer, name='input_layer',
-                 debug_mode=True):
+                 debug_mode=True, weight_decay=0.0):
         """ InputLayer has only a layer_dim and a
         forward activation that can be set,
          no input dimension nor parameters"""
         super().__init__(in_dim=None, layer_dim=layer_dim, writer=writer,
-                         name=name, debug_mode=debug_mode)
+                         name=name, debug_mode=debug_mode,
+                         weight_decay=weight_decay)
 
     def propagate_forward(self, lower_layer):
         """ This function should never be called for an input layer,
@@ -620,7 +625,8 @@ class OutputLayer(Layer):
     methods as explained below. """
 
     def __init__(self, in_dim, layer_dim, loss_function, writer,
-                 name='output_layer', debug_mode=True):
+                 name='output_layer', debug_mode=True,
+                 weight_decay=0.0):
         """
         :param in_dim: input dimension of the layer,
         equal to the layer dimension of the second last layer in the network
@@ -629,7 +635,8 @@ class OutputLayer(Layer):
         compute the network loss
         """
         super().__init__(in_dim, layer_dim, writer, name=name,
-                         debug_mode=debug_mode)
+                         debug_mode=debug_mode,
+                         weight_decay=weight_decay)
         self.set_loss_function(loss_function)
 
     def set_loss_function(self, loss_function):
@@ -804,12 +811,14 @@ class CapsuleOutputLayer(ClassificationOutputLayer):
     def __init__(self, in_dim, layer_dim, nb_classes, writer,
                  loss_function='capsule_loss',
                  name='invertible_capsule_output_layer',
-                 debug_mode=True):
+                 debug_mode=True,
+                 weight_decay=0.0):
         super().__init__(in_dim, layer_dim,
                          writer=writer,
                          loss_function=loss_function,
                          name=name,
-                         debug_mode=debug_mode)
+                         debug_mode=debug_mode,
+                         weight_decay=weight_decay)
         self.set_nb_classes(nb_classes)
         self.set_capsule_indices()
         self.m_plus = 0.9

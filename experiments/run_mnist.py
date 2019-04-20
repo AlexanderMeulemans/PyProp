@@ -16,7 +16,8 @@ from tensorboardX import SummaryWriter
 import os
 
 # User variables
-batch_size = 128
+batch_size = 64
+n = 100
 
 # Initializing network
 
@@ -39,13 +40,14 @@ else:
 
 # ======== Design network =============
 
-inputlayer = InputLayer(layer_dim=28 * 28, writer=writer, name='input_layer_BP')
-hiddenlayer = ReluLayer(in_dim=28 * 28, layer_dim=100, writer=writer,
-                        name='hidden_layer_BP')
-outputlayer = SoftmaxOutputLayer(in_dim=100, layer_dim=10,
+inputlayer = InputLayer(layer_dim=28 * 28, writer=writer, name='input_layer_BP',
+                        debug_mode=False)
+hiddenlayer = ReluLayer(in_dim=28 * 28, layer_dim=n, writer=writer,
+                        name='hidden_layer_BP', debug_mode=False)
+outputlayer = SoftmaxOutputLayer(in_dim=n, layer_dim=10,
                                  loss_function='crossEntropy',
                                  name='output_layer_BP',
-                                 writer=writer)
+                                 writer=writer, debug_mode=False)
 
 network = Network([inputlayer, hiddenlayer, outputlayer])
 # if torch.cuda.is_available():
