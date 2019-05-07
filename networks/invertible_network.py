@@ -11,6 +11,7 @@ You may obtain a copy of the License at
 from layers.invertible_layer import InvertibleInputLayer, \
     InvertibleLayer, InvertibleOutputLayer
 from networks.bidirectional_network import BidirectionalNetwork
+import torch
 
 
 class InvertibleNetwork(BidirectionalNetwork):
@@ -98,3 +99,36 @@ class InvertibleNetwork(BidirectionalNetwork):
         super().save_state_histograms(global_step)
         if self.log:
             self.test_invertibility(self.layers[0].forward_output)
+
+    def compute_GN_targets(self):
+        Jtot = self.compute_total_jacobian()
+        g = self.get_output_gradient()
+        J_pinverse = torch.pinverse(Jtot, rcond=1e-6)
+        htot = torch.matmul(J_pinverse, g)
+        return htot
+
+    def compute_total_jacobian(self):
+        rows = self.layers[-1].layer_dim
+        cols = 0
+        for i in range(1,len(self.layers)-1):
+            cols += self.layers[i].layer_dim
+
+        J_tot = torch.empty(rows, cols)
+        J = torch.eye(rows, rows)
+        start = 0
+        for i in range(len(self.layers) - 1,1,-1):
+            Di = self.layers[i].compute_vectorized_jacobian()
+            Di = Di.squeeze(0)
+            Ji = Di*self.layers[i].forward_weights
+            J = torch.matmul(J,Ji)
+            size = self.layers[i].layer_dim
+            J_tot[:,start:start+size] = J
+            start = start+size
+        return J_tot
+
+    def get_output_gradient(self):
+        gradient = self.layers[-1].forward_output-self.layers[-1].backward_output
+        return gradient
+
+
+
