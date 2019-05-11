@@ -130,5 +130,25 @@ class InvertibleNetwork(BidirectionalNetwork):
         gradient = self.layers[-1].forward_output-self.layers[-1].backward_output
         return gradient
 
+    def get_activation_update(self):
+        total_length = 0
+        for i in range(1,len(self.layers)-1):
+            total_length += self.layers[i].layer_dim
+
+        h_update = torch.empty(self.layers[0].forward_output.shape[0],
+                               total_length, 1)
+        start = 0
+        for i in range(1, len(self.layers)-1):
+            stop = start + self.layers[i].layer_dim
+            h_update[:,start:stop,:] = self.layers[i].backward_output - \
+                self.layers[i].forward_output
+            start = stop
+
+        return h_update
+
+
+
+
+
 
 

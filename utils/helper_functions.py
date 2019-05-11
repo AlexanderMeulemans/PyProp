@@ -144,3 +144,17 @@ def get_invertible_neighbourhood_matrix(matrix, distance, threshold=0.4):
         iter += 1
 
     return matrix_n.to(device)
+
+def get_angle(tensor1, tensor2):
+    """
+    returns angle between each sample of the two batches (tensors of size
+    batch_size x vector dimension x 1
+    """
+
+    tensor1_T = torch.transpose(tensor1,1,2)
+    tensor2_T = torch.transpose(tensor2, 1, 2)
+    inner_product = torch.bmm(tensor1_T,tensor2)
+    norm_1 = torch.sqrt(torch.bmm(tensor1_T, tensor1))
+    norm_2 = torch.sqrt(torch.bmm(tensor2_T, tensor2))
+    angles = inner_product/(norm_1*norm_2)
+    return angles.squeeze()

@@ -6,35 +6,12 @@ from utils.create_datasets import GenerateDatasetFromModel
 from tensorboardX import SummaryWriter
 from utils import helper_functions as hf
 
-J1 = torch.randn(3,3)
-J2 = torch.randn(3,3)
-g = torch.randn(6,1)
-Jtot = torch.empty(3,6)
-l = 0.0001
-Jtot[:,0:3] = J1
-Jtot[:,3:6] = J2
-H = torch.matmul(Jtot.transpose(0,1),Jtot)
-J_pinverse = torch.pinverse(Jtot,rcond=1e-6)
-
-Htot = torch.empty(6,6)
-Htot[0:3,0:3] = torch.matmul(J1.transpose(0,1),J1)
-Htot[0:3,3:6] = torch.matmul(J1.transpose(0,1),J2)
-Htot[3:6,0:3] = torch.matmul(J2.transpose(0,1),J1)
-Htot[3:6,3:6] = torch.matmul(J2.transpose(0,1),J2)
-
-Htot_reg = Htot+l*torch.eye(6,6)
-
-Htot_pinverse = torch.pinverse(Htot, rcond=1e-6)
-
-h = torch.gesv(g, Htot_reg)
-h_reg = torch.matmul(Htot_pinverse,g)
-
-
-U,S,V = torch.svd(Htot)
-U,S_reg,V = torch.svd(Htot_reg)
 
 n=3
 writer = SummaryWriter()
+epsilon = 1e-3
+
+
 
 input_layer = InvertibleInputLayer(layer_dim=n, out_dim=n, loss_function='mse',
                                   name='input_layer', writer=writer)
@@ -71,10 +48,32 @@ input_dataset_test, output_dataset_test = generator.generate(
 optimizer3.run_dataset(input_dataset, output_dataset, input_dataset_test,
                        output_dataset_test)
 J = network.compute_total_jacobian()
-htot = network.compute_GN_targets()
+h1 = hidden_layer.forward_output
+h2 = hidden_layer2.forward_output
+output = output_layer.forward_output
 
-h_network_update = network.get_activation_update()
+J_fd = torch.empty(J.shape)
+for j in range(J.shape[1]):
+    if j < h1.shape[1]:
+        fd1 = torch.zeros(h1.shape)
+        fd1[0,j,0] = epsilon
+        h1_fd = h1 + fd1
+        hidden_layer.set_forward_output(h1_fd)
+        hidden_layer2.propagate_forward(hidden_layer)
+        output_layer.propagate_forward(hidden_layer2)
+        output_fd = output_layer.forward_output
+        output_difference = output_fd - output
+        J_fd[:,j] = output_difference.squeeze()/epsilon
+    else:
+        fd2 = torch.zeros(h2.shape)
+        fd2[0,j-h1.shape[1],0] = epsilon
+        h2_fd = h2 + fd2
+        hidden_layer2.set_forward_output(h2_fd)
+        output_layer.propagate_forward(hidden_layer2)
+        output_fd = output_layer.forward_output
+        output_difference = output_fd - output
+        J_fd[:, j] = output_difference.squeeze() / epsilon
 
-angle = hf.get_angle(htot, h_network_update)
-
-print('cos(alpha): {}'.format(angle))
+error = J-J_fd
+max_error = torch.max(error)
+print('max error: {}'.format(max_error))
