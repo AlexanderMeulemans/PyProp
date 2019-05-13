@@ -12,6 +12,7 @@ from layers.invertible_layer import InvertibleInputLayer, \
     InvertibleLayer, InvertibleOutputLayer
 from networks.bidirectional_network import BidirectionalNetwork
 import torch
+import utils.helper_functions as hf
 
 
 class InvertibleNetwork(BidirectionalNetwork):
@@ -72,6 +73,7 @@ class InvertibleNetwork(BidirectionalNetwork):
         if self.log:
             self.save_inverse_error()
             self.save_sherman_morrison()
+            self.save_angle_GN_block_approx()
 
 
     def test_invertibility(self, input_batch):
@@ -100,11 +102,25 @@ class InvertibleNetwork(BidirectionalNetwork):
         if self.log:
             self.test_invertibility(self.layers[0].forward_output)
 
+    def save_angle_GN_block_approx(self):
+        if self.log:
+            angle = self.get_angle_GN_block_approx()
+            self.writer.add_scalar(tag='network/angle_'
+                                       'GN_blockapprox',
+                                   scalar_value=angle,
+                                   global_step=self.global_step)
+
+    def get_angle_GN_block_approx(self):
+        h_GN = self.compute_GN_targets()
+        h_TP = self.get_activation_update()
+        angle = hf.get_angle(h_GN,h_TP)
+        return angle
+
     def compute_GN_targets(self):
         Jtot = self.compute_total_jacobian()
         g = self.get_output_gradient()
         J_pinverse = torch.pinverse(Jtot, rcond=1e-6)
-        htot = torch.matmul(J_pinverse, g)
+        htot = torch.matmul(J_pinverse, -g)
         return htot
 
     def compute_total_jacobian(self):
@@ -115,15 +131,15 @@ class InvertibleNetwork(BidirectionalNetwork):
 
         J_tot = torch.empty(rows, cols)
         J = torch.eye(rows, rows)
-        start = 0
+        end = cols
         for i in range(len(self.layers) - 1,1,-1):
             Di = self.layers[i].compute_vectorized_jacobian()
             Di = Di.squeeze(0)
             Ji = Di*self.layers[i].forward_weights
             J = torch.matmul(J,Ji)
             size = self.layers[i].layer_dim
-            J_tot[:,start:start+size] = J
-            start = start+size
+            J_tot[:,end-size:end] = J
+            end = end-size
         return J_tot
 
     def get_output_gradient(self):

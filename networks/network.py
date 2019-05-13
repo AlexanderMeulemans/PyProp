@@ -28,6 +28,7 @@ class Network(object):
         self.set_layers(layers)
         self.writer = self.layers[0].writer
         self.set_log(log)
+        self.global_step = 0
 
     def set_log(self, log):
         if not isinstance(log, bool):
@@ -176,6 +177,7 @@ class Network(object):
         return self.layers[-1].forward_output
 
     def set_global_step(self, global_step):
+        self.global_step = global_step
         for layer in self.layers:
             layer.global_step = global_step
 

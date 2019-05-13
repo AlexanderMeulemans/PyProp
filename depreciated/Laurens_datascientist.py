@@ -4,13 +4,13 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import scipy
 
-main_dir = r'/home/alexander/Downloads/P19-hole20'
-base_name = 'P19-hole20ref'
+main_dir = r'/home/alexander/Downloads/P21-hole20ref'
+base_name = 'P21-hole20ref'
 
 new_file_name = r'/home/alexander/Downloads/Lauren/'+ base_name + '.csv'
 
-plot_figures = True
-manual = True
+plot_figures = False
+manual = False
 
 list_dir = os.listdir(main_dir)
 list_dir.sort()

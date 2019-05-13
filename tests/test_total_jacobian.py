@@ -9,7 +9,7 @@ from utils import helper_functions as hf
 
 n=3
 writer = SummaryWriter()
-epsilon = 1e-3
+epsilon = 1e-5
 
 
 
