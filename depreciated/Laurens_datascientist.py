@@ -4,10 +4,10 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import scipy
 
-main_dir = r'/home/alexander/Downloads/P21-hole20ref'
-base_name = 'P21-hole20ref'
+main_dir = r'/home/alexander/Downloads/P21'
+base_name = 'P212'
 
-new_file_name = r'/home/alexander/Downloads/Lauren/'+ base_name + '.csv'
+new_file_name = r'/home/alexander/Downloads'+ base_name + '.csv'
 
 plot_figures = False
 manual = False
@@ -42,6 +42,25 @@ def data_detrender(data):
 
     return data_detrend, peaks
 
+def get_output_value(data_detrend):
+    w = 1.
+    window = 5
+    index_180 = 130 - 91 + np.argmax(data_detrend[130 - 91:134 - 91])
+    index_190 = 138 - 91 + np.argmax(data_detrend[138 - 91:143 - 91])
+    index_147 = 104 - 91 + np.argmax(data_detrend[104 - 91:108 - 91])
+    index_256 = 190 - 91 + np.argmax(data_detrend[190 - 91:203 - 91])
+
+
+    I_180 = w*np.sum(data_detrend[index_180-window:index_180+window])
+    I_190 = w*np.sum(data_detrend[index_190-window:index_190+window])
+    I_147 = w*np.sum(data_detrend[index_147-window:index_147+window])
+    I_256 = w*np.sum(data_detrend[index_256-window:index_256+window])
+
+    output_value = float(I_180 + I_190) / float(
+        I_180 + I_190 + 0.32 * (I_147 + I_256))
+
+    return output_value
+
 plt.figure()
 outputs = np.array([])
 for file_name in list_dir:
@@ -60,18 +79,19 @@ for file_name in list_dir:
         plt.plot(peaks, data_detrend[peaks], '*')
         plt.show()
 
-    I_180 = np.max(data_detrend[130-91:134-91])
-    I_190 = np.max(data_detrend[138-91:143-91])
-    I_147 = np.max(data_detrend[104-91:108-91])
-    I_256 = np.max(data_detrend[190-91:203-91])
-
-    output_value = float(I_180 + I_190)/float(I_180 + I_190 + 0.32*(I_147 + I_256))
+    # I_180 = np.max(data_detrend[130-91:134-91])
+    # I_190 = np.max(data_detrend[138-91:143-91])
+    # I_147 = np.max(data_detrend[104-91:108-91])
+    # I_256 = np.max(data_detrend[190-91:203-91])
+    #
+    # output_value = float(I_180 + I_190)/float(I_180 + I_190 + 0.32*(I_147 + I_256))
+    output_value = get_output_value(data_detrend)
     outputs = np.append(outputs, output_value)
     print('output_value: {}'.format(output_value))
     if manual:
         input('press enter to continue')
 
-output_file = pd.DataFrame(outputs, index=list_dir)
+output_file = pd.DataFrame(outputs)
 output_file.to_csv(new_file_name)
 
 

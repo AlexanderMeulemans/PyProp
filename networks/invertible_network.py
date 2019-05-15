@@ -13,16 +13,21 @@ from layers.invertible_layer import InvertibleInputLayer, \
 from networks.bidirectional_network import BidirectionalNetwork
 import torch
 import utils.helper_functions as hf
+import numpy as np
 
 
 class InvertibleNetwork(BidirectionalNetwork):
     """ Invertible Network consisting of multiple invertible layers. This class
         provides a range of methods to facilitate training of the networks """
 
-    def __init__(self, layers, log=True, name=None, debug_mode=False):
+    def __init__(self, layers, log=True, name=None, debug_mode=False,
+                 randomize=True):
         super().__init__(layers=layers, log=log, name=name)
         self.init_inverses()
         self.debug_mode = debug_mode
+        self.randomize = randomize
+        if randomize==True:
+            self.random_layer = np.random.choice(len(layers) - 1, 1)[0]+1
 
     def set_layers(self, layers):
         if not isinstance(layers, list):
@@ -162,6 +167,28 @@ class InvertibleNetwork(BidirectionalNetwork):
 
         return h_update
 
+    def update_backward_parameters(self, learning_rate):
+        """ Update all the parameters of the network with the
+        computed gradients"""
+        if self.randomize == True:
+            i = self.random_layer - 1
+            self.layers[i].update_backward_parameters(learning_rate,
+                                                      self.layers[i + 1])
+        else:
+            for i in range(0, len(self.layers) - 1):
+                self.layers[i].update_backward_parameters(learning_rate,
+                                                          self.layers[i + 1])
+
+    def update_forward_parameters(self, learning_rate):
+        """ Update all the parameters of the network with the
+        computed gradients"""
+        if self.randomize == True:
+            self.random_layer = np.random.choice(len(self.layers) - 1, 1)[0] + 1
+            i = self.random_layer
+            self.layers[i].update_forward_parameters(learning_rate)
+        else:
+            for i in range(1, len(self.layers)):
+                self.layers[i].update_forward_parameters(learning_rate)
 
 
 
