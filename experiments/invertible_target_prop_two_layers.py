@@ -81,6 +81,11 @@ hidden_layer2_true = LeakyReluLayer(negative_slope=0.35, in_dim=n, layer_dim=n,
                                    name='hidden_layer2_true_model',
                                    debug_mode=debug,
                                    weight_decay=weight_decay)
+hidden_layer3_true = LeakyReluLayer(negative_slope=0.35, in_dim=n, layer_dim=n,
+                                   writer=writer,
+                                   name='hidden_layer3_true_model',
+                                   debug_mode=debug,
+                                   weight_decay=weight_decay)
 output_layer_true = LinearOutputLayer(in_dim=n, layer_dim=n,
                                       loss_function='mse',
                                       writer=writer,
@@ -88,7 +93,7 @@ output_layer_true = LinearOutputLayer(in_dim=n, layer_dim=n,
                                       debug_mode=debug,
                                       weight_decay=weight_decay)
 true_network = Network([input_layer_true, hidden_layer_true,
-                        hidden_layer2_true,
+                        hidden_layer2_true, hidden_layer3_true,
                         output_layer_true])
 
 generator = GenerateDatasetFromModel(true_network)
@@ -101,7 +106,7 @@ input_dataset_test, output_dataset_test = generator.generate(
 output_weights_true = output_layer_true.forward_weights
 hidden_weights_true = hidden_layer_true.forward_weights
 hidden_weights2_true = hidden_layer2_true.forward_weights
-
+hidden_weights3_true = hidden_layer3_true.forward_weights
 
 # compute least squares solution as control
 print('computing LS solution ...')
@@ -120,6 +125,8 @@ output_weights = hf.get_invertible_neighbourhood_matrix(output_weights_true,
 hidden_weights = hf.get_invertible_neighbourhood_matrix(hidden_weights_true,
                                                         distance)
 hidden_weights2 = hf.get_invertible_neighbourhood_matrix(hidden_weights2_true,
+                                                         distance)
+hidden_weights3 = hf.get_invertible_neighbourhood_matrix(hidden_weights3_true,
                                                          distance)
 
 
@@ -142,6 +149,13 @@ hiddenlayer2 = InvertibleLeakyReluLayer(negative_slope=0.35, in_dim=n,
                                        writer=writer,
                                        debug_mode=debug,
                                        weight_decay=weight_decay)
+hiddenlayer3 = InvertibleLeakyReluLayer(negative_slope=0.35, in_dim=n,
+                                       layer_dim=n, out_dim=n, loss_function=
+                                       'mse',
+                                       name='hidden_layer3',
+                                       writer=writer,
+                                       debug_mode=debug,
+                                       weight_decay=weight_decay)
 outputlayer = InvertibleLinearOutputLayer(in_dim=n, layer_dim=n,
                                           step_size=0.001,
                                           name='output_layer',
@@ -151,9 +165,10 @@ outputlayer = InvertibleLinearOutputLayer(in_dim=n, layer_dim=n,
 hiddenlayer.set_forward_parameters(hidden_weights, hiddenlayer.forward_bias)
 outputlayer.set_forward_parameters(output_weights, outputlayer.forward_bias)
 hiddenlayer2.set_forward_parameters(hidden_weights2, hiddenlayer2.forward_bias)
+hiddenlayer3.set_forward_parameters(hidden_weights3, hiddenlayer3.forward_bias)
 
 network = InvertibleNetwork([inputlayer, hiddenlayer,
-                             hiddenlayer2, outputlayer])
+                             hiddenlayer2, hiddenlayer3, outputlayer])
 
 # Initializing optimizer
 optimizer1 = SGD(network=network, threshold=0.0001, init_learning_rate=0.5,
@@ -162,7 +177,7 @@ optimizer1 = SGD(network=network, threshold=0.0001, init_learning_rate=0.5,
                  max_epoch=120,
                  outputfile_name='resultfile.csv')
 optimizer2 = SGDInvertible(network=network, threshold=0.0001,
-                           init_step_size=0.003, tau=100,
+                           init_step_size=0.0003, tau=100,
                            final_step_size=0.0001,
                            learning_rate=0.5, max_epoch=120)
 # Train on dataset

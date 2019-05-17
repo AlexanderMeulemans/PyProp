@@ -21,7 +21,7 @@ class InvertibleNetwork(BidirectionalNetwork):
         provides a range of methods to facilitate training of the networks """
 
     def __init__(self, layers, log=True, name=None, debug_mode=False,
-                 randomize=True):
+                 randomize=False):
         super().__init__(layers=layers, log=log, name=name)
         self.init_inverses()
         self.debug_mode = debug_mode
