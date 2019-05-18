@@ -44,11 +44,11 @@ n = 3
 distances = [0.1, 0.5, 1.5, 5., 10.]
 # learning_rates = [0.005, 0.001]
 learning_rates = [0.005, 0.001, 0.0005, 0.0001, 0.00005, 0.00001]
-CPU = False
+CPU = True
 debug = False
 weight_decay = 0.
 randomizes = [True, False]
-max_epochs = 2
+max_epochs = 30
 logs = False
 threshold = 0.00001
 
