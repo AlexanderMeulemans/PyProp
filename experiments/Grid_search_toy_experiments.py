@@ -40,14 +40,14 @@ nb_training_batches = 5000
 batch_size = 1
 testing_size = 1000
 n = 3
-distances = [0.5, 1.5, 5., 10.]
-# learning_rates = [0.005, 0.001, 0.0001]
+distances = [0.1, 0.5, 1.5, 5., 10.]
+# learning_rates = [0.005, 0.001]
 learning_rates = [0.005, 0.001, 0.0005, 0.0001, 0.00005, 0.00001]
-CPU = True
+CPU = False
 debug = False
 weight_decay = 0.
 randomizes = [True, False]
-max_epochs = 30
+max_epochs = 2
 logs = False
 threshold = 0.00001
 
@@ -62,6 +62,7 @@ results_test = np.zeros((len(randomizes), len(distances), len(learning_rates),
                           max_epochs))
 succesful_run = np.ones((len(randomizes), len(distances), len(learning_rates)),
                          dtype=bool)
+best_results = np.zeros((len(randomizes), len(distances), len(learning_rates)))
 
 # ======== set device ============
 if not CPU:
@@ -204,6 +205,7 @@ for i,randomize in enumerate(randomizes):
                 test_loss = hf.append_results(test_loss, max_epochs)
                 results_train[i,j,k,:] = train_loss
                 results_test[i,j,k,:] = test_loss
+                best_results[i,j,k] = np.min(test_loss)
             except Exception as e:
                 print('Training failed')
                 print('Occurred error:')
@@ -211,4 +213,4 @@ for i,randomize in enumerate(randomizes):
                 succesful_run[i,j,k] = False
             #
 np.save(log_dir + '/train_losses.npy', results_train)
-np.save(log_dir + '/test_losses.npy', results_train)
+np.save(log_dir + '/test_losses.npy', results_test)
