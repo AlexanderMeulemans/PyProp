@@ -282,7 +282,7 @@ class Optimizer(object):
         self.save_csv_file()
         # self.writer.close()
         print('====== Training finished =======')
-        return self.epoch_losses.numpy(), self.test_losses.numpy()
+        return self.epoch_losses.cpu().numpy(), self.cpu().test_losses.numpy()
 
     def test_dataset(self, input_data, targets):
         for i in range(input_data.size(0)):
