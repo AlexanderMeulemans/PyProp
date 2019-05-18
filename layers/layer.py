@@ -174,7 +174,7 @@ class Layer(object):
         self.forward_bias = torch.zeros(self.layer_dim, 1)
         self.forward_weights_grad = torch.zeros(self.layer_dim, self.in_dim)
         self.forward_bias_grad = torch.zeros(self.layer_dim, 1)
-        self.save_initial_state()
+        #self.save_initial_state()
 
     def init_velocities(self):
         """ Initializes the velocities of the gradients. This should only be

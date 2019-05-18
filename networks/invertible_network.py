@@ -70,15 +70,26 @@ class InvertibleNetwork(BidirectionalNetwork):
 
     def save_sherman_morrison(self):
         if self.log:
-            for i in range(len(self.layers)-1):
+            if self.randomize:
+                i = self.random_layer -1
                 self.layers[i].save_sherman_morrison()
+            else:
+                for i in range(len(self.layers)-1):
+                    self.layers[i].save_sherman_morrison()
 
     def save_state(self, global_step):
-        super().save_state(global_step)
         if self.log:
+            self.set_global_step(global_step)
             self.save_inverse_error()
             self.save_sherman_morrison()
-            self.save_angle_GN_block_approx()
+            if self.randomize:
+                self.layers[self.random_layer].save_state()
+            else:
+                for layer in self.layers:
+                    layer.save_state()
+                self.save_angle_GN_block_approx()
+
+
 
 
     def test_invertibility(self, input_batch):

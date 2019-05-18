@@ -11,6 +11,7 @@ You may obtain a copy of the License at
 import torch
 import matplotlib.pyplot as plt
 import os
+import numpy as np
 
 
 def kronecker(i, j):
@@ -158,3 +159,15 @@ def get_angle(tensor1, tensor2):
     norm_2 = torch.sqrt(torch.bmm(tensor2_T, tensor2))
     angles = inner_product/(norm_1*norm_2)
     return angles.squeeze()
+
+def append_results(array, max_len):
+    """
+    Appends the given array by its last element until max_len is reached.
+    """
+    if len(array) == max_len:
+        return array
+    else:
+        last_element = array[-1]
+        for i in range(max_len-len(array)):
+            array = np.append(array, last_element)
+        return array

@@ -49,6 +49,7 @@ class Optimizer(object):
             self.outputfile = pd.DataFrame(columns=
                                            ['Train_loss', 'Test_loss',
                                             'Train_accuracy', 'Test_accuracy'])
+        self.log = network.log
 
     def set_network(self, network):
         if not isinstance(network, Network):
@@ -119,17 +120,19 @@ class Optimizer(object):
     def save_results(self, targets):
         """ Save the results of the optimizing step in the optimizer object."""
         loss = self.network.loss(targets)
-        self.writer.add_scalar(tag='training_loss_batch',
-                               scalar_value=loss,
-                               global_step=self.global_step)
+        if self.log:
+            self.writer.add_scalar(tag='training_loss_batch',
+                                   scalar_value=loss,
+                                   global_step=self.global_step)
         self.batch_losses = torch.cat([self.batch_losses, loss])
         self.single_batch_losses = torch.cat([self.single_batch_losses, loss])
         self.network.save_state(self.global_step)
         if self.compute_accuracies:
             accuracy = self.network.accuracy(targets)
-            self.writer.add_scalar(tag='training_accuracy_batch',
-                                   scalar_value=accuracy,
-                                   global_step=self.global_step)
+            if self.log:
+                self.writer.add_scalar(tag='training_accuracy_batch',
+                                       scalar_value=accuracy,
+                                       global_step=self.global_step)
             self.batch_accuracies = torch.cat([self.batch_accuracies, accuracy],
                                               0)
             self.single_batch_accuracies = torch.cat(
@@ -151,9 +154,10 @@ class Optimizer(object):
     def save_test_results_epoch(self):
         test_loss = torch.Tensor([torch.mean(self.test_batch_losses)])
         self.test_losses = torch.cat([self.test_losses, test_loss], 0)
-        self.writer.add_scalar(tag='test_loss',
-                               scalar_value=test_loss,
-                               global_step=self.epoch)
+        if self.log:
+            self.writer.add_scalar(tag='test_loss',
+                                   scalar_value=test_loss,
+                                   global_step=self.epoch)
         self.reset_test_batch_losses()
         print('Test Loss: ' + str(test_loss))
         if self.compute_accuracies:
@@ -161,16 +165,18 @@ class Optimizer(object):
                 self.test_batch_accuracies)])
             self.test_accuracies = torch.cat(
                 [self.test_accuracies, test_accuracy], 0)
-            self.writer.add_scalar(tag='test_accuracy',
-                                   scalar_value=test_accuracy,
-                                   global_step=self.epoch)
+            if self.log:
+                self.writer.add_scalar(tag='test_accuracy',
+                                       scalar_value=test_accuracy,
+                                       global_step=self.epoch)
             self.reset_test_batch_accuracies()
             print('Test Accuracy: ' + str(test_accuracy))
 
     def save_train_results_epoch(self):
         epoch_loss = torch.Tensor([torch.mean(self.single_batch_losses)])
-        self.writer.add_scalar(tag='train_loss', scalar_value=epoch_loss,
-                               global_step=self.epoch)
+        if self.log:
+            self.writer.add_scalar(tag='train_loss', scalar_value=epoch_loss,
+                                   global_step=self.epoch)
         self.reset_single_batch_losses()
         self.epoch_losses = torch.cat([self.epoch_losses, epoch_loss], 0)
         self.network.save_state_histograms(self.epoch)
@@ -181,9 +187,10 @@ class Optimizer(object):
                                           ])
             self.epoch_accuracies = torch.cat([self.epoch_accuracies,
                                                epoch_accuracy], 0)
-            self.writer.add_scalar(tag='train_accuracy',
-                                   scalar_value=epoch_accuracy,
-                                   global_step=self.epoch)
+            if self.log:
+                self.writer.add_scalar(tag='train_accuracy',
+                                       scalar_value=epoch_accuracy,
+                                       global_step=self.epoch)
             self.reset_single_batch_accuracies()
             print('Train Accuracy: ' + str(epoch_accuracy))
 
@@ -229,7 +236,8 @@ class Optimizer(object):
             print('Epoch: ' + str(self.epoch) + ' ------------------------')
         self.global_step = 0
         self.save_csv_file()
-        self.writer.close()
+        # if self.log:
+        #     self.writer.close()
         print('====== Training finished =======')
 
     def test_mnist(self, test_loader, device):
@@ -253,12 +261,12 @@ class Optimizer(object):
             for i in range(input_data.size(0)):
                 data = input_data[i, :, :, :]
                 target = targets[i, :, :, :]
-                if i % 100 == 0:
-                    print('batch: ' + str(i))
                 if i % 1000 == 0:
-                    if type(self.network) == InvertibleNetwork:
-                        self.network.init_inverses
-                        print('recomputing inverses')
+                    print('batch: ' + str(i))
+                # if i % 1000 == 0:
+                #     if type(self.network) == InvertibleNetwork:
+                #         self.network.init_inverses
+                #         print('recomputing inverses')
                 self.step(data, target)
             self.save_train_results_epoch()
             epoch_loss = self.epoch_losses[-1]
@@ -272,8 +280,9 @@ class Optimizer(object):
 
         self.global_step = 0
         self.save_csv_file()
-        self.writer.close()
+        # self.writer.close()
         print('====== Training finished =======')
+        return self.epoch_losses.numpy(), self.test_losses.numpy()
 
     def test_dataset(self, input_data, targets):
         for i in range(input_data.size(0)):
