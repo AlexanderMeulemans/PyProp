@@ -26,6 +26,7 @@ class InvertibleNetwork(BidirectionalNetwork):
         self.init_inverses()
         self.debug_mode = debug_mode
         self.randomize = randomize
+        self.random_layers = np.array([])
         if randomize==True:
             self.random_layer = np.random.choice(len(layers) - 1, 1)[0]+1
 
@@ -117,6 +118,7 @@ class InvertibleNetwork(BidirectionalNetwork):
         super().save_state_histograms(global_step)
         if self.log:
             self.test_invertibility(self.layers[0].forward_output)
+            self.save_random_layers()
 
     def save_angle_GN_block_approx(self):
         if self.log:
@@ -125,6 +127,15 @@ class InvertibleNetwork(BidirectionalNetwork):
                                        'GN_blockapprox',
                                    scalar_value=angle,
                                    global_step=self.global_step)
+
+    def save_random_layers(self):
+        if self.log:
+            if self.randomize:
+                self.writer.add_histogram(tag='network/layer_updates_'
+                                              'hist'.format(
+                    self.name),
+                    values=self.random_layers,
+                    global_step=self.global_step)
 
     def get_angle_GN_block_approx(self):
         h_GN = self.compute_GN_targets()
@@ -195,6 +206,8 @@ class InvertibleNetwork(BidirectionalNetwork):
         computed gradients"""
         if self.randomize == True:
             self.random_layer = np.random.choice(len(self.layers) - 1, 1)[0] + 1
+            self.random_layers = np.append(
+                self.random_layers, self.random_layer)
             i = self.random_layer
             self.layers[i].update_forward_parameters(learning_rate)
         else:

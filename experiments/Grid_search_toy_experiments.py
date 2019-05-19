@@ -215,3 +215,5 @@ for i,randomize in enumerate(randomizes):
             #
 np.save(log_dir + '/train_losses.npy', results_train)
 np.save(log_dir + '/test_losses.npy', results_test)
+np.save(log_dir + '/best_results.npy', best_results)
+np.save(log_dir + '/succesful_run.npy', succesful_run)

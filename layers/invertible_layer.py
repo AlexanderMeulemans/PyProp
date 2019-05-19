@@ -257,7 +257,8 @@ class InvertibleLayer(BidirectionalLayer):
 
         weight_gradients = torch.matmul(u, torch.transpose(v, -1, -2))
 
-        bias_gradients = u
+        # bias_gradients = u
+        bias_gradients = torch.zeros(u.shape)
         self.set_weight_update_u(torch.reshape(u, (u.shape[-2], u.shape[-1])))
         self.set_weight_update_v(torch.reshape(v, (v.shape[-2], v.shape[-1])))
         self.set_forward_gradients(torch.mean(weight_gradients, 0), torch.mean(
@@ -316,9 +317,9 @@ class InvertibleLeakyReluLayer(InvertibleLayer):
                          debug_mode=debug_mode,
                          weight_decay=weight_decay,
                          fixed=fixed)
-        self.setNegativeSlope(negative_slope)
+        self.set_negative_slope(negative_slope)
 
-    def setNegativeSlope(self, negative_slope):
+    def set_negative_slope(self, negative_slope):
         """ Set the negative slope of the leaky ReLU activation function"""
         if not isinstance(negative_slope, float):
             raise TypeError("Expecting a float number for negative_slope, "
@@ -613,7 +614,8 @@ class InvertibleSoftmaxOutputLayer(InvertibleOutputLayer):
 
         weight_gradients = torch.matmul(u, torch.transpose(v, -1, -2))
 
-        bias_gradients = u
+        # bias_gradients = u
+        bias_gradients = torch.zeros(u.shape)
         self.set_weight_update_u(torch.reshape(u, (u.shape[-2], u.shape[-1])))
         self.set_weight_update_v(torch.reshape(v, (v.shape[-2], v.shape[-1])))
         self.set_forward_gradients(torch.mean(weight_gradients, 0), torch.mean(

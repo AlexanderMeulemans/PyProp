@@ -35,7 +35,7 @@ random.seed(seed)
 # torch.backends.cudnn.benchmark = False
 
 # ======== User variables ============
-nb_training_batches = 2000
+nb_training_batches = 5000
 batch_size = 1
 testing_size = 1000
 n = 3
@@ -43,7 +43,9 @@ distance = 0.5
 CPU = True
 debug = False
 weight_decay = 0.0000
-
+learning_rate = 0.05
+randomize = False
+max_epoch = 20
 # ======== set log directory ==========
 log_dir = '../logs/debug_TP'
 writer = SummaryWriter(log_dir=log_dir)
@@ -134,7 +136,8 @@ outputlayer = InvertibleLinearOutputLayer(in_dim=n, layer_dim=n,
 hiddenlayer.set_forward_parameters(hidden_weights, hiddenlayer.forward_bias)
 outputlayer.set_forward_parameters(output_weights, outputlayer.forward_bias)
 
-network = InvertibleNetwork([inputlayer, hiddenlayer, outputlayer])
+network = InvertibleNetwork([inputlayer, hiddenlayer, outputlayer],
+                            randomize=randomize)
 
 # Initializing optimizer
 optimizer1 = SGD(network=network, threshold=0.0001, init_learning_rate=0.5,
@@ -143,8 +146,8 @@ optimizer1 = SGD(network=network, threshold=0.0001, init_learning_rate=0.5,
                  max_epoch=120,
                  outputfile_name='resultfile.csv')
 optimizer2 = SGDInvertible(network=network, threshold=0.0001,
-                           init_step_size=0.003, tau=100,
-                           final_step_size=0.0001,
+                           init_step_size=learning_rate, tau=100,
+                           final_step_size=learning_rate/10.,
                            learning_rate=0.5, max_epoch=120)
 # Train on dataset
 timings = np.array([])
