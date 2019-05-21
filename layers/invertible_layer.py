@@ -284,6 +284,15 @@ class InvertibleLayer(BidirectionalLayer):
                 - torch.eye(self.backward_weights.shape[0])
         return torch.norm(error)
 
+    def check_inverse2(self, upper_layer):
+        forward_propagated = upper_layer.forward_nonlinearity(
+            torch.matmul(upper_layer.forward_weights, self.forward_output) + \
+            upper_layer.forward_bias)
+        backward_propagated = torch.matmul(self.backward_weights,
+                         upper_layer.inverse_nonlinearity(forward_propagated)\
+                                           + self.backward_bias)
+        return self.forward_output - backward_propagated
+
     def save_inverse_error(self, upper_layer):
         error = self.check_inverse(upper_layer)
         self.writer.add_scalar(tag='{}/inverse_error'.format(self.name),
@@ -297,6 +306,46 @@ class InvertibleLayer(BidirectionalLayer):
         self.writer.add_scalar(tag='{}/SM_denominator'.format(self.name),
                                scalar_value=self.denominator,
                                global_step=self.global_step)
+
+    def propagate_GN_error(self, upper_layer):
+        D_inv = upper_layer.compute_inverse_vectorized_jacobian()
+        self.GN_error = torch.matmul(self.backward_weights,
+                                     D_inv*upper_layer.GN_error)
+
+    def compute_inverse_vectorized_jacobian(self):
+        """ Should be implemented by child class"""
+        raise NetworkError('Should be implemented by child class')
+
+    def compute_approx_error(self):
+        error = self.backward_output - self.forward_output + self.GN_error
+        return error
+
+    def compute_approx_angle_error(self):
+        total_update = self.backward_output - self.forward_output
+        GN_update = - self.GN_error
+        angles = hf.get_angle(total_update, GN_update)
+        return torch.tensor([torch.mean(angles)])
+
+    def save_approx_angle_error(self):
+        angle = self.compute_approx_angle_error()
+        # if angle < 0.5:
+        #     raise NetworkError('approx_angle_error smaller than 0.9: '
+        #                        '{}'.format(angle))
+        self.writer.add_scalar(tag='{}/approx_angle_error'.format(self.name),
+                               scalar_value=angle,
+                               global_step=self.global_step)
+
+    def save_approx_error(self):
+        error = torch.norm(torch.mean(self.compute_approx_error(),0))
+        self.writer.add_scalar(tag='{}/approx_error'.format(self.name),
+                               scalar_value=error,
+                               global_step=self.global_step)
+
+    def save_state(self):
+        super().save_state()
+        self.save_approx_angle_error()
+        self.save_approx_error()
+
 
 
 class InvertibleLeakyReluLayer(InvertibleLayer):
@@ -358,6 +407,16 @@ class InvertibleLeakyReluLayer(InvertibleLayer):
                     output[i, j, 0] = 1
                 else:
                     output[i, j, 0] = self.negative_slope
+        return output
+
+    def compute_inverse_vectorized_jacobian(self):
+        output = torch.empty(self.forward_output.shape)
+        for i in range(self.forward_output.size(0)):
+            for j in range(self.forward_output.size(1)):
+                if self.forward_output[i, j, 0] >= 0:
+                    output[i, j, 0] = 1
+                else:
+                    output[i, j, 0] = self.negative_slope**(-1)
         return output
 
 
@@ -473,6 +532,8 @@ class InvertibleOutputLayer(InvertibleLayer):
         self.save_forward_weight_gradients()
         self.save_backward_activations()
         self.save_distance_target()
+        self.save_approx_error()
+        self.save_approx_angle_error()
 
     def save_state_histograms(self):
         """ The histograms (specified by the arguments) are saved to
@@ -498,6 +559,9 @@ class InvertibleLinearOutputLayer(InvertibleOutputLayer):
     def compute_vectorized_jacobian(self):
         return torch.ones(self.forward_output.shape)
 
+    def compute_inverse_vectorized_jacobian(self):
+        return torch.ones(self.forward_output.shape)
+
     def compute_backward_output(self, target):
         """ Compute the backward output based on a small move from the
         forward output in the direction of the negative gradient of the loss
@@ -514,6 +578,11 @@ class InvertibleLinearOutputLayer(InvertibleOutputLayer):
         gradient = torch.mul(self.forward_output - target, 2)
         self.backward_output = self.forward_output - torch.mul(gradient,
                                                                self.step_size)
+
+    def compute_GN_error(self, target):
+        gradient = torch.mul(self.forward_output - target, 2)
+        self.GN_error = torch.mul(gradient, self.step_size)
+
 
 
 class InvertibleSoftmaxOutputLayer(InvertibleOutputLayer):

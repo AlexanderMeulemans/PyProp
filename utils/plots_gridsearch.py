@@ -1,8 +1,9 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-test_losses = np.load('../logs/test_losses.npy')
-train_losses = np.load('../logs/train_losses.npy')
+main_dir = '../logs/gridsearch_onelayer/'
+test_losses = np.load(main_dir + 'test_losses.npy')
+train_losses = np.load(main_dir + 'train_losses.npy')
 
 best_test_results = np.min(test_losses, 3)
 succesful_runs = best_test_results != 0

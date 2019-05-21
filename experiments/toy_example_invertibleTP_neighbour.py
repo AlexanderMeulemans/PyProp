@@ -43,9 +43,10 @@ distance = 0.5
 CPU = True
 debug = False
 weight_decay = 0.0000
-learning_rate = 0.05
-randomize = False
-max_epoch = 20
+learning_rate = 0.001
+output_step_size = 0.1
+randomize = True
+max_epoch = 120
 # ======== set log directory ==========
 log_dir = '../logs/debug_TP'
 writer = SummaryWriter(log_dir=log_dir)
@@ -128,7 +129,7 @@ hiddenlayer = InvertibleLeakyReluLayer(negative_slope=0.35, in_dim=n,
                                        debug_mode=debug,
                                        weight_decay=weight_decay)
 outputlayer = InvertibleLinearOutputLayer(in_dim=n, layer_dim=n,
-                                          step_size=0.001,
+                                          step_size=output_step_size,
                                           name='output_layer',
                                           writer=writer,
                                           debug_mode=debug,
@@ -140,19 +141,21 @@ network = InvertibleNetwork([inputlayer, hiddenlayer, outputlayer],
                             randomize=randomize)
 
 # Initializing optimizer
-optimizer1 = SGD(network=network, threshold=0.0001, init_learning_rate=0.5,
+optimizer1 = SGD(network=network, threshold=0.0001,
+                 init_learning_rate=learning_rate,
                  tau=100,
-                 final_learning_rate=0.005, compute_accuracies=False,
-                 max_epoch=120,
+                 final_learning_rate=learning_rate/5.,
+                 compute_accuracies=False,
+                 max_epoch=max_epoch,
                  outputfile_name='resultfile.csv')
 optimizer2 = SGDInvertible(network=network, threshold=0.0001,
-                           init_step_size=learning_rate, tau=100,
-                           final_step_size=learning_rate/10.,
-                           learning_rate=0.5, max_epoch=120)
+                           init_step_size=output_step_size, tau=100,
+                           final_step_size=output_step_size/5.,
+                           learning_rate=learning_rate, max_epoch=max_epoch)
 # Train on dataset
 timings = np.array([])
 start_time = time.time()
-optimizer2.run_dataset(input_dataset, output_dataset, input_dataset_test,
+optimizer1.run_dataset(input_dataset, output_dataset, input_dataset_test,
                        output_dataset_test)
 end_time = time.time()
 print('Elapsed time: {} seconds'.format(end_time - start_time))

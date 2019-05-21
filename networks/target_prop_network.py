@@ -14,13 +14,8 @@ from networks.bidirectional_network import BidirectionalNetwork
 import torch
 import utils.helper_functions as hf
 import numpy as np
-from utils.helper_classes import NetworkError
 
-
-class InvertibleNetwork(BidirectionalNetwork):
-    """ Invertible Network consisting of multiple invertible layers. This class
-        provides a range of methods to facilitate training of the networks """
-
+class TargetPropNetwork(BidirectionalNetwork):
     def __init__(self, layers, log=True, name=None, debug_mode=False,
                  randomize=False):
         super().__init__(layers=layers, log=log, name=name)
@@ -30,33 +25,6 @@ class InvertibleNetwork(BidirectionalNetwork):
         self.random_layers = np.array([])
         if randomize==True:
             self.random_layer = np.random.choice(len(layers) - 1, 1)[0]+1
-
-    def set_layers(self, layers):
-        if not isinstance(layers, list):
-            raise TypeError("Expecting a list object containing all the "
-                            "layers of the network")
-        if len(layers) < 2:
-            raise ValueError("Expecting at least 2 layers (including input "
-                             "and output layer) in a network")
-        if not isinstance(layers[0], InvertibleInputLayer):
-            raise TypeError("First layer of the network should be of type"
-                            " InvertibleInputLayer")
-        if not isinstance(layers[-1], InvertibleOutputLayer):
-            raise TypeError("Last layer of the network should be of "
-                            "type InvertibleOutputLayer")
-        for i in range(1, len(layers)):
-            if not isinstance(layers[i], InvertibleLayer):
-                TypeError("All layers of the network should be of type "
-                          "InvertibleLayer")
-            if not layers[i - 1].layer_dim == layers[i].in_dim:
-                raise ValueError("layer_dim should match with in_dim of "
-                                 "next layer")
-            if not layers[i - 1].out_dim == layers[i].layer_dim:
-                raise ValueError(
-                    "outputDim should match with layer_dim of next "
-                    "layer")
-
-        self.layers = layers
 
     def init_inverses(self):
         """ Initialize the backward weights of all layers to the inverse of
@@ -70,29 +38,16 @@ class InvertibleNetwork(BidirectionalNetwork):
             for i in range(0, len(self.layers) - 1):
                 self.layers[i].save_inverse_error(self.layers[i + 1])
 
-    def save_sherman_morrison(self):
-        if self.log:
-            if self.randomize:
-                i = self.random_layer -1
-                self.layers[i].save_sherman_morrison()
-            else:
-                for i in range(len(self.layers)-1):
-                    self.layers[i].save_sherman_morrison()
-
     def save_state(self, global_step):
         if self.log:
             self.set_global_step(global_step)
             self.save_inverse_error()
-            self.save_sherman_morrison()
             if self.randomize:
                 self.layers[self.random_layer].save_state()
             else:
                 for layer in self.layers:
                     layer.save_state()
                 self.save_angle_GN_block_approx()
-
-
-
 
     def test_invertibility(self, input_batch):
         """ Propagate an input batch forward and backward, and compute the error
@@ -213,27 +168,3 @@ class InvertibleNetwork(BidirectionalNetwork):
         else:
             for i in range(1, len(self.layers)):
                 self.layers[i].update_forward_parameters(learning_rate)
-
-    def propagate_backward(self, target):
-        """ Propagate the layer targets backward
-        through the network
-        :param target: 3D tensor of size batchdimension x class dimension x 1
-        """
-        if not isinstance(target, torch.Tensor):
-            raise TypeError("Expecting a torch.Tensor object as target")
-
-        self.layers[-1].compute_backward_output(target)
-        self.layers[-1].compute_GN_error(target)
-        for i in range(len(self.layers) - 2, -1, -1):
-            self.layers[i].propagate_backward(self.layers[i + 1])
-            self.layers[i].propagate_GN_error(self.layers[i+1])
-            angle = self.layers[i].compute_approx_angle_error()
-            # if angle < 0.5:
-            #     raise NetworkError('approx_angle_error smaller than 0.9: '
-            #                        '{}'.format(angle))
-
-
-
-
-
-
