@@ -55,7 +55,7 @@ logs = False
 threshold = 0.00001
 
 # ======== set log directory ==========
-log_dir = '../logs/gridsearch_onelayer'
+log_dir = '../logs/gridsearch_onelayer2'
 writer = SummaryWriter(log_dir=log_dir)
 
 # ======== Create result files ========7
