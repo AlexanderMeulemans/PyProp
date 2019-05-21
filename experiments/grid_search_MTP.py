@@ -12,8 +12,8 @@ import sys
 sys.path.append('.')
 from utils.create_datasets import GenerateDatasetFromModel
 from optimizers.optimizers import SGD, SGDInvertible
-from layers.invertible_layer import InvertibleInputLayer, \
-    InvertibleLeakyReluLayer, InvertibleLinearOutputLayer
+from layers.modified_TP_layer import MTPInvertibleInputLayer, \
+    MTPInvertibleLeakyReluLayer, MTPInvertibleLinearOutputLayer
 from networks.invertible_network import InvertibleNetwork
 from layers.layer import InputLayer, LeakyReluLayer, \
     LinearOutputLayer
@@ -55,7 +55,7 @@ logs = False
 threshold = 0.00001
 
 # ======== set log directory ==========
-log_dir = '../logs/gridsearch_invertible_TP_onelayer'
+log_dir = '../logs/gridsearch_onelayer_MTP'
 writer = SummaryWriter(log_dir=log_dir)
 
 # ======== Create result files ========7
@@ -131,12 +131,12 @@ for i,randomize in enumerate(randomizes):
                 hidden_weights_true,
                 distance)
 
-            inputlayer = InvertibleInputLayer(layer_dim=n, out_dim=n,
+            inputlayer = MTPInvertibleInputLayer(layer_dim=n, out_dim=n,
                                               loss_function='mse',
                                               name='input_layer', writer=writer,
                                               debug_mode=debug,
                                               weight_decay=weight_decay)
-            hiddenlayer = InvertibleLeakyReluLayer(negative_slope=0.35,
+            hiddenlayer = MTPInvertibleLeakyReluLayer(negative_slope=0.35,
                                                    in_dim=n,
                                                    layer_dim=n, out_dim=n,
                                                    loss_function=
@@ -146,7 +146,7 @@ for i,randomize in enumerate(randomizes):
                                                    debug_mode=debug,
                                                    weight_decay=weight_decay)
 
-            outputlayer = InvertibleLinearOutputLayer(in_dim=n, layer_dim=n,
+            outputlayer = MTPInvertibleLinearOutputLayer(in_dim=n, layer_dim=n,
                                                       step_size=output_step_size,
                                                       name='output_layer',
                                                       writer=writer,

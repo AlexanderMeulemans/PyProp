@@ -43,7 +43,8 @@ testing_size = 1000
 n = 3
 distances = [0.1, 0.5, 1.5, 5., 10.]
 # learning_rates = [0.005, 0.001]
-learning_rates = [0.005, 0.001, 0.0005, 0.0001, 0.00005, 0.00001]
+learning_rates = [5., 1., 0.5, 0.1, 0.05, 0.01, 0.005, 0.001]
+output_step_size = 0.1
 CPU = True
 debug = False
 weight_decay = 0.
@@ -53,7 +54,7 @@ logs = False
 threshold = 0.00001
 
 # ======== set log directory ==========
-log_dir = '../logs/gridsearch'
+log_dir = '../logs/gridsearch_invertible_TP_2layers'
 writer = SummaryWriter(log_dir=log_dir)
 
 # ======== Create result files ========7
@@ -170,7 +171,7 @@ for i,randomize in enumerate(randomizes):
                                                     weight_decay=weight_decay)
 
             outputlayer = InvertibleLinearOutputLayer(in_dim=n, layer_dim=n,
-                                                      step_size=0.001,
+                                                      step_size=output_step_size,
                                                       name='output_layer',
                                                       writer=writer,
                                                       debug_mode=debug,
@@ -188,13 +189,13 @@ for i,randomize in enumerate(randomizes):
                                         log=logs)
 
             # Initializing optimizer
-            optimizer = SGDInvertible(network=network,
-                                       threshold=threshold,
-                                       init_step_size=learning_rate,
-                                       tau=max_epochs,
-                                       final_step_size=learning_rate/5.,
-                                       learning_rate=1.,
-                                       max_epoch=max_epochs)
+            optimizer = SGD(network=network, threshold=threshold,
+                            init_learning_rate=learning_rate,
+                            tau=100,
+                            final_learning_rate=learning_rate / 5.,
+                            compute_accuracies=False,
+                            max_epoch=max_epochs,
+                            outputfile_name='resultfile.csv')
             # Train on dataset
 
             try:

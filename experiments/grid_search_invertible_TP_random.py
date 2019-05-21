@@ -42,7 +42,7 @@ nb_training_batches = 5000
 batch_size = 1
 testing_size = 1000
 n = 3
-distances = [0.1, 0.5, 1.5, 5., 10.]
+random_iterations = 3
 # learning_rates = [0.005, 0.001]
 learning_rates = [5., 1., 0.5, 0.1, 0.05, 0.01, 0.005, 0.001]
 output_step_size = 0.1
@@ -55,17 +55,17 @@ logs = False
 threshold = 0.00001
 
 # ======== set log directory ==========
-log_dir = '../logs/gridsearch_invertible_TP_onelayer'
+log_dir = '../logs/gridsearch_invertibleTP_random'
 writer = SummaryWriter(log_dir=log_dir)
 
 # ======== Create result files ========7
-results_train = np.zeros((len(randomizes), len(distances), len(learning_rates),
+results_train = np.zeros((len(randomizes), random_iterations, len(learning_rates),
                           max_epochs))
-results_test = np.zeros((len(randomizes), len(distances), len(learning_rates),
+results_test = np.zeros((len(randomizes), random_iterations, len(learning_rates),
                           max_epochs))
-succesful_run = np.ones((len(randomizes), len(distances), len(learning_rates)),
+succesful_run = np.ones((len(randomizes), random_iterations, len(learning_rates)),
                          dtype=bool)
-best_results = np.zeros((len(randomizes), len(distances), len(learning_rates)))
+best_results = np.zeros((len(randomizes), random_iterations, len(learning_rates)))
 
 # ======== set device ============
 if not CPU:
@@ -111,25 +111,17 @@ input_dataset, output_dataset = generator.generate(nb_training_batches,
 input_dataset_test, output_dataset_test = generator.generate(
     testing_size, 1)
 
-output_weights_true = output_layer_true.forward_weights
-hidden_weights_true = hidden_layer_true.forward_weights
 
 # ======= Start grid search ============
 for i,randomize in enumerate(randomizes):
-    for j,distance in enumerate(distances):
+    for j in range(random_iterations):
         for k, learning_rate in enumerate(learning_rates):
 
             print('#################################')
             print('Training combination: randomize={}, '
-                  'distance={}, learning_rate={} ...'.format(randomize,
-                                                             distance,
+                  'random_iteration={}, learning_rate={} ...'.format(randomize,
+                                                             j,
                                                              learning_rate))
-            output_weights = hf.get_invertible_neighbourhood_matrix(
-                output_weights_true,
-                distance)
-            hidden_weights = hf.get_invertible_neighbourhood_matrix(
-                hidden_weights_true,
-                distance)
 
             inputlayer = InvertibleInputLayer(layer_dim=n, out_dim=n,
                                               loss_function='mse',
@@ -152,10 +144,6 @@ for i,randomize in enumerate(randomizes):
                                                       writer=writer,
                                                       debug_mode=debug,
                                                       weight_decay=weight_decay)
-            hiddenlayer.set_forward_parameters(hidden_weights,
-                                               hiddenlayer.forward_bias)
-            outputlayer.set_forward_parameters(output_weights,
-                                               outputlayer.forward_bias)
 
             network = InvertibleNetwork([inputlayer, hiddenlayer,
                                          outputlayer],

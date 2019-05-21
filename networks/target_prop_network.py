@@ -14,6 +14,7 @@ from networks.bidirectional_network import BidirectionalNetwork
 import torch
 import utils.helper_functions as hf
 import numpy as np
+from utils.helper_classes import NetworkError
 
 class TargetPropNetwork(BidirectionalNetwork):
     def __init__(self, layers, log=True, name=None, debug_mode=False,
@@ -149,10 +150,11 @@ class TargetPropNetwork(BidirectionalNetwork):
         computed gradients"""
         if self.randomize == True:
             i = self.random_layer - 1
+            # if i != 0:
             self.layers[i].update_backward_parameters(learning_rate,
-                                                      self.layers[i + 1])
+                                                          self.layers[i + 1])
         else:
-            for i in range(0, len(self.layers) - 1):
+            for i in range(1, len(self.layers) - 1):
                 self.layers[i].update_backward_parameters(learning_rate,
                                                           self.layers[i + 1])
 
@@ -168,3 +170,17 @@ class TargetPropNetwork(BidirectionalNetwork):
         else:
             for i in range(1, len(self.layers)):
                 self.layers[i].update_forward_parameters(learning_rate)
+
+    def propagate_backward(self, target):
+        """ Propagate the layer targets backward
+        through the network
+        :param target: 3D tensor of size batchdimension x class dimension x 1
+        """
+        if not isinstance(target, torch.Tensor):
+            raise TypeError("Expecting a torch.Tensor object as target")
+
+        self.layers[-1].compute_backward_output(target)
+        self.layers[-1].compute_GN_error(target)
+        for i in range(len(self.layers) - 2, -1, -1):
+            self.layers[i].propagate_backward(self.layers[i + 1])
+            self.layers[i].propagate_GN_error(self.layers[i + 1])

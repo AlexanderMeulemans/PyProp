@@ -103,9 +103,9 @@ class BidirectionalLayer(Layer):
             raise ValueError("Expecting same dimension as layer_dim")
         self.backward_output = backward_output
 
-    def backwardNonlinearity(self, linear_activation):
+    def backward_nonlinearity(self, linear_activation):
         """ This method should be always overwritten by the children"""
-        raise NetworkError("The method backwardNonlinearity should always be "
+        raise NetworkError("The method backward_nonlinearity should always be "
                            "overwritten by children of Layer. Layer on itself "
                            "cannot be used in a network")
 

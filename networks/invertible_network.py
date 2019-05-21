@@ -38,16 +38,16 @@ class InvertibleNetwork(BidirectionalNetwork):
         if len(layers) < 2:
             raise ValueError("Expecting at least 2 layers (including input "
                              "and output layer) in a network")
-        if not isinstance(layers[0], InvertibleInputLayer):
-            raise TypeError("First layer of the network should be of type"
-                            " InvertibleInputLayer")
-        if not isinstance(layers[-1], InvertibleOutputLayer):
-            raise TypeError("Last layer of the network should be of "
-                            "type InvertibleOutputLayer")
+        # if not isinstance(layers[0], InvertibleInputLayer):
+        #     raise TypeError("First layer of the network should be of type"
+        #                     " InvertibleInputLayer")
+        # if not isinstance(layers[-1], InvertibleOutputLayer):
+        #     raise TypeError("Last layer of the network should be of "
+        #                     "type InvertibleOutputLayer")
         for i in range(1, len(layers)):
-            if not isinstance(layers[i], InvertibleLayer):
-                TypeError("All layers of the network should be of type "
-                          "InvertibleLayer")
+            # if not isinstance(layers[i], InvertibleLayer):
+            #     TypeError("All layers of the network should be of type "
+            #               "InvertibleLayer")
             if not layers[i - 1].layer_dim == layers[i].in_dim:
                 raise ValueError("layer_dim should match with in_dim of "
                                  "next layer")
@@ -227,7 +227,7 @@ class InvertibleNetwork(BidirectionalNetwork):
         for i in range(len(self.layers) - 2, -1, -1):
             self.layers[i].propagate_backward(self.layers[i + 1])
             self.layers[i].propagate_GN_error(self.layers[i+1])
-            angle = self.layers[i].compute_approx_angle_error()
+            # angle = self.layers[i].compute_approx_angle_error()
             # if angle < 0.5:
             #     raise NetworkError('approx_angle_error smaller than 0.9: '
             #                        '{}'.format(angle))

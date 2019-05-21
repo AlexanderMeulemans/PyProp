@@ -40,7 +40,8 @@ class MTPInvertibleLayer(InvertibleLayer):
 
         weight_gradients = torch.matmul(u, torch.transpose(v, -1, -2))
 
-        bias_gradients = u
+        # bias_gradients = u
+        bias_gradients = torch.zeros(u.shape)
         self.set_weight_update_u(torch.reshape(u, (u.shape[-2], u.shape[-1])))
         self.set_weight_update_v(torch.reshape(v, (v.shape[-2], v.shape[-1])))
         self.set_forward_gradients(torch.mean(weight_gradients, 0), torch.mean(
@@ -105,6 +106,16 @@ class MTPInvertibleLeakyReluLayer(MTPInvertibleLayer):
                     output[i, j, 0] = 1
                 else:
                     output[i, j, 0] = self.negative_slope
+        return output
+
+    def compute_inverse_vectorized_jacobian(self):
+        output = torch.empty(self.forward_output.shape)
+        for i in range(self.forward_output.size(0)):
+            for j in range(self.forward_output.size(1)):
+                if self.forward_output[i, j, 0] >= 0:
+                    output[i, j, 0] = 1
+                else:
+                    output[i, j, 0] = self.negative_slope**(-1)
         return output
 
 
@@ -220,6 +231,8 @@ class MTPInvertibleOutputLayer(MTPInvertibleLayer):
         self.save_forward_weight_gradients()
         self.save_backward_activations()
         self.save_distance_target()
+        self.save_approx_error()
+        self.save_approx_angle_error()
 
     def save_state_histograms(self):
         """ The histograms (specified by the arguments) are saved to
@@ -245,6 +258,9 @@ class MTPInvertibleLinearOutputLayer(MTPInvertibleOutputLayer):
     def compute_vectorized_jacobian(self):
         return torch.ones(self.forward_output.shape)
 
+    def compute_inverse_vectorized_jacobian(self):
+        return torch.ones(self.forward_output.shape)
+
     def compute_backward_output(self, target):
         """ Compute the backward output based on a small move from the
         forward output in the direction of the negative gradient of the loss
@@ -261,6 +277,10 @@ class MTPInvertibleLinearOutputLayer(MTPInvertibleOutputLayer):
         gradient = torch.mul(self.forward_output - target, 2)
         self.backward_output = self.forward_output - torch.mul(gradient,
                                                                self.step_size)
+
+    def compute_GN_error(self, target):
+        gradient = torch.mul(self.forward_output - target, 2)
+        self.GN_error = torch.mul(gradient, self.step_size)
 
 
 class MTPInvertibleInputLayer(MTPInvertibleLayer):

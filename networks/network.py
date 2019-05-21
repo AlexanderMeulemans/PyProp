@@ -43,12 +43,12 @@ class Network(object):
         if len(layers) < 2:
             raise ValueError("Expecting at least 2 layers (including input "
                              "and output layer) in a network")
-        if not isinstance(layers[0], InputLayer):
-            raise TypeError("First layer of the network should be of type"
-                            " InputLayer")
-        if not isinstance(layers[-1], OutputLayer):
-            raise TypeError("Last layer of the network should be of "
-                            "type OutputLayer")
+        # if not isinstance(layers[0], InputLayer):
+        #     raise TypeError("First layer of the network should be of type"
+        #                     " InputLayer")
+        # if not isinstance(layers[-1], OutputLayer):
+        #     raise TypeError("Last layer of the network should be of "
+        #                     "type OutputLayer")
         for i in range(1, len(layers)):
             if not isinstance(layers[i], Layer):
                 TypeError("All layers of the network should be of type Layer")
