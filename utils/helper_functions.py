@@ -171,3 +171,9 @@ def append_results(array, max_len):
         for i in range(max_len-len(array)):
             array = np.append(array, last_element)
         return array
+
+def get_invertible_diagonal_matrix(size, threshold=0.1, max_iter=500):
+    diag = torch.randn((size))
+    while torch.min(torch.abs(diag)) < threshold:
+        diag = torch.randn((size))
+    return torch.diag(diag)

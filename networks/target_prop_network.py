@@ -18,8 +18,9 @@ from utils.helper_classes import NetworkError
 
 class TargetPropNetwork(BidirectionalNetwork):
     def __init__(self, layers, log=True, name=None, debug_mode=False,
-                 randomize=False):
+                 randomize=False, find_inverses=False):
         super().__init__(layers=layers, log=log, name=name)
+        self.find_inverses = find_inverses
         self.init_inverses()
         self.debug_mode = debug_mode
         self.randomize = randomize
@@ -31,8 +32,11 @@ class TargetPropNetwork(BidirectionalNetwork):
         """ Initialize the backward weights of all layers to the inverse of
         the forward weights of
         the layer on top."""
-        for i in range(0, len(self.layers) - 1):
-            self.layers[i].init_inverse(self.layers[i + 1])
+        if not self.find_inverses:
+            for i in range(0, len(self.layers) - 1):
+                self.layers[i].init_inverse(self.layers[i + 1])
+        else:
+            pass
 
     def save_inverse_error(self):
         if self.log:
@@ -75,7 +79,8 @@ class TargetPropNetwork(BidirectionalNetwork):
         super().save_state_histograms(global_step)
         if self.log:
             self.test_invertibility(self.layers[0].forward_output)
-            self.save_random_layers()
+            if not self.find_inverses:
+                self.save_random_layers()
 
     def save_angle_GN_block_approx(self):
         if self.log:
@@ -148,28 +153,30 @@ class TargetPropNetwork(BidirectionalNetwork):
     def update_backward_parameters(self, learning_rate):
         """ Update all the parameters of the network with the
         computed gradients"""
-        if self.randomize == True:
-            i = self.random_layer - 1
-            # if i != 0:
+        # if self.randomize == True:
+        #     i = self.random_layer - 1
+        #     self.layers[i].update_backward_parameters(learning_rate,
+        #                                                   self.layers[i + 1])
+        # else:
+        for i in range(0, len(self.layers) - 1):
             self.layers[i].update_backward_parameters(learning_rate,
-                                                          self.layers[i + 1])
-        else:
-            for i in range(1, len(self.layers) - 1):
-                self.layers[i].update_backward_parameters(learning_rate,
-                                                          self.layers[i + 1])
+                                                      self.layers[i + 1])
 
     def update_forward_parameters(self, learning_rate):
         """ Update all the parameters of the network with the
         computed gradients"""
-        if self.randomize == True:
-            self.random_layer = np.random.choice(len(self.layers) - 1, 1)[0] + 1
-            self.random_layers = np.append(
-                self.random_layers, self.random_layer)
-            i = self.random_layer
-            self.layers[i].update_forward_parameters(learning_rate)
-        else:
-            for i in range(1, len(self.layers)):
+        if not self.find_inverses:
+            if self.randomize == True:
+                self.random_layer = np.random.choice(len(self.layers) - 1, 1)[0] + 1
+                self.random_layers = np.append(
+                    self.random_layers, self.random_layer)
+                i = self.random_layer
                 self.layers[i].update_forward_parameters(learning_rate)
+            else:
+                for i in range(1, len(self.layers)):
+                    self.layers[i].update_forward_parameters(learning_rate)
+        else:
+            pass
 
     def propagate_backward(self, target):
         """ Propagate the layer targets backward
