@@ -21,9 +21,13 @@ torch.cuda.manual_seed(seed)
 np.random.seed(seed)
 random.seed(seed)
 
+# Set plot style
+plt.rc('text', usetex=True)
+plt.rc('font', family='serif')
+
 # User variables
-layer_sizes = [5,4,4,4]
-iterations = 100
+layer_sizes = [12,10,10,10]
+iterations = 1000
 batch_size = 8
 font_size = 23
 
@@ -68,7 +72,7 @@ for iteration in range(iterations):
 fig = plt.figure('matrix error')
 ax = fig.add_subplot(1, 1, 1)
 ax.tick_params(axis='both', which='major', labelsize=21)
-plt.hist(matrix_errors,bins=30)
+plt.hist(matrix_errors,bins=100)
 plt.xlabel(r'$\| J_{tot}^{\dagger} - J_{tot}^{f}\|_{\infty}$', fontsize=font_size)
 plt.ylabel(r'\# samples', fontsize=font_size)
 plt.show()
@@ -76,7 +80,7 @@ plt.show()
 fig = plt.figure('inverse error')
 ax = fig.add_subplot(1, 1, 1)
 ax.tick_params(axis='both', which='major', labelsize=21)
-plt.hist(inverse_errors,bins=30)
+plt.hist(inverse_errors,bins=100)
 plt.xlabel(r'$\| J_{tot}^{\dagger}h - J_{tot}^{f}h\|_{2}$', fontsize=font_size)
 plt.ylabel(r'\# samples', fontsize=font_size)
 plt.show()
@@ -84,7 +88,7 @@ plt.show()
 fig = plt.figure('inverse error control')
 ax = fig.add_subplot(1, 1, 1)
 ax.tick_params(axis='both', which='major', labelsize=21)
-plt.hist(inverse_errors_control,bins=30)
+plt.hist(inverse_errors_control,bins=100)
 plt.xlabel(r'$\| h_1 - h_2\|_{2}$', fontsize=font_size)
 plt.ylabel(r'\# samples', fontsize=font_size)
 plt.show()
