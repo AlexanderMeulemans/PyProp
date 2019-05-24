@@ -56,7 +56,7 @@ logs = False
 threshold = 0.00001
 
 # ======== set log directory ==========
-log_dir = '../logs/gridsearch_invertible_TP_onelayer'
+log_dir = '../logs/gridsearch_pure_TP_onelayer'
 writer = SummaryWriter(log_dir=log_dir)
 
 # ======== Create result files ========7
