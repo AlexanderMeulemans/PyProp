@@ -39,13 +39,13 @@ nb_training_batches = 5000
 batch_size = 1
 testing_size = 1000
 n = 3
-distance = 0.1
+distance = 1.0
 CPU = True
 debug = False
 weight_decay = 0.0000
-learning_rate = 0.001
+learning_rate = 0.01
 output_step_size = 0.1
-randomize = True
+randomize = False
 max_epoch = 120
 # ======== set log directory ==========
 log_dir = '../logs/debug_TP'
