@@ -102,12 +102,12 @@ class TargetPropNetwork(BidirectionalNetwork):
         h_GN = self.compute_GN_targets()
         h_TP = self.get_activation_update()
         angle = hf.get_angle(h_GN,h_TP)
-        return angle
+        return torch.mean(angle)
 
     def compute_GN_targets(self):
         Jtot = self.compute_total_jacobian()
         g = self.get_output_gradient()
-        J_pinverse = torch.pinverse(Jtot, rcond=1e-6)
+        J_pinverse = hf.pinverse(Jtot, rcond=1e-6)
         htot = torch.matmul(J_pinverse, -g)
         return htot
 
@@ -117,16 +117,16 @@ class TargetPropNetwork(BidirectionalNetwork):
         for i in range(1,len(self.layers)-1):
             cols += self.layers[i].layer_dim
 
-        J_tot = torch.empty(rows, cols)
-        J = torch.eye(rows, rows)
+        J_tot = torch.empty(self.batch_size, rows, cols)
+        J = hf.eye(rows=rows, batch_size=self.batch_size)
         end = cols
         for i in range(len(self.layers) - 1,1,-1):
             Di = self.layers[i].compute_vectorized_jacobian()
-            Di = Di.squeeze(0)
+            # Di = Di.squeeze(0)
             Ji = Di*self.layers[i].forward_weights
             J = torch.matmul(J,Ji)
-            size = self.layers[i].layer_dim
-            J_tot[:,end-size:end] = J
+            size = self.layers[i].in_dim
+            J_tot[:, :, end-size:end] = J
             end = end-size
         return J_tot
 

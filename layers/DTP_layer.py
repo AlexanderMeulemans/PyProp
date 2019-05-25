@@ -18,7 +18,7 @@ from layers.target_prop_layer import TargetPropLayer
 
 class DTPLayer(TargetPropLayer):
     """ Difference target propagation layer"""
-    def propagate_backwad(self, upper_layer):
+    def propagate_backward(self, upper_layer):
         """Propagate the target signal from the upper layer to the current
                 layer (self)
                 :type upper_layer: InvertibleLayer
@@ -43,7 +43,7 @@ class DTPLayer(TargetPropLayer):
         activation_linear = torch.matmul(self.backward_weights,
                                        activation_inverse + self.backward_bias)
 
-        backward_output = self.forward_output + target_linear + \
+        backward_output = self.forward_output + target_linear - \
                           activation_linear
         self.set_backward_output(backward_output)
 
@@ -108,14 +108,14 @@ class DTPLeakyReluLayer(DTPLayer):
                     output[i, j, 0] = self.negative_slope
         return output
 
-    def compute_inverse_vectorized_jacobian(self):
-        output = torch.empty(self.forward_output.shape)
-        for i in range(self.forward_output.size(0)):
+    def compute_inverse_vectorized_jacobian(self, linear_activation):
+        output = torch.empty(linear_activation.shape)
+        for i in range(linear_activation.size(0)):
             for j in range(self.forward_output.size(1)):
-                if self.forward_output[i, j, 0] >= 0:
+                if linear_activation[i, j, 0] >= 0:
                     output[i, j, 0] = 1
                 else:
-                    output[i, j, 0] = self.negative_slope**(-1)
+                    output[i, j, 0] = self.negative_slope ** (-1)
         return output
 
 
@@ -258,8 +258,8 @@ class DTPLinearOutputLayer(DTPOutputLayer):
     def compute_vectorized_jacobian(self):
         return torch.ones(self.forward_output.shape)
 
-    def compute_inverse_vectorized_jacobian(self):
-        return torch.ones(self.forward_output.shape)
+    def compute_inverse_vectorized_jacobian(self, linear_activation):
+        return torch.ones(linear_activation.shape)
 
     def compute_backward_output(self, target):
         """ Compute the backward output based on a small move from the

@@ -10,8 +10,8 @@ You may obtain a copy of the License at
 
 from utils.create_datasets import GenerateDatasetFromModel
 from optimizers.optimizers import SGD, SGDInvertible
-from layers.DTP_layer import DTPInputLayer, DTPLeakyReluLayer, \
-    DTPLinearOutputLayer
+from layers.original_TP_layer import OriginalTPInputLayer, \
+    OriginalTPLeakyReluLayer, OriginalTPLinearOutputLayer
 from networks.target_prop_network import TargetPropNetwork
 from layers.layer import InputLayer, LeakyReluLayer, \
     LinearOutputLayer
@@ -39,13 +39,13 @@ nb_training_batches = 5000
 batch_size = 1
 testing_size = 1000
 n = 3
-distance = 1.
+distance = 1.0
 CPU = True
 debug = False
 weight_decay = 0.0000
-learning_rate = 0.01
+learning_rate = 0.005
 output_step_size = 0.1
-randomize = True
+randomize = False
 max_epoch = 120
 # ======== set log directory ==========
 log_dir = '../logs/debug_TP'
@@ -117,28 +117,27 @@ hidden_weights = hf.get_invertible_neighbourhood_matrix(hidden_weights_true,
 
 
 # Creating training network
-inputlayer = DTPInputLayer(layer_dim=n, out_dim=n, loss_function='mse',
-                                  name='input_layer', writer=writer,
-                                  debug_mode=debug,
-                                  weight_decay=weight_decay)
-hiddenlayer = DTPLeakyReluLayer(negative_slope=0.35, in_dim=n,
-                                       layer_dim=n, out_dim=n, loss_function=
-                                       'mse',
-                                       name='hidden_layer',
-                                       writer=writer,
-                                       debug_mode=debug,
-                                       weight_decay=weight_decay)
-outputlayer = DTPLinearOutputLayer(in_dim=n, layer_dim=n,
-                                          step_size=output_step_size,
-                                          name='output_layer',
-                                          writer=writer,
-                                          debug_mode=debug,
-                                          weight_decay=weight_decay)
+inputlayer = InputLayer(layer_dim=n, writer=writer,
+                              name='input_layer',
+                              debug_mode=debug,
+                              weight_decay=weight_decay)
+hiddenlayer = LeakyReluLayer(negative_slope=0.35, in_dim=n, layer_dim=n,
+                                   writer=writer,
+                                   name='hidden_layer',
+                                   debug_mode=debug,
+                                   weight_decay=weight_decay,
+                                   fixed=True)
+outputlayer = LinearOutputLayer(in_dim=n, layer_dim=n,
+                                      loss_function='mse',
+                                      writer=writer,
+                                      name='output_layer',
+                                      debug_mode=debug,
+                                      weight_decay=weight_decay)
+
 hiddenlayer.set_forward_parameters(hidden_weights, hiddenlayer.forward_bias)
 outputlayer.set_forward_parameters(output_weights, outputlayer.forward_bias)
 
-network = TargetPropNetwork([inputlayer, hiddenlayer, outputlayer],
-                            randomize=randomize)
+network = Network([inputlayer, hiddenlayer, outputlayer])
 
 # Initializing optimizer
 optimizer1 = SGD(network=network, threshold=0.0001,

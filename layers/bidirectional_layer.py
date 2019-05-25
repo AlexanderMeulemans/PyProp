@@ -168,6 +168,7 @@ class BidirectionalLayer(Layer):
             values=self.backward_output,
             global_step=self.global_step)
 
+
     def save_distance_target(self):
         mean_distance = self.distance_target()
         # print('{} distance target: {}'.format(self.name, mean_distance))

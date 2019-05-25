@@ -14,66 +14,40 @@ from utils import helper_functions as hf
 from utils.helper_classes import NetworkError, NotImplementedError
 from layers.layer import Layer
 from layers.bidirectional_layer import BidirectionalLayer
+from layers.target_prop_layer import TargetPropLayer
 
-class TargetPropLayer(BidirectionalLayer):
-    """ Target propagation with approximate inverses, but still the right
-    form of the inverse."""
-    def __init__(self, in_dim, layer_dim, out_dim, writer, loss_function='mse',
-                 name='target_prop_layer', debug_mode=True,
-                 weight_decay=0.0, weight_decay_backward=0.0,
-                 fixed=False):
-        super().__init__(in_dim, layer_dim, out_dim,
-                         loss_function=loss_function,
-                         name=name,
-                         writer=writer,
-                         debug_mode=debug_mode,
-                         weight_decay=weight_decay,
-                         fixed=fixed)
-        self.weight_decay_backward = weight_decay_backward
+class MTPLayer(TargetPropLayer):
+    """ Modified target propagation layer"""
 
-    def init_inverse(self, upper_layer):
-        """ Initializes the backward weights to the inverse of the
-        forward weights. After this
-        initial inverse is computed, the sherman-morrison formula can be
-        used to compute the
-        inverses later in training"""
-        self.backward_weights = torch.pinverse(
-            upper_layer.forward_weights)
+    def propagate_forward(self, lower_layer):
+        """
+        :param lower_layer: The first layer upstream of the layer 'self'
+        :type lower_layer: Layer
+        :return saves the computed output of the layer to self.forward_output.
+                forward_output is a 3D tensor of size
+                batchDimension x layerDimension x 1
+        """
+        if not isinstance(lower_layer, Layer):
+            raise TypeError("Expecting a Layer object as "
+                            "argument for propagate_forward")
+        if not lower_layer.layer_dim == self.in_dim:
+            raise ValueError("Layer sizes are not compatible for "
+                             "propagating forward")
 
-    def inverse_nonlinearity(self, input):
-        """ Returns the inverse of the forward nonlinear activation function,
-        performed on the given input.
-        IMPORTANT: this function should always be overwritten by a child of
-        InvertibleLayer, as now the forward nonlinearity is not yet specified"""
-        raise NetworkError("inverse_nonlinearity should be overwritten by a "
-                           "child of InvertibleLayer")
+        if isinstance(lower_layer, MTPInputLayer):
+            forward_input = lower_layer.forward_output
+        else:
+            forward_input = lower_layer.forward_output_batchnorm
+        self.forward_linear_activation = torch.matmul(self.forward_weights,
+                                                 forward_input) + \
+                                    self.forward_bias
+        forward_output = self.forward_nonlinearity(
+            self.forward_linear_activation)
+        self.mu = torch.mean(forward_output, dim=0)
+        self.sigma = torch.std(forward_output, dim=0)
+        self.set_forward_output(forward_output)
+        self.forward_output_batchnorm = 1./self.sigma*(forward_output-self.mu)
 
-    def backward_nonlinearity(self, input, upper_layer):
-        """ Take the inverse nonlinearity of the upper layer as backward
-        nonlinearity."""
-        return upper_layer.inverse_nonlinearity(input)
-
-    def update_backward_parameters(self, learning_rate, upper_layer):
-
-        noise_input = torch.randn(self.forward_output.shape)
-        linear_activation = torch.matmul(upper_layer.forward_weights,
-                                         noise_input) + upper_layer.forward_bias
-        nonlinear_activation = upper_layer.forward_nonlinearity(linear_activation)
-        nonlinear_activation2 = self.backward_nonlinearity(nonlinear_activation,
-                                                           upper_layer)
-        linear_activation2 = torch.matmul(self.backward_weights,
-                                          nonlinear_activation2) + \
-                                            self.backward_bias
-        approx_error = linear_activation2 - noise_input
-        gradient = torch.matmul(approx_error,
-                               torch.transpose(nonlinear_activation2, -1, -2))
-        updated_weights = (1-learning_rate*self.weight_decay_backward) * \
-                          self.backward_weights - \
-                          learning_rate*torch.mean(gradient,0)
-        # updated_bias = self.backward_bias + learning_rate*torch.mean(approx_error, 0)
-        updated_bias = self.backward_bias
-
-        self.set_backward_parameters(updated_weights, updated_bias)
 
     def propagate_backward(self, upper_layer):
         """Propagate the target signal from the upper layer to the current
@@ -87,113 +61,42 @@ class TargetPropLayer(BidirectionalLayer):
         if not upper_layer.in_dim == self.layer_dim:
             raise ValueError("Layer sizes are not compatible for propagating "
                              "backwards")
-
+        backward_input = upper_layer.backward_output
         target_inverse = self.backward_nonlinearity(
-            upper_layer.backward_output, upper_layer)
+            backward_input, upper_layer)
 
 
         backward_output = torch.matmul(self.backward_weights,
                                       target_inverse) + self.backward_bias
+        backward_output = self.sigma*backward_output + self.mu
         self.set_backward_output(backward_output)
 
-    def compute_forward_gradients(self, lower_layer):
-        """
-        :param lower_layer: first layer upstream of the layer self
-        :type lower_layer: Layer
-        :return: saves the gradients of the local cost function to the layer
-        parameters for all the batch samples
+    # def compute_forward_gradients(self, lower_layer):
+    #     """
+    #     :param lower_layer: first layer upstream of the layer self
+    #     :type lower_layer: Layer
+    #     :return: saves the gradients of the local cost function to the layer
+    #     parameters for all the batch samples
+    #
+    #     """
+    #     if self.loss_function == 'mse':
+    #         local_loss_der = torch.mul(self.forward_output -
+    #                                  self.backward_output, 2.)
+    #     else:
+    #         raise NetworkError("Expecting a mse local loss function")
+    #
+    #     vectorized_jacobian = self.compute_vectorized_jacobian()
+    #     u = torch.mul(vectorized_jacobian**(-1), local_loss_der)
+    #     v = lower_layer.forward_output
+    #
+    #     weight_gradients = torch.matmul(u, torch.transpose(v, -1, -2))
+    #
+    #     # bias_gradients = u
+    #     bias_gradients = torch.zeros(u.shape)
+    #     self.set_forward_gradients(torch.mean(weight_gradients, 0), torch.mean(
+    #         bias_gradients, 0))
 
-        """
-        if self.loss_function == 'mse':
-            local_loss_der = torch.mul(self.forward_output -
-                                     self.backward_output, 2.)
-        else:
-            raise NetworkError("Expecting a mse local loss function")
-
-        vectorized_jacobian = self.compute_vectorized_jacobian()
-        u = torch.mul(vectorized_jacobian, local_loss_der)
-        v = lower_layer.forward_output
-
-        weight_gradients = torch.matmul(u, torch.transpose(v, -1, -2))
-
-        # bias_gradients = u
-        bias_gradients = torch.zeros(u.shape)
-        self.set_forward_gradients(torch.mean(weight_gradients, 0), torch.mean(
-            bias_gradients, 0))
-
-    def compute_vectorized_jacobian(self):
-        """ Compute the vectorized Jacobian (as the jacobian for a ridge
-        nonlinearity is diagonal, it can be stored in a vector.
-        IMPORTANT: this function should always be overwritten by children of
-        InvertibleLayer"""
-        raise NetworkError("compute_vectorized_jacobian should always be "
-                           "overwritten by children of InvertibleLayer")
-
-    def check_inverse(self, upper_layer):
-        """ Check whether the computed inverse from iterative updates
-        is still equal to the exact inverse. This is done by calculating the
-        frobeniusnorm of W^(-1)*W - I
-        :type upper_layer: InvertibleLayer
-        """
-        forward_weights = upper_layer.forward_weights
-        forward_weights_pinv = torch.pinverse(forward_weights)
-        error = self.backward_weights - forward_weights_pinv
-        return torch.norm(error)
-
-    def save_inverse_error(self, upper_layer):
-        error = self.check_inverse(upper_layer)
-        self.writer.add_scalar(tag='{}/inverse_error'.format(self.name),
-                               scalar_value=error,
-                               global_step=self.global_step)
-
-    def propagate_GN_error(self, upper_layer):
-        D_inv = self.compute_backward_vectorized_jacobian(
-            upper_layer.forward_output, upper_layer
-        )
-        self.GN_error = torch.matmul(self.backward_weights,
-                                     D_inv*upper_layer.GN_error)
-
-    def compute_inverse_vectorized_jacobian(self, linear_activation):
-        """ Should be implemented by child class"""
-        raise NetworkError('Should be implemented by child class')
-
-    def compute_approx_error(self):
-        error = self.backward_output - self.forward_output + self.GN_error
-        return error
-
-    def compute_approx_angle_error(self):
-        total_update = self.backward_output - self.forward_output
-        GN_update = - self.GN_error
-        angles = hf.get_angle(total_update, GN_update)
-        return torch.tensor([torch.mean(angles)])
-
-    def save_approx_angle_error(self):
-        angle = self.compute_approx_angle_error()
-        # if angle < 0.5:
-        #     raise NetworkError('approx_angle_error smaller than 0.9: '
-        #                        '{}'.format(angle))
-        self.writer.add_scalar(tag='{}/approx_angle_error'.format(self.name),
-                               scalar_value=angle,
-                               global_step=self.global_step)
-
-    def save_approx_error(self):
-        error = torch.norm(torch.mean(self.compute_approx_error(),0))
-        self.writer.add_scalar(tag='{}/approx_error'.format(self.name),
-                               scalar_value=error,
-                               global_step=self.global_step)
-
-    def save_state(self):
-        super().save_state()
-        self.save_approx_angle_error()
-        self.save_approx_error()
-
-    def compute_backward_vectorized_jacobian(self, linear_activation,
-                                             upper_layer):
-        """ has to be implemented by the child class"""
-        return upper_layer.compute_inverse_vectorized_jacobian(linear_activation)
-
-
-class TargetPropLeakyReluLayer(TargetPropLayer):
+class MTPLeakyReluLayer(MTPLayer):
     """ Layer of an invertible neural network with a leaky RELU activation
     fucntion. """
 
@@ -267,7 +170,7 @@ class TargetPropLeakyReluLayer(TargetPropLayer):
         return output
 
 
-class TargetPropLinearLayer(TargetPropLayer):
+class MTPLinearLayer(MTPLayer):
     """ Layer in neural network that is purely linear and invertible"""
 
     def forward_nonlinearity(self, linear_activation):
@@ -280,7 +183,7 @@ class TargetPropLinearLayer(TargetPropLayer):
         return torch.ones(self.forward_output.shape)
 
 
-class TargetPropOutputLayer(TargetPropLayer):
+class MTPOutputLayer(MTPLayer):
     """ Super class for the last layer of an invertible network, that will be
     trained using target propagation"""
 
@@ -300,6 +203,32 @@ class TargetPropOutputLayer(TargetPropLayer):
                          fixed=fixed)
         self.set_stepsize(step_size)
         self.set_output_loss_function(output_loss_function)
+
+    def propagate_forward(self, lower_layer):
+        """
+        Don't do batch normalization in the output layer
+        :param lower_layer: The first layer upstream of the layer 'self'
+        :type lower_layer: Layer
+        :return saves the computed output of the layer to self.forward_output.
+                forward_output is a 3D tensor of size
+                batchDimension x layerDimension x 1
+        """
+        if not isinstance(lower_layer, Layer):
+            raise TypeError("Expecting a Layer object as "
+                            "argument for propagate_forward")
+        if not lower_layer.layer_dim == self.in_dim:
+            raise ValueError("Layer sizes are not compatible for "
+                             "propagating forward")
+
+        forward_input = lower_layer.forward_output
+        self.forward_linear_activation = torch.matmul(self.forward_weights,
+                                                 forward_input) + \
+                                    self.forward_bias
+        forward_output = self.forward_nonlinearity(
+            self.forward_linear_activation)
+        self.mu = torch.ones((forward_output.shape[1], forward_output.shape[2]))
+        self.sigma = torch.ones((forward_output.shape[1], forward_output.shape[2]))
+        self.set_forward_output(forward_output)
 
     def set_output_loss_function(self, output_loss_function):
         if not isinstance(output_loss_function, str):
@@ -392,7 +321,7 @@ class TargetPropOutputLayer(TargetPropLayer):
         self.save_backward_activations_hist()
 
 
-class TargetPropLinearOutputLayer(TargetPropOutputLayer):
+class MTPLinearOutputLayer(MTPOutputLayer):
     """ Invertible output layer with a linear activation function. This layer
     can so far only be combined with an mse loss
     function."""
@@ -431,7 +360,7 @@ class TargetPropLinearOutputLayer(TargetPropOutputLayer):
         self.GN_error = torch.mul(gradient, self.step_size)
 
 
-class TargetPropInputLayer(TargetPropLayer):
+class MTPInputLayer(MTPLayer):
     """ Input layer of the invertible neural network,
         e.g. the pixelvalues of a picture. """
 
@@ -491,3 +420,11 @@ class TargetPropInputLayer(TargetPropLayer):
         self.save_activations_hist()
         self.save_backward_activations_hist()
         self.save_backward_weights_hist()
+
+
+    def propagate_backward(self, upper_layer):
+        self.mu = torch.ones((self.forward_output.shape[1],
+                              self.forward_output.shape[2]))
+        self.sigma = torch.ones(
+            (self.forward_output.shape[1], self.forward_output.shape[2]))
+        super().propagate_backward(upper_layer)

@@ -35,8 +35,8 @@ random.seed(seed)
 # torch.backends.cudnn.benchmark = False
 
 # ======== User variables ============
-nb_training_batches = 5000
-batch_size = 1
+nb_training_batches = 120
+batch_size = 32
 testing_size = 1000
 n = 3
 distance = 1.0

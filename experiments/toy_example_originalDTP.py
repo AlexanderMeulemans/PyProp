@@ -10,6 +10,8 @@ You may obtain a copy of the License at
 
 from utils.create_datasets import GenerateDatasetFromModel
 from optimizers.optimizers import SGD, SGDInvertible
+from layers.original_DTP_layer import OriginalDTPInputLayer, \
+    OriginalDTPLeakyReluLayer, OriginalDTPLinearOutputLayer
 from layers.DTP_layer import DTPInputLayer, DTPLeakyReluLayer, \
     DTPLinearOutputLayer
 from networks.target_prop_network import TargetPropNetwork
@@ -117,18 +119,18 @@ hidden_weights = hf.get_invertible_neighbourhood_matrix(hidden_weights_true,
 
 
 # Creating training network
-inputlayer = DTPInputLayer(layer_dim=n, out_dim=n, loss_function='mse',
+inputlayer = OriginalDTPInputLayer(layer_dim=n, out_dim=n, loss_function='mse',
                                   name='input_layer', writer=writer,
                                   debug_mode=debug,
                                   weight_decay=weight_decay)
-hiddenlayer = DTPLeakyReluLayer(negative_slope=0.35, in_dim=n,
+hiddenlayer = OriginalDTPLeakyReluLayer(negative_slope=0.35, in_dim=n,
                                        layer_dim=n, out_dim=n, loss_function=
                                        'mse',
                                        name='hidden_layer',
                                        writer=writer,
                                        debug_mode=debug,
                                        weight_decay=weight_decay)
-outputlayer = DTPLinearOutputLayer(in_dim=n, layer_dim=n,
+outputlayer = OriginalDTPLinearOutputLayer(in_dim=n, layer_dim=n,
                                           step_size=output_step_size,
                                           name='output_layer',
                                           writer=writer,

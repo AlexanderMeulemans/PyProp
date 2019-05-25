@@ -84,6 +84,7 @@ class Network(object):
         """ Propagate the inputbatch forward through the network
         :param input_batch: Inputbatch of dimension
         batch dimension x input dimension x 1"""
+        self.batch_size = input_batch.shape[0]
         self.layers[0].set_forward_output(input_batch)
         for i in range(1, len(self.layers)):
             self.layers[i].propagate_forward(self.layers[i - 1])

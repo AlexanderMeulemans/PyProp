@@ -40,7 +40,7 @@ class OriginalTPLayer(TargetPropLayer):
 
         self.set_backward_parameters(updated_weights, updated_bias)
 
-    def compute_backward_vectorized_jacobian(self, linear_activation):
+    def compute_backward_vectorized_jacobian(self, linear_activation, upper_layer=None):
         """ has to be implemented by the child class"""
         raise NetworkError('has to be implemented by the child class')
 
@@ -113,7 +113,7 @@ class OriginalTPLeakyReluLayer(OriginalTPLayer):
                     output[i, j, 0] = self.negative_slope
         return output
 
-    def compute_backward_vectorized_jacobian(self, linear_activation):
+    def compute_backward_vectorized_jacobian(self, linear_activation, upper_layer=None):
         output = torch.empty(linear_activation.shape)
         for i in range(linear_activation.size(0)):
             for j in range(linear_activation.size(1)):
@@ -123,14 +123,14 @@ class OriginalTPLeakyReluLayer(OriginalTPLayer):
                     output[i, j, 0] = self.negative_slope
         return output
 
-    def compute_inverse_vectorized_jacobian(self):
-        output = torch.empty(self.forward_output.shape)
-        for i in range(self.forward_output.size(0)):
+    def compute_inverse_vectorized_jacobian(self, linear_activation):
+        output = torch.empty(linear_activation.shape)
+        for i in range(linear_activation.size(0)):
             for j in range(self.forward_output.size(1)):
-                if self.forward_output[i, j, 0] >= 0:
+                if linear_activation[i, j, 0] >= 0:
                     output[i, j, 0] = 1
                 else:
-                    output[i, j, 0] = self.negative_slope**(-1)
+                    output[i, j, 0] = self.negative_slope ** (-1)
         return output
 
 
@@ -146,7 +146,7 @@ class OriginalTPLinearLayer(OriginalTPLayer):
     def compute_vectorized_jacobian(self):
         return torch.ones(self.forward_output.shape)
 
-    def compute_backward_vectorized_jacobian(self, linear_activation):
+    def compute_backward_vectorized_jacobian(self, linear_activation, upper_layer=None):
         return torch.ones(linear_activation.shape)
 
 
@@ -276,8 +276,8 @@ class OriginalTPLinearOutputLayer(OriginalTPOutputLayer):
     def compute_vectorized_jacobian(self):
         return torch.ones(self.forward_output.shape)
 
-    def compute_backward_vectorized_jacobian(self):
-        return torch.ones(self.backward_output.shape)
+    def compute_backward_vectorized_jacobian(self, linear_activation, upper_layer=None):
+        return torch.ones(linear_activation.shape)
 
     def compute_backward_output(self, target):
         """ Compute the backward output based on a small move from the
@@ -329,6 +329,13 @@ class OriginalTPInputLayer(OriginalTPLayer):
     def init_forward_parameters_tilde(self):
         """ InputLayer has no forward parameters"""
         pass
+
+    def backward_nonlinearity(self, input):
+        return input
+
+
+    def compute_backward_vectorized_jacobian(self, linear_activation, upper_layer=None):
+        return torch.ones(linear_activation.shape)
 
     def init_velocities(self):
         """ InputLayer has no forward parameters"""

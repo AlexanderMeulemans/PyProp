@@ -10,8 +10,10 @@ You may obtain a copy of the License at
 
 from utils.create_datasets import GenerateDatasetFromModel
 from optimizers.optimizers import SGD, SGDInvertible
-from layers.DTP_layer import DTPInputLayer, DTPLeakyReluLayer, \
-    DTPLinearOutputLayer
+from layers.MTP_layer import MTPInputLayer, MTPLeakyReluLayer,\
+    MTPLinearOutputLayer
+from layers.target_prop_layer import TargetPropInputLayer, \
+    TargetPropLeakyReluLayer, TargetPropLinearOutputLayer
 from networks.target_prop_network import TargetPropNetwork
 from layers.layer import InputLayer, LeakyReluLayer, \
     LinearOutputLayer
@@ -35,17 +37,17 @@ random.seed(seed)
 # torch.backends.cudnn.benchmark = False
 
 # ======== User variables ============
-nb_training_batches = 5000
-batch_size = 1
+nb_training_batches = 120
+batch_size = 32
 testing_size = 1000
 n = 3
-distance = 1.
+distance = 1.0
 CPU = True
 debug = False
 weight_decay = 0.0000
-learning_rate = 0.01
+learning_rate = 0.02
 output_step_size = 0.1
-randomize = True
+randomize = False
 max_epoch = 120
 # ======== set log directory ==========
 log_dir = '../logs/debug_TP'
@@ -92,8 +94,8 @@ generator = GenerateDatasetFromModel(true_network)
 
 input_dataset, output_dataset = generator.generate(nb_training_batches,
                                                    batch_size)
-input_dataset_test, output_dataset_test = generator.generate(
-    testing_size, 1)
+input_dataset_test, output_dataset_test = generator.generate(1,
+    testing_size)
 
 output_weights_true = output_layer_true.forward_weights
 hidden_weights_true = hidden_layer_true.forward_weights
@@ -117,18 +119,18 @@ hidden_weights = hf.get_invertible_neighbourhood_matrix(hidden_weights_true,
 
 
 # Creating training network
-inputlayer = DTPInputLayer(layer_dim=n, out_dim=n, loss_function='mse',
+inputlayer = MTPInputLayer(layer_dim=n, out_dim=n, loss_function='mse',
                                   name='input_layer', writer=writer,
                                   debug_mode=debug,
                                   weight_decay=weight_decay)
-hiddenlayer = DTPLeakyReluLayer(negative_slope=0.35, in_dim=n,
+hiddenlayer = MTPLeakyReluLayer(negative_slope=0.35, in_dim=n,
                                        layer_dim=n, out_dim=n, loss_function=
                                        'mse',
                                        name='hidden_layer',
                                        writer=writer,
                                        debug_mode=debug,
                                        weight_decay=weight_decay)
-outputlayer = DTPLinearOutputLayer(in_dim=n, layer_dim=n,
+outputlayer = MTPLinearOutputLayer(in_dim=n, layer_dim=n,
                                           step_size=output_step_size,
                                           name='output_layer',
                                           writer=writer,
