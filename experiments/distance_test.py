@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 iterations = 1000
-n=5
+n=6
 distances = np.zeros(iterations)
 
 for i in range(iterations):

@@ -12,8 +12,8 @@ import sys
 sys.path.append('.')
 from utils.create_datasets import GenerateDatasetFromModel
 from optimizers.optimizers import SGD, SGDInvertible, SGDbidirectional
-from layers.target_prop_layer import TargetPropInputLayer, \
-    TargetPropLeakyReluLayer, TargetPropLinearOutputLayer
+from layers.original_TP_layer import OriginalTPInputLayer, \
+    OriginalTPLeakyReluLayer, OriginalTPLinearOutputLayer
 from networks.target_prop_network import TargetPropNetwork
 from layers.layer import InputLayer, LeakyReluLayer, \
     LinearOutputLayer
@@ -45,7 +45,7 @@ n = 6
 # distances = [0.1, 0.5, 1.5, 5., 10.]
 distances = [8.]
 # learning_rates = [5., 1., 0.5, 0.1, 0.05, 0.01, 0.005, 0.001]
-learning_rates = [0.09, 0.08, 0.05, 0.01, 0.005, 0.001]
+learning_rates = [0.5,0.1, 0.05, 0.01, 0.005, 0.001]
 backward_weight_decay = 0.0
 backward_learning_rates = [0.08, 0.05, 0.01]
 output_step_size = 0.1
@@ -56,9 +56,8 @@ randomizes = [True, False]
 max_epochs = 30
 logs = False
 threshold = 0.00001
-
 # ======== set log directory ==========
-log_dir = '../logs/gridsearch_pure_TP_onelayer2'
+log_dir = '../logs/gridsearch_original_TP_onelayer2'
 writer = SummaryWriter(log_dir=log_dir)
 
 # ======== Create result files ========7
@@ -122,6 +121,12 @@ hidden_weights_true = hidden_layer_true.forward_weights
 # ======= Start grid search ============
 for i,randomize in enumerate(randomizes):
     for j,distance in enumerate(distances):
+        output_weights = hf.get_invertible_neighbourhood_matrix(
+            output_weights_true,
+            distance)
+        hidden_weights = hf.get_invertible_neighbourhood_matrix(
+            hidden_weights_true,
+            distance)
         for k, learning_rate in enumerate(learning_rates):
             for l, backward_learning_rate in enumerate(backward_learning_rates):
 
@@ -129,23 +134,18 @@ for i,randomize in enumerate(randomizes):
                 print('Training combination: randomize={}, '
                       'distance={}, learning_rate={}, '
                       'backward_learning_rate={} ...'.format(randomize,
-                                                                 distance,
-                                                                 learning_rate,
-                                                   backward_learning_rate))
-                output_weights = hf.get_invertible_neighbourhood_matrix(
-                    output_weights_true,
-                    distance)
-                hidden_weights = hf.get_invertible_neighbourhood_matrix(
-                    hidden_weights_true,
-                    distance)
+                                                             distance,
+                                                             learning_rate,
+                                                             backward_learning_rate))
 
-                inputlayer = TargetPropInputLayer(layer_dim=n, out_dim=n,
+
+                inputlayer = OriginalTPInputLayer(layer_dim=n, out_dim=n,
                                                   loss_function='mse',
                                                   name='input_layer', writer=writer,
                                                   debug_mode=debug,
                                                   weight_decay=weight_decay,
                                                   weight_decay_backward=backward_weight_decay)
-                hiddenlayer = TargetPropLeakyReluLayer(negative_slope=0.35,
+                hiddenlayer = OriginalTPLeakyReluLayer(negative_slope=0.35,
                                                        in_dim=n,
                                                        layer_dim=n, out_dim=n,
                                                        loss_function=
@@ -155,7 +155,7 @@ for i,randomize in enumerate(randomizes):
                                                        debug_mode=debug,
                                                        weight_decay=weight_decay,
                                                        weight_decay_backward=backward_weight_decay)
-                outputlayer = TargetPropLinearOutputLayer(in_dim=n, layer_dim=n,
+                outputlayer = OriginalTPLinearOutputLayer(in_dim=n, layer_dim=n,
                                                           step_size=output_step_size,
                                                           name='output_layer',
                                                           writer=writer,
@@ -172,14 +172,14 @@ for i,randomize in enumerate(randomizes):
 
                 # Initializing optimizer
                 optimizer = SGDbidirectional(network=network, threshold=0.0001,
-                                              init_learning_rate=learning_rate,
-                                              tau=100,
-                                              final_learning_rate=learning_rate / 5.,
-                                              init_learning_rate_backward=backward_learning_rate,
-                                              final_learning_rate_backward=backward_learning_rate / 5.,
-                                              compute_accuracies=False,
-                                              max_epoch=max_epochs,
-                                              outputfile_name='resultfile.csv')
+                                             init_learning_rate=learning_rate,
+                                             tau=max_epochs * 2,
+                                             final_learning_rate=learning_rate / 5.,
+                                             init_learning_rate_backward=backward_learning_rate,
+                                             final_learning_rate_backward=backward_learning_rate / 5.,
+                                             compute_accuracies=False,
+                                             max_epoch=max_epochs,
+                                             outputfile_name='resultfile.csv')
                 # Train on dataset
 
                 try:
@@ -187,11 +187,11 @@ for i,randomize in enumerate(randomizes):
                                                                   output_dataset,
                                                                input_dataset_test,
                                                                output_dataset_test)
-                    train_loss = hf.append_results(train_loss, max_epochs+1)
-                    test_loss = hf.append_results(test_loss, max_epochs+1)
-                    results_train[i,j,k,l,:] = train_loss
-                    results_test[i,j,k,l,:] = test_loss
-                    best_results[i,j,k,l] = np.min(test_loss)
+                    train_loss = hf.append_results(train_loss, max_epochs + 1)
+                    test_loss = hf.append_results(test_loss, max_epochs + 1)
+                    results_train[i, j, k, l, :] = train_loss
+                    results_test[i, j, k, l, :] = test_loss
+                    best_results[i, j, k, l] = np.min(test_loss)
                 except Exception as e:
                     print('Training failed')
                     print('Occurred error:')

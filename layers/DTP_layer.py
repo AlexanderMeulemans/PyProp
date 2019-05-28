@@ -57,14 +57,16 @@ class DTPLeakyReluLayer(DTPLayer):
                  name='invertible_leaky_ReLU_layer',
                  debug_mode=True,
                  weight_decay=0.0,
-                 fixed=False):
+                 fixed=False,
+                 weight_decay_backward=0.):
         super().__init__(in_dim, layer_dim, out_dim,
                          writer=writer,
                          loss_function=loss_function,
                          name=name,
                          debug_mode=debug_mode,
                          weight_decay=weight_decay,
-                         fixed=fixed)
+                         fixed=fixed,
+                         weight_decay_backward=weight_decay_backward)
         self.set_negative_slope(negative_slope)
 
     def set_negative_slope(self, negative_slope):
@@ -281,6 +283,8 @@ class DTPLinearOutputLayer(DTPOutputLayer):
     def compute_GN_error(self, target):
         gradient = torch.mul(self.forward_output - target, 2)
         self.GN_error = torch.mul(gradient, self.step_size)
+        self.real_GN_error = torch.mul(gradient, self.step_size)
+        self.BP_error = gradient
 
 
 class DTPInputLayer(DTPLayer):
@@ -292,7 +296,8 @@ class DTPInputLayer(DTPLayer):
                  name='invertible_input_layer',
                  debug_mode=True,
                  weight_decay=0.0,
-                 fixed=False):
+                 fixed=False,
+                 weight_decay_backward=0.0):
         super().__init__(in_dim=None, layer_dim=layer_dim,
                          out_dim=out_dim,
                          writer=writer,
@@ -300,7 +305,8 @@ class DTPInputLayer(DTPLayer):
                          name=name,
                          debug_mode=debug_mode,
                          weight_decay=weight_decay,
-                         fixed=fixed)
+                         fixed=fixed,
+                         weight_decay_backward=weight_decay_backward)
 
     def init_forward_parameters(self):
         """ InputLayer has no forward parameters"""

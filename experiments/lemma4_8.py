@@ -26,35 +26,54 @@ plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
 
 # User variables
-layer_sizes = [12,10,10,10]
+layer_sizes = [5,5,3]
 iterations = 1000
 batch_size = 8
 font_size = 23
+rcond = 1e-12
 
 # result arrays
 matrix_errors = np.zeros(iterations)
 inverse_errors = np.zeros(iterations)
 inverse_errors_control = np.zeros(iterations)
+h1s = np.zeros(iterations)
+h2s = np.zeros(iterations)
+hs = np.zeros(iterations)
+s_min_reals = np.zeros(iterations)
+s_min_differences = np.zeros(iterations)
+
 
 for iteration in range(iterations):
     # Create weight and diagonal matrices
     weight_matrices = dict()
     diagonal_matrices = dict()
+    s_mins = np.empty(len(layer_sizes)-1)
     for i in range(1, len(layer_sizes)):
         weight_matrices[i] = hf.get_invertible_random_matrix(layer_sizes[i],
                                                              layer_sizes[i-1])
+        U,S,V = torch.svd(weight_matrices[i])
+        s_mins[i-1] = torch.min(S)
         diagonal_matrices[i] = hf.get_invertible_diagonal_matrix(layer_sizes[i])
 
     J_tot = torch.eye(layer_sizes[-1])
+    W_tot = torch.eye(layer_sizes[-1])
+    s_min_tot = 1.
     for i in range(len(layer_sizes)-1,0,-1):
         J_tot = torch.matmul(J_tot, torch.matmul(diagonal_matrices[i],
                                                  weight_matrices[i]))
-    J_tot_pinv = torch.pinverse(J_tot)
+        W_tot = torch.matmul(W_tot, weight_matrices[i])
+        s_min_tot = s_min_tot * s_mins[i-1]
+    J_tot_pinv = torch.pinverse(J_tot, rcond=rcond)
+    U,S,V = torch.svd(W_tot)
+    s_min_real = torch.min(S)
+    s_min_reals[iteration] = s_min_real
+    s_min_difference = s_min_real - s_min_tot
+    s_min_differences[iteration] = s_min_difference
 
     J_tot_pinv_factored = torch.eye(layer_sizes[0])
     for i in range(1,len(layer_sizes)):
-        W_pinv = torch.pinverse(weight_matrices[i])
-        D_pinv = torch.pinverse(diagonal_matrices[i])
+        W_pinv = torch.pinverse(weight_matrices[i], rcond=rcond)
+        D_pinv = torch.pinverse(diagonal_matrices[i], rcond=rcond)
         J_tot_pinv_factored = torch.matmul(J_tot_pinv_factored, torch.matmul(
             W_pinv,D_pinv
         ))
@@ -63,6 +82,9 @@ for iteration in range(iterations):
     h = torch.randn(batch_size,layer_sizes[-1],1)
     h1 = torch.matmul(J_tot_pinv, h)
     h2 = torch.matmul(J_tot_pinv_factored, h)
+    hs[iteration] = torch.norm(h)
+    h1s[iteration] = torch.norm(h1)
+    h2s[iteration] = torch.norm(h2)
     h_control = torch.randn(batch_size,layer_sizes[-1],1)
     inverse_errors[iteration] = torch.mean(torch.norm(h1 - h2, dim=1))
     inverse_errors_control[iteration] = torch.mean(
@@ -90,5 +112,45 @@ ax = fig.add_subplot(1, 1, 1)
 ax.tick_params(axis='both', which='major', labelsize=21)
 plt.hist(inverse_errors_control,bins=100)
 plt.xlabel(r'$\| h_1 - h_2\|_{2}$', fontsize=font_size)
+plt.ylabel(r'\# samples', fontsize=font_size)
+plt.show()
+
+fig = plt.figure('norm h1')
+ax = fig.add_subplot(1, 1, 1)
+ax.tick_params(axis='both', which='major', labelsize=21)
+plt.hist(h1s, bins=100)
+plt.xlabel(r'$\| h_1\|_{2}$', fontsize=font_size)
+plt.ylabel(r'\# samples', fontsize=font_size)
+plt.show()
+
+fig = plt.figure('norm h2')
+ax = fig.add_subplot(1, 1, 1)
+ax.tick_params(axis='both', which='major', labelsize=21)
+plt.hist(h2s, bins=100)
+plt.xlabel(r'$\| h_2\|_{2}$', fontsize=font_size)
+plt.ylabel(r'\# samples', fontsize=font_size)
+plt.show()
+
+fig = plt.figure('norm h')
+ax = fig.add_subplot(1, 1, 1)
+ax.tick_params(axis='both', which='major', labelsize=21)
+plt.hist(hs, bins=100)
+plt.xlabel(r'$\| h\|_{2}$', fontsize=font_size)
+plt.ylabel(r'\# samples', fontsize=font_size)
+plt.show()
+
+fig = plt.figure('s_min')
+ax = fig.add_subplot(1, 1, 1)
+ax.tick_params(axis='both', which='major', labelsize=21)
+plt.hist(s_min_reals, bins=100)
+plt.xlabel(r'$\| h\|_{2}$', fontsize=font_size)
+plt.ylabel(r'\# samples', fontsize=font_size)
+plt.show()
+
+fig = plt.figure('s_min_diff')
+ax = fig.add_subplot(1, 1, 1)
+ax.tick_params(axis='both', which='major', labelsize=21)
+plt.hist(s_min_differences, bins=100)
+plt.xlabel(r'$\| h\|_{2}$', fontsize=font_size)
 plt.ylabel(r'\# samples', fontsize=font_size)
 plt.show()

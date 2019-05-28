@@ -2,25 +2,28 @@ import matplotlib.pyplot as plt
 import numpy as np
 import utils.helper_functions as hf
 
-main_dir = '../logs/gridsearch_BP_2layers/'
+main_dir = '../logs/gridsearch_onelayer_BP3/'
 test_losses = np.load(main_dir + 'test_losses.npy')
 train_losses = np.load(main_dir + 'train_losses.npy')
 
 best_test_results = np.min(test_losses, 3)
 succesful_runs = best_test_results != 0
 
-learning_rates = [5., 1., 0.5, 0.1, 0.05, 0.01, 0.005, 0.001]
-distances = [0.1, 0.5, 1.5, 5., 10.]
-randomizes = [True, False]
+# learning_rates = [0.5, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001]
+# distances = [0.1, 0.5, 1.5, 5., 10.]
+distances = [5.]
+learning_rates = [0.5, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001]
+# randomizes = [True, False]
+randomizes = [True]
 
 print('Train results randomize=True ---------')
 train_stats_true = hf.get_stats_gridsearch(train_losses[0,:,:,:], distances, learning_rates)
-print('Train results randomize=False ---------')
-train_stats_false = hf.get_stats_gridsearch(train_losses[1,:,:,:], distances, learning_rates)
+# print('Train results randomize=False ---------')
+# train_stats_false = hf.get_stats_gridsearch(train_losses[1,:,:,:], distances, learning_rates)
 print('Test results randomize=True ---------')
 test_stats_true = hf.get_stats_gridsearch(test_losses[0,:,:,:], distances, learning_rates)
-print('Test results randomize=False ---------')
-test_stats_false = hf.get_stats_gridsearch(test_losses[1,:,:,:], distances, learning_rates)
+# print('Test results randomize=False ---------')
+# test_stats_false = hf.get_stats_gridsearch(test_losses[1,:,:,:], distances, learning_rates)
 
 
 for i,randomize in enumerate(randomizes):

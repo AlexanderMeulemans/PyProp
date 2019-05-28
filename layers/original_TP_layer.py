@@ -60,6 +60,16 @@ class OriginalTPLayer(TargetPropLayer):
             linear_output)
         self.set_backward_output(backward_output)
 
+    def propagate_GN_error(self, upper_layer):
+        linear_activation = torch.matmul(self.backward_weights,
+                                         upper_layer.forward_output) + \
+                            self.backward_bias
+        D_inv = self.compute_backward_vectorized_jacobian(
+           linear_activation, upper_layer
+        )
+        self.GN_error = D_inv*torch.matmul(self.backward_weights,
+                                           upper_layer.GN_error)
+
 class OriginalTPLeakyReluLayer(OriginalTPLayer):
     """ Layer of an invertible neural network with a leaky RELU activation
     fucntion. """
@@ -111,6 +121,16 @@ class OriginalTPLeakyReluLayer(OriginalTPLayer):
                     output[i, j, 0] = 1
                 else:
                     output[i, j, 0] = self.negative_slope
+        return output
+
+    def compute_inverse_vectorized_jacobian(self, linear_activation):
+        output = torch.empty(linear_activation.shape)
+        for i in range(linear_activation.size(0)):
+            for j in range(linear_activation.size(1)):
+                if linear_activation[i, j, 0] >= 0:
+                    output[i, j, 0] = 1
+                else:
+                    output[i, j, 0] = self.negative_slope**(-1)
         return output
 
     def compute_backward_vectorized_jacobian(self, linear_activation, upper_layer=None):
@@ -279,6 +299,9 @@ class OriginalTPLinearOutputLayer(OriginalTPOutputLayer):
     def compute_backward_vectorized_jacobian(self, linear_activation, upper_layer=None):
         return torch.ones(linear_activation.shape)
 
+    def compute_inverse_vectorized_jacobian(self, linear_activation):
+        return torch.ones(linear_activation.shape)
+
     def compute_backward_output(self, target):
         """ Compute the backward output based on a small move from the
         forward output in the direction of the negative gradient of the loss
@@ -299,6 +322,8 @@ class OriginalTPLinearOutputLayer(OriginalTPOutputLayer):
     def compute_GN_error(self, target):
         gradient = torch.mul(self.forward_output - target, 2)
         self.GN_error = torch.mul(gradient, self.step_size)
+        self.real_GN_error = torch.mul(gradient, self.step_size)
+        self.BP_error = gradient
 
 
 class OriginalTPInputLayer(OriginalTPLayer):

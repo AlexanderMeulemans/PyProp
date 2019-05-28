@@ -41,6 +41,9 @@ class BidirectionalNetwork(Network):
             self.layers[i].update_backward_parameters(learning_rate,
                                                       self.layers[i + 1])
 
-    def update_parameters(self, learning_rate):
+    def update_parameters(self, learning_rate, learning_rate_backward=None):
+        if learning_rate_backward is None:
+            learning_rate_backward = learning_rate
         self.update_forward_parameters(learning_rate)
-        self.update_backward_parameters(learning_rate)
+        self.update_backward_parameters(learning_rate_backward)
+

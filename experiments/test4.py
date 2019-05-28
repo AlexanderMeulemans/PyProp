@@ -9,9 +9,15 @@ You may obtain a copy of the License at
 """
 
 from utils.create_datasets import GenerateDatasetFromModel
-from optimizers.optimizers import SGD, SGDInvertible, SGDbidirectional
+from optimizers.optimizers import SGD, SGDInvertible
 from layers.target_prop_layer import TargetPropInputLayer, \
     TargetPropLeakyReluLayer, TargetPropLinearOutputLayer
+from layers.DTP_layer import DTPLinearOutputLayer, DTPInputLayer, \
+    DTPLeakyReluLayer
+from layers.original_TP_layer import OriginalTPLinearOutputLayer, \
+    OriginalTPLeakyReluLayer, OriginalTPInputLayer
+from layers.original_DTP_layer import OriginalDTPLinearOutputLayer, \
+    OriginalDTPLeakyReluLayer, OriginalDTPInputLayer
 from networks.target_prop_network import TargetPropNetwork
 from layers.layer import InputLayer, LeakyReluLayer, \
     LinearOutputLayer
@@ -24,9 +30,10 @@ from utils.LLS import linear_least_squares
 import os
 import random
 import utils.helper_functions as hf
+import matplotlib.pyplot as plt
 
 # good results for seed 32, no good results for seed 47
-seed = 47
+seed = 32
 torch.manual_seed(seed)
 torch.cuda.manual_seed(seed)
 np.random.seed(seed)
@@ -37,20 +44,30 @@ random.seed(seed)
 # ======== User variables ============
 nb_training_batches = 120
 batch_size = 32
-testing_size = 1000
-n = 6
-distance = 8.
+testing_size = 2
+n = 3
+distance = 5.
 CPU = True
 debug = False
 weight_decay = 0.0000
-learning_rate = 0.01
-learning_rate_backward = 0.07
+learning_rate_TP = 0.1
+learning_rate_BP = 0.05
+learning_rate_DTP = 0.1
+learning_rate_fixed = 0.05
+learning_rate_originalTP = 0.05
+learning_rate_originalDTP = 0.1
+weight_decay_TP = 0.0
+weight_decay_DTP = 0.0
+weight_decay_originalTP = 0.0
+weight_decay_originalDTP = 0.0
+
 output_step_size = 0.1
-randomize = False
-max_epoch = 30
+randomize = True
+max_epoch = 60
+logs=True
+threshold = 0.0000001
 # ======== set log directory ==========
-log_dir = '../logs/debug_TP'
-writer = SummaryWriter(log_dir=log_dir)
+log_dir_main = '../logs/final_combined_toy_example/'
 
 # ======== set device ============
 if not CPU:
@@ -70,7 +87,8 @@ else:
     print('using CPU')
 
 # ======== Create toy model dataset =============
-
+log_dir = log_dir_main + 'dataset'
+writer = SummaryWriter(log_dir=log_dir)
 input_layer_true = InputLayer(layer_dim=n, writer=writer,
                               name='input_layer_true_model',
                               debug_mode=debug,
@@ -99,6 +117,12 @@ input_dataset_test, output_dataset_test = generator.generate(
 output_weights_true = output_layer_true.forward_weights
 hidden_weights_true = hidden_layer_true.forward_weights
 
+output_weights = hf.get_invertible_neighbourhood_matrix(output_weights_true,
+                                                        distance)
+hidden_weights = hf.get_invertible_neighbourhood_matrix(hidden_weights_true,
+                                                        distance)
+
+
 # compute least squares solution as control
 print('computing LS solution ...')
 weights, train_loss, test_loss = linear_least_squares(input_dataset,
@@ -108,65 +132,49 @@ weights, train_loss, test_loss = linear_least_squares(input_dataset,
 print('LS train loss: ' + str(train_loss))
 print('LS test loss: ' + str(test_loss))
 
-
-# ===== Run experiment with invertible TP =======
+# ===== Run experiment with BP =======
 # initialize forward weights in the neighbourhood of true weights
-output_weights = hf.get_invertible_neighbourhood_matrix(output_weights_true,
-                                                        distance)
-hidden_weights = hf.get_invertible_neighbourhood_matrix(hidden_weights_true,
-                                                        distance)
+log_dir = log_dir_main + 'BP'
+writer = SummaryWriter(log_dir=log_dir)
 
 
 # Creating training network
-inputlayer = TargetPropInputLayer(layer_dim=n, out_dim=n, loss_function='mse',
-                                  name='input_layer', writer=writer,
-                                  debug_mode=debug,
-                                  weight_decay=weight_decay)
-hiddenlayer = TargetPropLeakyReluLayer(negative_slope=0.35, in_dim=n,
-                                       layer_dim=n, out_dim=n, loss_function=
-                                       'mse',
-                                       name='hidden_layer',
-                                       writer=writer,
-                                       debug_mode=debug,
-                                       weight_decay=weight_decay)
-outputlayer = TargetPropLinearOutputLayer(in_dim=n, layer_dim=n,
-                                          step_size=output_step_size,
-                                          name='output_layer',
-                                          writer=writer,
-                                          debug_mode=debug,
-                                          weight_decay=weight_decay)
-hiddenlayer.set_forward_parameters(hidden_weights, hiddenlayer.forward_bias)
-outputlayer.set_forward_parameters(output_weights, outputlayer.forward_bias)
+inputlayer_BP = InputLayer(layer_dim=n, writer=writer,
+                          name='input_layer',
+                          debug_mode=debug,
+                          weight_decay=weight_decay)
+hiddenlayer_BP = LeakyReluLayer(negative_slope=0.35, in_dim=n,
+                                   layer_dim=n,
+                                   writer=writer,
+                                   name='hidden_layer',
+                                   debug_mode=debug,
+                                   weight_decay=weight_decay,
+                                fixed=True)
+outputlayer_BP = LinearOutputLayer(in_dim=n, layer_dim=n,
+                                      loss_function='mse',
+                                      writer=writer,
+                                      name='output_layer',
+                                      debug_mode=debug,
+                                      weight_decay=weight_decay)
+hiddenlayer_BP.set_forward_parameters(hidden_weights, hiddenlayer_BP.forward_bias)
+outputlayer_BP.set_forward_parameters(output_weights, outputlayer_BP.forward_bias)
 
-network = TargetPropNetwork([inputlayer, hiddenlayer, outputlayer],
-                            randomize=randomize)
+network_BP = Network([inputlayer_BP,
+                             hiddenlayer_BP, outputlayer_BP], log=logs)
 
 # Initializing optimizer
-optimizer1 = SGD(network=network, threshold=0.0001,
-                 init_learning_rate=learning_rate,
+optimizer1 = SGD(network=network_BP, threshold=threshold,
+                 init_learning_rate=learning_rate_BP,
                  tau=100,
-                 final_learning_rate=learning_rate/5.,
+                 final_learning_rate=learning_rate_BP/5.,
                  compute_accuracies=False,
                  max_epoch=max_epoch,
                  outputfile_name='resultfile.csv')
-optimizer3 = SGDbidirectional(network=network, threshold=0.0001,
-                 init_learning_rate=learning_rate,
-                 tau=100,
-                 final_learning_rate=learning_rate/5.,
-                 init_learning_rate_backward=learning_rate_backward,
-                 final_learning_rate_backward=learning_rate_backward/5.,
-                 compute_accuracies=False,
-                 max_epoch=max_epoch,
-                 outputfile_name='resultfile.csv')
-optimizer2 = SGDInvertible(network=network, threshold=0.0001,
-                           init_step_size=output_step_size, tau=100,
-                           final_step_size=output_step_size/5.,
-                           learning_rate=learning_rate, max_epoch=max_epoch)
+
 # Train on dataset
-timings = np.array([])
 start_time = time.time()
-optimizer3.run_dataset(input_dataset, output_dataset, input_dataset_test,
+train_loss_BP, test_loss_BP = optimizer1.run_dataset(
+    input_dataset, output_dataset, input_dataset_test,
                        output_dataset_test)
 end_time = time.time()
 print('Elapsed time: {} seconds'.format(end_time - start_time))
-timings = np.append(timings, end_time - start_time)

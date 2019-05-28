@@ -1,3 +1,4 @@
+
 """
 Copyright 2019 Alexander Meulemans
 
@@ -10,9 +11,9 @@ You may obtain a copy of the License at
 import sys
 sys.path.append('.')
 from utils.create_datasets import GenerateDatasetFromModel
-from optimizers.optimizers import SGD, SGDInvertible
-from layers.target_prop_layer import TargetPropInputLayer, \
-    TargetPropLeakyReluLayer, TargetPropLinearOutputLayer
+from optimizers.optimizers import SGD, SGDInvertible, SGDbidirectional
+from layers.DTP_layer import DTPInputLayer, \
+    DTPLeakyReluLayer, DTPLinearOutputLayer
 from networks.target_prop_network import TargetPropNetwork
 from layers.layer import InputLayer, LeakyReluLayer, \
     LinearOutputLayer
@@ -27,6 +28,7 @@ import random
 import utils.helper_functions as hf
 import traceback
 
+
 seed = 47
 torch.manual_seed(seed)
 torch.cuda.manual_seed(seed)
@@ -35,15 +37,18 @@ random.seed(seed)
 # torch.backends.cudnn.deterministic = True
 # torch.backends.cudnn.benchmark = False
 
+
 # ======== User variables ============
 nb_training_batches = 120
 batch_size = 32
 testing_size = 1000
-n = 3
-distances = [0.1, 0.5, 1.5, 5.]
-# learning_rates = [0.005, 0.001]
-learning_rates = [0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001]
-backward_weight_decays = [0.1, 0.0]
+n = 6
+# distances = [0.1, 0.5, 1.5, 5., 10.]
+distances = [8.]
+# learning_rates = [5., 1., 0.5, 0.1, 0.05, 0.01, 0.005, 0.001]
+learning_rates = [0.5,0.1, 0.05, 0.01, 0.005, 0.001]
+backward_weight_decay = 0.0
+backward_learning_rates = [0.08, 0.05, 0.01]
 output_step_size = 0.1
 CPU = True
 debug = False
@@ -54,20 +59,19 @@ logs = False
 threshold = 0.00001
 
 # ======== set log directory ==========
-log_dir = '../logs/gridsearch_normal_TP_4layers'
+log_dir = '../logs/gridsearch_pure_DTP_onelayer2'
 writer = SummaryWriter(log_dir=log_dir)
 
 # ======== Create result files ========7
 results_train = np.zeros((len(randomizes), len(distances), len(learning_rates),
-                          len(backward_weight_decays), max_epochs))
+                          len(backward_learning_rates), max_epochs+1))
 results_test = np.zeros((len(randomizes), len(distances), len(learning_rates),
-                          len(backward_weight_decays), max_epochs))
+                          len(backward_learning_rates), max_epochs+1))
 succesful_run = np.ones((len(randomizes), len(distances), len(learning_rates),
-                         len(backward_weight_decays)),
+                         len(backward_learning_rates)),
                          dtype=bool)
 best_results = np.zeros((len(randomizes), len(distances), len(learning_rates),
-                         len(backward_weight_decays)))
-
+                         len(backward_learning_rates)))
 # ======== set device ============
 if not CPU:
     if torch.cuda.is_available():
@@ -96,23 +100,6 @@ hidden_layer_true = LeakyReluLayer(negative_slope=0.35, in_dim=n, layer_dim=n,
                                    name='hidden_layer_true_model',
                                    debug_mode=debug,
                                    weight_decay=weight_decay)
-hidden_layer2_true = LeakyReluLayer(negative_slope=0.35, in_dim=n, layer_dim=n,
-                                   writer=writer,
-                                   name='hidden_layer2_true_model',
-                                   debug_mode=debug,
-                                   weight_decay=weight_decay)
-hidden_layer3_true = LeakyReluLayer(negative_slope=0.35, in_dim=n, layer_dim=n,
-                                   writer=writer,
-                                   name='hidden_layer3_true_model',
-                                   debug_mode=debug,
-                                   weight_decay=weight_decay)
-
-hidden_layer4_true = LeakyReluLayer(negative_slope=0.35, in_dim=n, layer_dim=n,
-                                   writer=writer,
-                                   name='hidden_layer4_true_model',
-                                   debug_mode=debug,
-                                   weight_decay=weight_decay)
-
 output_layer_true = LinearOutputLayer(in_dim=n, layer_dim=n,
                                       loss_function='mse',
                                       writer=writer,
@@ -120,9 +107,6 @@ output_layer_true = LinearOutputLayer(in_dim=n, layer_dim=n,
                                       debug_mode=debug,
                                       weight_decay=weight_decay)
 true_network = Network([input_layer_true, hidden_layer_true,
-                        hidden_layer2_true,
-                        hidden_layer3_true,
-                        hidden_layer4_true,
                         output_layer_true])
 
 generator = GenerateDatasetFromModel(true_network)
@@ -134,44 +118,36 @@ input_dataset_test, output_dataset_test = generator.generate(
 
 output_weights_true = output_layer_true.forward_weights
 hidden_weights_true = hidden_layer_true.forward_weights
-hidden_weights2_true = hidden_layer2_true.forward_weights
-hidden_weights3_true = hidden_layer3_true.forward_weights
-hidden_weights4_true = hidden_layer4_true.forward_weights
+
 
 # ======= Start grid search ============
 for i,randomize in enumerate(randomizes):
     for j,distance in enumerate(distances):
+        output_weights = hf.get_invertible_neighbourhood_matrix(
+            output_weights_true,
+            distance)
+        hidden_weights = hf.get_invertible_neighbourhood_matrix(
+            hidden_weights_true,
+            distance)
         for k, learning_rate in enumerate(learning_rates):
-            for l, backward_weight_decay in enumerate(backward_weight_decays):
+            for l, backward_learning_rate in enumerate(backward_learning_rates):
 
                 print('#################################')
                 print('Training combination: randomize={}, '
-                      'distance={}, learning_rate={} ...'.format(randomize,
-                                                                 distance,
-                                                                 learning_rate))
-                output_weights = hf.get_invertible_neighbourhood_matrix(
-                    output_weights_true,
-                    distance)
-                hidden_weights = hf.get_invertible_neighbourhood_matrix(
-                    hidden_weights_true,
-                    distance)
-                hidden_weights2 = hf.get_invertible_neighbourhood_matrix(
-                    hidden_weights2_true,
-                    distance)
-                hidden_weights3 = hf.get_invertible_neighbourhood_matrix(
-                    hidden_weights3_true,
-                    distance)
-                hidden_weights4 = hf.get_invertible_neighbourhood_matrix(
-                    hidden_weights4_true,
-                    distance)
+                      'distance={}, learning_rate={}, '
+                      'backward_learning_rate={} ...'.format(randomize,
+                                                             distance,
+                                                             learning_rate,
+                                                             backward_learning_rate))
 
-                inputlayer = TargetPropInputLayer(layer_dim=n, out_dim=n,
+
+                inputlayer = DTPInputLayer(layer_dim=n, out_dim=n,
                                                   loss_function='mse',
                                                   name='input_layer', writer=writer,
                                                   debug_mode=debug,
                                                   weight_decay=weight_decay,
                                                   weight_decay_backward=backward_weight_decay)
-                hiddenlayer = TargetPropLeakyReluLayer(negative_slope=0.35,
+                hiddenlayer = DTPLeakyReluLayer(negative_slope=0.35,
                                                        in_dim=n,
                                                        layer_dim=n, out_dim=n,
                                                        loss_function=
@@ -181,40 +157,7 @@ for i,randomize in enumerate(randomizes):
                                                        debug_mode=debug,
                                                        weight_decay=weight_decay,
                                                        weight_decay_backward=backward_weight_decay)
-                hiddenlayer2 = TargetPropLeakyReluLayer(negative_slope=0.35,
-                                                       in_dim=n,
-                                                       layer_dim=n, out_dim=n,
-                                                       loss_function=
-                                                       'mse',
-                                                       name='hidden_layer2',
-                                                       writer=writer,
-                                                       debug_mode=debug,
-                                                       weight_decay=weight_decay,
-                                                       weight_decay_backward=backward_weight_decay)
-
-                hiddenlayer3 = TargetPropLeakyReluLayer(negative_slope=0.35,
-                                                        in_dim=n,
-                                                        layer_dim=n, out_dim=n,
-                                                        loss_function=
-                                                        'mse',
-                                                        name='hidden_layer3',
-                                                        writer=writer,
-                                                        debug_mode=debug,
-                                                        weight_decay=weight_decay,
-                                                        weight_decay_backward=backward_weight_decay)
-
-                hiddenlayer4 = TargetPropLeakyReluLayer(negative_slope=0.35,
-                                                        in_dim=n,
-                                                        layer_dim=n, out_dim=n,
-                                                        loss_function=
-                                                        'mse',
-                                                        name='hidden_layer4',
-                                                        writer=writer,
-                                                        debug_mode=debug,
-                                                        weight_decay=weight_decay,
-                                                        weight_decay_backward=backward_weight_decay)
-
-                outputlayer = TargetPropLinearOutputLayer(in_dim=n, layer_dim=n,
+                outputlayer = DTPLinearOutputLayer(in_dim=n, layer_dim=n,
                                                           step_size=output_step_size,
                                                           name='output_layer',
                                                           writer=writer,
@@ -224,29 +167,21 @@ for i,randomize in enumerate(randomizes):
                                                    hiddenlayer.forward_bias)
                 outputlayer.set_forward_parameters(output_weights,
                                                    outputlayer.forward_bias)
-                hiddenlayer2.set_forward_parameters(hidden_weights2,
-                                                    hiddenlayer2.forward_bias)
-                hiddenlayer3.set_forward_parameters(hidden_weights3,
-                                                    hiddenlayer3.forward_bias)
-                hiddenlayer4.set_forward_parameters(hidden_weights4,
-                                                    hiddenlayer4.forward_bias)
 
-                network = TargetPropNetwork([inputlayer, hiddenlayer,
-                                             hiddenlayer2,
-                                             hiddenlayer3,
-                                             hiddenlayer4,
-                                             outputlayer],
+                network = TargetPropNetwork([inputlayer, hiddenlayer, outputlayer],
                                             randomize=randomize,
                                             log=logs)
 
                 # Initializing optimizer
-                optimizer = SGD(network=network, threshold=threshold,
-                                init_learning_rate=learning_rate,
-                                tau=100,
-                                final_learning_rate=learning_rate / 5.,
-                                compute_accuracies=False,
-                                max_epoch=max_epochs,
-                                outputfile_name='resultfile.csv')
+                optimizer = SGDbidirectional(network=network, threshold=0.0001,
+                                             init_learning_rate=learning_rate,
+                                             tau=max_epochs*2,
+                                             final_learning_rate=learning_rate / 5.,
+                                             init_learning_rate_backward=backward_learning_rate,
+                                             final_learning_rate_backward=backward_learning_rate / 5.,
+                                             compute_accuracies=False,
+                                             max_epoch=max_epochs,
+                                             outputfile_name='resultfile.csv')
                 # Train on dataset
 
                 try:
@@ -254,8 +189,8 @@ for i,randomize in enumerate(randomizes):
                                                                   output_dataset,
                                                                input_dataset_test,
                                                                output_dataset_test)
-                    train_loss = hf.append_results(train_loss, max_epochs)
-                    test_loss = hf.append_results(test_loss, max_epochs)
+                    train_loss = hf.append_results(train_loss, max_epochs+1)
+                    test_loss = hf.append_results(test_loss, max_epochs+1)
                     results_train[i,j,k,l,:] = train_loss
                     results_test[i,j,k,l,:] = test_loss
                     best_results[i,j,k,l] = np.min(test_loss)

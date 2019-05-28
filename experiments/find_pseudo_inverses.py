@@ -22,16 +22,18 @@ np.random.seed(seed)
 random.seed(seed)
 
 # User variables
-learning_rate_init = 0.02
-learning_rate_final = 0.0001
-l = 0
-rows = 3
+
+learning_rate_init = 0.006
+learning_rate_final = 0.001
+l_init = 0
+l = l_init
+rows = 5
 cols = 5
-training_iterations = 2000
-batch_sizes = [1, 1, 16]
+training_iterations = 2500
+batch_sizes = [1, 1, 1]
 plots = 3
+legend = ('white input', 'coloured full rank', 'coloured low rank')
 fontsize = 22
-legend = ('coloured input', 'batch size = 1', 'batch size = 16')
 """
 53 setting: 
 learning_rate_init = 0.02
@@ -85,6 +87,18 @@ batch_sizes = [1, 1, 1]
 plots = 3
 legend = ('white input', 'coloured full rank', 'coloured low rank')
 fontsize = 22
+
+35 combined setting:
+learning_rate_init = 0.02
+learning_rate_final = 0.0001
+l = 0
+rows = 3
+cols = 5
+training_iterations = 2000
+batch_sizes = [1, 1, 16]
+plots = 3
+fontsize = 22
+legend = ('coloured input', 'batch size = 1', 'batch size = 16')
 
 """
 
@@ -154,7 +168,7 @@ for j, batch_size in enumerate(batch_sizes):
                                       p=float('inf'))
         matrix_errors_LM[j,i] = torch.norm(backward_weights - forward_weights_LM,
                                       p=float('inf'))
-        inverse_errors[j,i] = torch.norm(torch.mean(approx_error,0))
+        inverse_errors[j,i] = torch.mean(torch.norm(approx_error, dim=1))
 
         backward_weights = (1-l*learning_rate)*backward_weights - \
                            learning_rate * torch.mean(gradient,0)

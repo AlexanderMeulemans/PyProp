@@ -358,6 +358,8 @@ class MTPLinearOutputLayer(MTPOutputLayer):
     def compute_GN_error(self, target):
         gradient = torch.mul(self.forward_output - target, 2)
         self.GN_error = torch.mul(gradient, self.step_size)
+        self.real_GN_error = torch.mul(gradient, self.step_size)
+        self.BP_error = gradient
 
 
 class MTPInputLayer(MTPLayer):

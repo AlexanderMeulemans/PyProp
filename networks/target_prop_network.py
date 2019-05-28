@@ -49,9 +49,12 @@ class TargetPropNetwork(BidirectionalNetwork):
             self.save_inverse_error()
             if self.randomize:
                 self.layers[self.random_layer].save_state()
+                for layer in self.layers:
+                    layer.save_state_always()
             else:
                 for layer in self.layers:
                     layer.save_state()
+                    layer.save_state_always()
                 self.save_angle_GN_block_approx()
 
     def test_invertibility(self, input_batch):
@@ -191,3 +194,5 @@ class TargetPropNetwork(BidirectionalNetwork):
         for i in range(len(self.layers) - 2, -1, -1):
             self.layers[i].propagate_backward(self.layers[i + 1])
             self.layers[i].propagate_GN_error(self.layers[i + 1])
+            self.layers[i].propagate_real_GN_error(self.layers[i + 1])
+            self.layers[i].propagate_BP_error(self.layers[i+1])

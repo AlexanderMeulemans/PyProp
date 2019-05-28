@@ -95,6 +95,16 @@ class OriginalDTPLeakyReluLayer(OriginalDTPLayer):
                     output[i, j, 0] = self.negative_slope
         return output
 
+    def compute_inverse_vectorized_jacobian(self, linear_activation):
+        output = torch.empty(linear_activation.shape)
+        for i in range(linear_activation.size(0)):
+            for j in range(linear_activation.size(1)):
+                if linear_activation[i, j, 0] >= 0:
+                    output[i, j, 0] = 1
+                else:
+                    output[i, j, 0] = self.negative_slope**(-1)
+        return output
+
     def compute_backward_vectorized_jacobian(self, linear_activation, upper_layer=None):
         output = torch.empty(linear_activation.shape)
         for i in range(linear_activation.size(0)):
@@ -261,6 +271,9 @@ class OriginalDTPLinearOutputLayer(OriginalDTPOutputLayer):
     def compute_backward_vectorized_jacobian(self, linear_activation, upper_layer=None):
         return torch.ones(linear_activation.shape)
 
+    def compute_inverse_vectorized_jacobian(self, linear_activation):
+        return torch.ones(linear_activation.shape)
+
     def compute_backward_output(self, target):
         """ Compute the backward output based on a small move from the
         forward output in the direction of the negative gradient of the loss
@@ -281,6 +294,8 @@ class OriginalDTPLinearOutputLayer(OriginalDTPOutputLayer):
     def compute_GN_error(self, target):
         gradient = torch.mul(self.forward_output - target, 2)
         self.GN_error = torch.mul(gradient, self.step_size)
+        self.real_GN_error = torch.mul(gradient, self.step_size)
+        self.BP_error = gradient
 
 
 class OriginalDTPInputLayer(OriginalDTPLayer):
