@@ -36,30 +36,31 @@ random.seed(seed)
 # torch.backends.cudnn.benchmark = False
 
 # ======== User variables ============
-nb_training_batches = 5000
-batch_size = 1
+nb_training_batches = 60
+batch_size = 32
 testing_size = 1000
-n = 3
-distances = [0.1, 0.5, 1.5, 5., 10.]
-# learning_rates = [0.005, 0.001]
+n = 6
+n_out = 3
+# distances = [0.1, 0.5, 1.5, 5., 10.]
+distances = [8.]
 learning_rates = [0.5, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001]
 CPU = True
 debug = False
 weight_decay = 0.
-randomizes = [True, False]
+randomizes = [True]
 max_epochs = 30
 logs = False
 threshold = 0.00001
 
 # ======== set log directory ==========
-log_dir = '../logs/gridsearch_onelayer_BP'
+log_dir = '../logs/gridsearch_onelayer_BP4'
 writer = SummaryWriter(log_dir=log_dir)
 
 # ======== Create result files ========7
 results_train = np.zeros((len(randomizes), len(distances), len(learning_rates),
-                          max_epochs))
+                          max_epochs+1))
 results_test = np.zeros((len(randomizes), len(distances), len(learning_rates),
-                          max_epochs))
+                          max_epochs+1))
 succesful_run = np.ones((len(randomizes), len(distances), len(learning_rates)),
                          dtype=bool)
 best_results = np.zeros((len(randomizes), len(distances), len(learning_rates)))
@@ -92,7 +93,7 @@ hidden_layer_true = LeakyReluLayer(negative_slope=0.35, in_dim=n, layer_dim=n,
                                    name='hidden_layer_true_model',
                                    debug_mode=debug,
                                    weight_decay=weight_decay)
-output_layer_true = LinearOutputLayer(in_dim=n, layer_dim=n,
+output_layer_true = LinearOutputLayer(in_dim=n, layer_dim=n_out,
                                       loss_function='mse',
                                       writer=writer,
                                       name='output_layer_true_model',
@@ -114,6 +115,13 @@ hidden_weights_true = hidden_layer_true.forward_weights
 # ======= Start grid search ============
 for i,randomize in enumerate(randomizes):
     for j,distance in enumerate(distances):
+        output_weights = hf.get_invertible_neighbourhood_matrix(
+            output_weights_true,
+            distance)
+        hidden_weights = hf.get_invertible_neighbourhood_matrix(
+            hidden_weights_true,
+            distance)
+
         for k, learning_rate in enumerate(learning_rates):
 
             print('#################################')
@@ -121,12 +129,6 @@ for i,randomize in enumerate(randomizes):
                   'distance={}, learning_rate={} ...'.format(randomize,
                                                              distance,
                                                              learning_rate))
-            output_weights = hf.get_invertible_neighbourhood_matrix(
-                output_weights_true,
-                distance)
-            hidden_weights = hf.get_invertible_neighbourhood_matrix(
-                hidden_weights_true,
-                distance)
 
             inputlayer = InputLayer(layer_dim=n, writer=writer,
                                           name='input_layer',
@@ -138,7 +140,7 @@ for i,randomize in enumerate(randomizes):
                                                name='hidden_layer',
                                                debug_mode=debug,
                                                weight_decay=weight_decay)
-            outputlayer = LinearOutputLayer(in_dim=n, layer_dim=n,
+            outputlayer = LinearOutputLayer(in_dim=n, layer_dim=n_out,
                                                   loss_function='mse',
                                                   writer=writer,
                                                   name='output_layer',
@@ -156,7 +158,7 @@ for i,randomize in enumerate(randomizes):
             # Initializing optimizer
             optimizer = SGD(network=network, threshold=threshold,
                              init_learning_rate=learning_rate,
-                             tau=100,
+                             tau=60,
                              final_learning_rate=learning_rate / 5.,
                              compute_accuracies=False,
                              max_epoch=max_epochs,
@@ -168,8 +170,8 @@ for i,randomize in enumerate(randomizes):
                                                               output_dataset,
                                                            input_dataset_test,
                                                            output_dataset_test)
-                train_loss = hf.append_results(train_loss, max_epochs)
-                test_loss = hf.append_results(test_loss, max_epochs)
+                train_loss = hf.append_results(train_loss, max_epochs+1)
+                test_loss = hf.append_results(test_loss, max_epochs+1)
                 results_train[i,j,k,:] = train_loss
                 results_test[i,j,k,:] = test_loss
                 best_results[i,j,k] = np.min(test_loss)

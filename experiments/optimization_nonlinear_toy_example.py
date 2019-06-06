@@ -32,7 +32,7 @@ w1_train_GN[:,0] = w1_start
 xs = np.random.randn(batch_size)
 
 
-# def sigmoid(x):
+# def lrelu(x):
 #     return 1 / (1 + np.exp(-x))
 
 def sigmoid(x):
@@ -94,7 +94,7 @@ def plot_contours(w1_true, w2_fixed, xs):
 def BP_update(w1, w1_true, w2_fixed, xs, eta):
     update_bp = np.zeros(w1.shape)
     for x in xs:
-        # sigmoid_der = sigmoid(w1*x)*(1-sigmoid(w1*x))
+        # sigmoid_der = lrelu(w1*x)*(1-lrelu(w1*x))
         sigmoid_der = sigmoid_derivative(w1*x)
         error = sigmoid(w1*x) - sigmoid(w1_true*x)
         update_bp += -1/batch_size*eta*x*sigmoid_der*np.dot(
@@ -104,7 +104,7 @@ def BP_update(w1, w1_true, w2_fixed, xs, eta):
 def TP_update(w1, w1_true, w2_fixed, xs, eta):
     update_tp = np.zeros(w1.shape)
     for x in xs:
-        # sigmoid_der = sigmoid(w1*x)*(1-sigmoid(w1*x))
+        # sigmoid_der = lrelu(w1*x)*(1-lrelu(w1*x))
         sigmoid_der = sigmoid_derivative(w1 * x)
         error = sigmoid(w1 * x) - sigmoid(w1_true * x)
         update_tp += -1 / batch_size *x* eta * sigmoid_der * error
@@ -114,7 +114,7 @@ def GN_update(w1, w1_true, w2_fixed, xs):
     H = np.zeros((2,2))
     gradient = np.zeros(w1.shape)
     for x in xs:
-        # sigmoid_der = sigmoid(w1*x)*(1-sigmoid(w1*x))
+        # sigmoid_der = lrelu(w1*x)*(1-lrelu(w1*x))
         sigmoid_der = sigmoid_derivative(w1 * x)
         A = np.dot(w2_fixed, np.diag(sigmoid_der))
         H += 1/batch_size*x**2*np.dot(np.transpose(A),A)

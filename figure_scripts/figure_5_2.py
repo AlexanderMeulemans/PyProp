@@ -11,6 +11,7 @@ eta = 0.3
 eta_tp = 0.8
 training_iter = 100
 batch_size = 64
+fontsize = 26
 
 # Set plot style
 plt.rc('text', usetex=True)
@@ -34,7 +35,7 @@ def plot_loss_ellipses(w1_true, w2_fixed):
     c2s = np.linspace(0.1, 4, 5)
     w1_true_tilde = np.dot(np.transpose(V), w1_true)
 
-    plt.figure()
+
     for c2 in c2s:
         w11_tilde = np.linspace(w1_true_tilde[0] - c2 / S[0],
                                 w1_true_tilde[0] + c2 / S[0], 100)
@@ -72,27 +73,37 @@ for iter in range(1, training_iter):
 
 w1_train_GN = np.stack([w1_start, w1_true],1)
 
-fig1 = plt.figure()
-plot_loss_ellipses(w1_true, w2_fixed)
+
+legend = ['Weight updates']
+fontsize2 = 23
+
+fig = plt.figure()
+ax = fig.add_subplot(1, 1, 1)
+ax.tick_params(axis='both', which='major', labelsize=fontsize)
 plt.plot(w1_train_BP[0,:], w1_train_BP[1,:], 'r*-')
-plt.title('Error back propagation', fontsize=20)
-plt.xlabel('$w_{11}$', fontsize = 20)
-plt.ylabel('$w_{12}$', fontsize=20)
+plot_loss_ellipses(w1_true, w2_fixed)
+plt.xlabel('$w_{11}$', fontsize = fontsize)
+plt.ylabel('$w_{12}$', fontsize=fontsize)
+# plt.legend(legend, fontsize=fontsize2, loc='upper right')
 plt.show()
 
-fig2 = plt.figure()
+fig = plt.figure()
+ax = fig.add_subplot(1, 1, 1)
+ax.tick_params(axis='both', which='major', labelsize=fontsize)
 plot_loss_ellipses(w1_true, w2_fixed)
 plt.plot(w1_train_TP[0,:], w1_train_TP[1,:], 'r*-')
-plt.title('Target propagation', fontsize=20)
-plt.xlabel('$w_{11}$', fontsize = 20)
-plt.ylabel('$w_{12}$', fontsize=20)
+# plt.title('Target propagation', fontsize=fontsize)
+plt.xlabel('$w_{11}$', fontsize = fontsize)
+plt.ylabel('$w_{12}$', fontsize=fontsize)
 plt.show()
 
-fig3 = plt.figure()
+fig = plt.figure()
+ax = fig.add_subplot(1, 1, 1)
+ax.tick_params(axis='both', which='major', labelsize=fontsize)
 plot_loss_ellipses(w1_true, w2_fixed)
 plt.plot(w1_train_GN[0,:], w1_train_GN[1,:], 'r*-')
-plt.title('Gauss Newton', fontsize=20)
-plt.xlabel('$w_{11}$', fontsize = 20)
-plt.ylabel('$w_{12}$', fontsize=20)
+# plt.title('Gauss Newton', fontsize=20)
+plt.xlabel('$w_{11}$', fontsize = fontsize)
+plt.ylabel('$w_{12}$', fontsize=fontsize)
 plt.show()
 

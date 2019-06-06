@@ -83,9 +83,9 @@ if plot_s_d:
     # plt.loglog(ds, s_maxs, '*')
     # plt.title('d versus s_max')
     # plt.show()
-    np.save('A_min.npy', A_min)
-    np.save('u_min.npy', u_min)
-    np.save('v_min.npy', v_min)
+    # np.save('A_min.npy', A_min)
+    # np.save('u_min.npy', u_min)
+    # np.save('v_min.npy', v_min)
 
 
 if plot_a_b:
@@ -193,44 +193,44 @@ if plot_s_min_robust:
     plt.ylabel(r'$\sigma_{min}$', fontsize=23)
     plt.show()
 
-    plt.figure()
-    plt.hist(betas, bins=30)
-    plt.title(r'$\beta$')
-    plt.show()
-
     # plt.figure()
-    # plt.hist(alphas, bins=30)
-    # plt.title(r'$\alpha$')
+    # plt.hist(betas, bins=30)
+    # plt.title(r'$\beta$')
     # plt.show()
-
-    plt.figure()
-    plt.hist(errors, bins=30)
-    plt.title('errors normal SM')
-    plt.show()
-
-    plt.figure()
-    plt.hist(errors_total * s_mins*np.sqrt(n), bins=50)
-    plt.title('inverse error times $s_{min}$')
-    plt.show()
-
-    plt.figure()
-    plt.hist(errors_robust, bins=30)
-    plt.title('errors robust SM')
-    plt.show()
-
-    plt.figure()
-    plt.hist(errors_notrobust, bins=30)
-    plt.title('errors not robust SM')
-    plt.show()
-
-    plt.figure()
-    plt.hist(errors_total, bins=30)
-    plt.title('total errors')
-
-    plt.figure()
-    plt.loglog(ds, errors_total, '*')
-    plt.title('errors vs $d$')
-    plt.show()
+    #
+    # # plt.figure()
+    # # plt.hist(alphas, bins=30)
+    # # plt.title(r'$\alpha$')
+    # # plt.show()
+    #
+    # plt.figure()
+    # plt.hist(errors, bins=30)
+    # plt.title('errors normal SM')
+    # plt.show()
+    #
+    # plt.figure()
+    # plt.hist(errors_total * s_mins*np.sqrt(n), bins=50)
+    # plt.title('inverse error times $s_{min}$')
+    # plt.show()
+    #
+    # plt.figure()
+    # plt.hist(errors_robust, bins=30)
+    # plt.title('errors robust SM')
+    # plt.show()
+    #
+    # plt.figure()
+    # plt.hist(errors_notrobust, bins=30)
+    # plt.title('errors not robust SM')
+    # plt.show()
+    #
+    # plt.figure()
+    # plt.hist(errors_total, bins=30)
+    # plt.title('total errors')
+    #
+    # plt.figure()
+    # plt.loglog(ds, errors_total, '*')
+    # plt.title('errors vs $d$')
+    # plt.show()
 
 
 

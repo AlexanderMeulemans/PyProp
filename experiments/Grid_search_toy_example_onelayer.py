@@ -38,13 +38,13 @@ random.seed(seed)
 # torch.backends.cudnn.benchmark = False
 
 # ======== User variables ============
-nb_training_batches = 5000
+nb_training_batches = 2000
 batch_size = 1
 testing_size = 1000
-n = 3
-distances = [0.1, 0.5, 1.5, 5., 10.]
+n = 6
+distances = [8.]
 # learning_rates = [0.005, 0.001]
-learning_rates = [5., 1., 0.5, 0.1, 0.05, 0.01, 0.005, 0.001]
+learning_rates = [0.5, 0.1, 0.05, 0.01, 0.005, 0.001]
 output_step_size = 0.1
 CPU = True
 debug = False
@@ -52,17 +52,17 @@ weight_decay = 0.
 randomizes = [True, False]
 max_epochs = 30
 logs = False
-threshold = 0.00001
+threshold = 0.00000001
 
 # ======== set log directory ==========
-log_dir = '../logs/gridsearch_invertible_TP_onelayer'
+log_dir = '../logs/gridsearch_invertible_TP_onelayer2'
 writer = SummaryWriter(log_dir=log_dir)
 
 # ======== Create result files ========7
 results_train = np.zeros((len(randomizes), len(distances), len(learning_rates),
-                          max_epochs))
+                          max_epochs+1))
 results_test = np.zeros((len(randomizes), len(distances), len(learning_rates),
-                          max_epochs))
+                          max_epochs+1))
 succesful_run = np.ones((len(randomizes), len(distances), len(learning_rates)),
                          dtype=bool)
 best_results = np.zeros((len(randomizes), len(distances), len(learning_rates)))
@@ -177,8 +177,8 @@ for i,randomize in enumerate(randomizes):
                                                               output_dataset,
                                                            input_dataset_test,
                                                            output_dataset_test)
-                train_loss = hf.append_results(train_loss, max_epochs)
-                test_loss = hf.append_results(test_loss, max_epochs)
+                train_loss = hf.append_results(train_loss, max_epochs+1)
+                test_loss = hf.append_results(test_loss, max_epochs+1)
                 results_train[i,j,k,:] = train_loss
                 results_test[i,j,k,:] = test_loss
                 best_results[i,j,k] = np.min(test_loss)

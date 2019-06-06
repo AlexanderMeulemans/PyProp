@@ -86,9 +86,12 @@ class InvertibleNetwork(BidirectionalNetwork):
             self.save_sherman_morrison()
             if self.randomize:
                 self.layers[self.random_layer].save_state()
+                for layer in self.layers:
+                    layer.save_state_always()
             else:
                 for layer in self.layers:
                     layer.save_state()
+                    layer.save_state_always()
                 self.save_angle_GN_block_approx()
 
 

@@ -2,11 +2,36 @@ import torch
 from utils import helper_functions as hf
 import matplotlib.pyplot as plt
 
+# Parameter settings
 iterations = 10000
 nb_blocks = 2
 block_size = 10
 batch = 1
 s = 1.
+
+"""
+figure 5.5a:
+iterations = 10000
+nb_blocks = 2
+block_size = 10
+batch = 1
+s = 1.
+
+figure 5.5b:
+iterations = 10000
+nb_blocks = 10
+block_size = 10
+batch = 1
+s = 1.
+
+figure 5.5b:
+iterations = 10000
+nb_blocks = 10
+block_size = 10
+batch = 100
+s = 1.
+
+"""
 
 # Set plot style
 plt.rc('text', usetex=True)
@@ -96,26 +121,26 @@ plt.xlabel(r'$\cos(\alpha)$', fontsize=26)
 plt.ylabel(r'\# samples', fontsize=26)
 
 plt.show()
-plt.figure('angle BP block approx')
-plt.hist(angles_bp_block, bins=100)
-plt.title('angle BP block approx')
-plt.show()
-plt.figure()
-plt.hist(angles_bp_gn, bins=100)
-plt.title('angle BP GN')
-plt.show()
-plt.figure('angle random control')
-plt.hist(angles_random, bins=100)
-plt.title('angle random control')
-plt.show()
-plt.figure()
-plt.hist(angles_block_gn_rand, bins=100)
-plt.title('angle block gn random')
-plt.show()
-plt.figure()
-plt.hist(angles_random_v, bins=100)
-plt.title('random vectors')
-plt.show()
+# plt.figure('angle BP block approx')
+# plt.hist(angles_bp_block, bins=100)
+# plt.title('angle BP block approx')
+# plt.show()
+# plt.figure()
+# plt.hist(angles_bp_gn, bins=100)
+# plt.title('angle BP GN')
+# plt.show()
+# plt.figure('angle random control')
+# plt.hist(angles_random, bins=100)
+# plt.title('angle random control')
+# plt.show()
+# plt.figure()
+# plt.hist(angles_block_gn_rand, bins=100)
+# plt.title('angle block gn random')
+# plt.show()
+# plt.figure()
+# plt.hist(angles_random_v, bins=100)
+# plt.title('random vectors')
+# plt.show()
 
 
 

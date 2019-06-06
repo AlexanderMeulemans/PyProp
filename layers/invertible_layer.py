@@ -41,6 +41,8 @@ class InvertibleLayer(BidirectionalLayer):
                          fixed=fixed)
         self.init_forward_parameters_tilde()
         self.set_epsilon(epsilon)
+        self.approx_errors = torch.Tensor([])
+        self.approx_error_angles = torch.Tensor([])
 
     def init_forward_parameters_tilde(self):
         """ Initializes the layer parameters that connect the current layer
@@ -334,15 +336,20 @@ class InvertibleLayer(BidirectionalLayer):
         self.writer.add_scalar(tag='{}/approx_angle_error'.format(self.name),
                                scalar_value=angle,
                                global_step=self.global_step)
+        self.approx_error_angles = torch.cat((self.approx_error_angles,
+                                              angle))
 
     def save_approx_error(self):
-        error = torch.norm(torch.mean(self.compute_approx_error(),0))
+        error = torch.mean(torch.norm(self.compute_approx_error(), dim=1))
         self.writer.add_scalar(tag='{}/approx_error'.format(self.name),
                                scalar_value=error,
                                global_step=self.global_step)
+        self.approx_errors = torch.cat((self.approx_errors, torch.Tensor([error])))
 
     def save_state(self):
         super().save_state()
+
+    def save_state_always(self):
         self.save_approx_angle_error()
         self.save_approx_error()
 

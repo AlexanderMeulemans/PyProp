@@ -9,7 +9,7 @@ You may obtain a copy of the License at
 """
 
 from utils.create_datasets import GenerateDatasetFromModel
-from optimizers.optimizers import SGD, SGDInvertible
+from optimizers.optimizers import SGD, SGDInvertible, SGDbidirectional
 from layers.target_prop_layer import TargetPropInputLayer, \
     TargetPropLeakyReluLayer, TargetPropLinearOutputLayer
 from networks.target_prop_network import TargetPropNetwork
@@ -35,18 +35,19 @@ random.seed(seed)
 # torch.backends.cudnn.benchmark = False
 
 # ======== User variables ============
-nb_training_batches = 5000
-batch_size = 1
+nb_training_batches = 120
+batch_size = 32
 testing_size = 1000
-n = 3
-distance = 1.0
+n = 6
+distance = 8.
 CPU = True
 debug = False
 weight_decay = 0.0000
 learning_rate = 0.01
+learning_rate_backward = 0.07
 output_step_size = 0.1
 randomize = False
-max_epoch = 120
+max_epoch = 30
 # ======== set log directory ==========
 log_dir = '../logs/debug_TP'
 writer = SummaryWriter(log_dir=log_dir)
@@ -148,6 +149,15 @@ optimizer1 = SGD(network=network, threshold=0.0001,
                  compute_accuracies=False,
                  max_epoch=max_epoch,
                  outputfile_name='resultfile.csv')
+optimizer3 = SGDbidirectional(network=network, threshold=0.0001,
+                 init_learning_rate=learning_rate,
+                 tau=100,
+                 final_learning_rate=learning_rate/5.,
+                 init_learning_rate_backward=learning_rate_backward,
+                 final_learning_rate_backward=learning_rate_backward/5.,
+                 compute_accuracies=False,
+                 max_epoch=max_epoch,
+                 outputfile_name='resultfile.csv')
 optimizer2 = SGDInvertible(network=network, threshold=0.0001,
                            init_step_size=output_step_size, tau=100,
                            final_step_size=output_step_size/5.,
@@ -155,7 +165,7 @@ optimizer2 = SGDInvertible(network=network, threshold=0.0001,
 # Train on dataset
 timings = np.array([])
 start_time = time.time()
-optimizer1.run_dataset(input_dataset, output_dataset, input_dataset_test,
+optimizer3.run_dataset(input_dataset, output_dataset, input_dataset_test,
                        output_dataset_test)
 end_time = time.time()
 print('Elapsed time: {} seconds'.format(end_time - start_time))

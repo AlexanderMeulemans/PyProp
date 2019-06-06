@@ -18,7 +18,7 @@ from layers.target_prop_layer import TargetPropLayer
 
 class DTPLayer(TargetPropLayer):
     """ Difference target propagation layer"""
-    def propagate_backwad(self, upper_layer):
+    def propagate_backward(self, upper_layer):
         """Propagate the target signal from the upper layer to the current
                 layer (self)
                 :type upper_layer: InvertibleLayer
@@ -38,12 +38,12 @@ class DTPLayer(TargetPropLayer):
             upper_layer.forward_output, upper_layer)
 
         target_linear = torch.matmul(self.backward_weights,
-                                       target_inverse + self.backward_bias)
+                                       target_inverse)  + self.backward_bias
 
         activation_linear = torch.matmul(self.backward_weights,
-                                       activation_inverse + self.backward_bias)
+                                       activation_inverse) + self.backward_bias
 
-        backward_output = self.forward_output + target_linear + \
+        backward_output = self.forward_output + target_linear - \
                           activation_linear
         self.set_backward_output(backward_output)
 
@@ -57,14 +57,16 @@ class DTPLeakyReluLayer(DTPLayer):
                  name='invertible_leaky_ReLU_layer',
                  debug_mode=True,
                  weight_decay=0.0,
-                 fixed=False):
+                 fixed=False,
+                 weight_decay_backward=0.):
         super().__init__(in_dim, layer_dim, out_dim,
                          writer=writer,
                          loss_function=loss_function,
                          name=name,
                          debug_mode=debug_mode,
                          weight_decay=weight_decay,
-                         fixed=fixed)
+                         fixed=fixed,
+                         weight_decay_backward=weight_decay_backward)
         self.set_negative_slope(negative_slope)
 
     def set_negative_slope(self, negative_slope):
@@ -108,14 +110,14 @@ class DTPLeakyReluLayer(DTPLayer):
                     output[i, j, 0] = self.negative_slope
         return output
 
-    def compute_inverse_vectorized_jacobian(self):
-        output = torch.empty(self.forward_output.shape)
-        for i in range(self.forward_output.size(0)):
+    def compute_inverse_vectorized_jacobian(self, linear_activation):
+        output = torch.empty(linear_activation.shape)
+        for i in range(linear_activation.size(0)):
             for j in range(self.forward_output.size(1)):
-                if self.forward_output[i, j, 0] >= 0:
+                if linear_activation[i, j, 0] >= 0:
                     output[i, j, 0] = 1
                 else:
-                    output[i, j, 0] = self.negative_slope**(-1)
+                    output[i, j, 0] = self.negative_slope ** (-1)
         return output
 
 
@@ -258,8 +260,8 @@ class DTPLinearOutputLayer(DTPOutputLayer):
     def compute_vectorized_jacobian(self):
         return torch.ones(self.forward_output.shape)
 
-    def compute_inverse_vectorized_jacobian(self):
-        return torch.ones(self.forward_output.shape)
+    def compute_inverse_vectorized_jacobian(self, linear_activation):
+        return torch.ones(linear_activation.shape)
 
     def compute_backward_output(self, target):
         """ Compute the backward output based on a small move from the
@@ -281,6 +283,8 @@ class DTPLinearOutputLayer(DTPOutputLayer):
     def compute_GN_error(self, target):
         gradient = torch.mul(self.forward_output - target, 2)
         self.GN_error = torch.mul(gradient, self.step_size)
+        self.real_GN_error = torch.mul(gradient, self.step_size)
+        self.BP_error = gradient
 
 
 class DTPInputLayer(DTPLayer):
@@ -292,7 +296,8 @@ class DTPInputLayer(DTPLayer):
                  name='invertible_input_layer',
                  debug_mode=True,
                  weight_decay=0.0,
-                 fixed=False):
+                 fixed=False,
+                 weight_decay_backward=0.0):
         super().__init__(in_dim=None, layer_dim=layer_dim,
                          out_dim=out_dim,
                          writer=writer,
@@ -300,7 +305,8 @@ class DTPInputLayer(DTPLayer):
                          name=name,
                          debug_mode=debug_mode,
                          weight_decay=weight_decay,
-                         fixed=fixed)
+                         fixed=fixed,
+                         weight_decay_backward=weight_decay_backward)
 
     def init_forward_parameters(self):
         """ InputLayer has no forward parameters"""

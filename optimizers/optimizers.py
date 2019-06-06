@@ -50,6 +50,8 @@ class Optimizer(object):
                                            ['Train_loss', 'Test_loss',
                                             'Train_accuracy', 'Test_accuracy'])
         self.log = network.log
+        self.start_train_loss = torch.Tensor([])
+        self.start_test_loss = torch.Tensor([])
 
     def set_network(self, network):
         if not isinstance(network, Network):
@@ -174,11 +176,11 @@ class Optimizer(object):
 
     def save_train_results_epoch(self):
         epoch_loss = torch.Tensor([torch.mean(self.single_batch_losses)])
+        self.epoch_losses = torch.cat([self.epoch_losses, epoch_loss], 0)
         if self.log:
             self.writer.add_scalar(tag='train_loss', scalar_value=epoch_loss,
                                    global_step=self.epoch)
         self.reset_single_batch_losses()
-        self.epoch_losses = torch.cat([self.epoch_losses, epoch_loss], 0)
         self.network.save_state_histograms(self.epoch)
         print('Train Loss: ' + str(epoch_loss))
         if self.compute_accuracies:
@@ -256,17 +258,18 @@ class Optimizer(object):
             raise ValueError("InputData and Targets have not the same size")
         epoch_loss = float('inf')
         print('====== Training started =======')
+        self.get_start_loss(input_data, targets, input_data_test, targets_test)
         print('Epoch: ' + str(self.epoch) + ' ------------------------')
         while epoch_loss > self.threshold and self.epoch < self.max_epoch:
             for i in range(input_data.size(0)):
                 data = input_data[i, :, :, :]
                 target = targets[i, :, :, :]
-                if i % 1000 == 0:
+                if i % 2000 == 0:
                     print('batch: ' + str(i))
-                if i % 3000 == 0:
-                    if type(self.network) == InvertibleNetwork:
-                        self.network.init_inverses
-                        print('recomputing inverses')
+                # if i % 3000 == 0:
+                #     if type(self.network) == InvertibleNetwork:
+                #         self.network.init_inverses
+                #         print('recomputing inverses')
                 self.step(data, target)
             self.save_train_results_epoch()
             epoch_loss = self.epoch_losses[-1]
@@ -296,6 +299,33 @@ class Optimizer(object):
 
     def save_csv_file(self):
         self.outputfile.to_csv(self.outputfile_name)
+
+    def fixed_step(self, inputbatch, target):
+        self.network.propagate_forward(inputbatch)
+        loss = self.network.loss(target)
+        self.start_train_loss = torch.cat((self.start_train_loss, loss))
+
+    def fixed_step_test(self, batch, target):
+        self.network.propagate_forward(batch)
+        loss = self.network.loss(target)
+        self.start_test_loss = torch.cat((self.start_test_loss, loss))
+
+    def get_start_loss(self, input_data,
+                       targets, input_data_test, targets_test):
+        for i in range(input_data.size(0)):
+            data = input_data[i, :, :, :]
+            target = targets[i, :, :, :]
+            self.fixed_step(data, target)
+        for i in range(input_data_test.size(0)):
+            data = input_data_test[i, :, :, :]
+            target = targets_test[i, :, :, :]
+            self.fixed_step_test(data, target)
+
+        start_train_loss = torch.Tensor([torch.mean(self.start_train_loss)])
+        start_test_loss = torch.Tensor([torch.mean(self.start_test_loss)])
+        self.epoch_losses = torch.cat((self.epoch_losses,start_train_loss))
+        self.test_losses = torch.cat((self.test_losses, start_test_loss))
+
 
 
 class SGD(Optimizer):
@@ -376,6 +406,48 @@ class SGD(Optimizer):
         self.network.update_parameters(self.learning_rate)
         self.save_results(targets)
         self.global_step += 1
+
+class SGDbidirectional(SGD):
+    def __init__(self, network, threshold, init_learning_rate, tau=100,
+                 final_learning_rate=None, init_learning_rate_backward=0.005,
+                 final_learning_rate_backward=0.001,
+                 compute_accuracies=False, max_epoch=150,
+                 outputfile_name='resultfile.csv'):
+        super().__init__(network=network,
+                         threshold=threshold,
+                         init_learning_rate=init_learning_rate,
+                         tau=tau,
+                         final_learning_rate=final_learning_rate,
+                         compute_accuracies=compute_accuracies,
+                         max_epoch=max_epoch,
+                         outputfile_name=outputfile_name)
+        self.init_learning_rate_backward = init_learning_rate_backward
+        self.final_learning_rate_backward = final_learning_rate_backward
+        self.learning_rate_backward = init_learning_rate_backward
+
+    def update_learning_rate_backward(self):
+        if self.epoch <= self.tau:
+            alpha = float(self.epoch) / float(self.tau)
+            learning_rate = (1. - alpha) * self.init_learning_rate_backward + \
+                            alpha * self.final_learning_rate_backward
+            self.learning_rate_backward = learning_rate
+        else:
+            pass
+
+    def step(self, input_batch, targets):
+        """ Perform one batch optimizing step"""
+        self.network.propagate_forward(input_batch)
+        self.network.propagate_backward(targets)
+        self.network.compute_gradients()
+        self.network.update_parameters(self.learning_rate,
+                                       self.learning_rate_backward)
+        self.save_results(targets)
+        self.global_step += 1
+
+    def update_learning_rate(self):
+        super().update_learning_rate()
+        self.update_learning_rate_backward()
+
 
 class SGDInvertible(SGD):
     """ Stochastic Gradient Descent, customized for networks trained by target

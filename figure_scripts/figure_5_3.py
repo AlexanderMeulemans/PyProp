@@ -12,6 +12,7 @@ eta_tp =1.0
 training_iter = 500
 batch_size = 1
 gridpoints = 100
+fontsize = 26
 
 # Set plot style
 plt.rc('text', usetex=True)
@@ -32,10 +33,10 @@ w1_train_GN[:,0] = w1_start
 xs = np.random.randn(batch_size)
 
 
-# def sigmoid(x):
+# def lrelu(x):
 #     return 1 / (1 + np.exp(-x))
 
-def sigmoid(x):
+def lrelu(x):
     output = np.zeros(x.shape)
     if x[0]>0:
         output[0] = x[0]
@@ -47,7 +48,7 @@ def sigmoid(x):
         output[1] = 0.1*x[1]
     return output
 
-def sigmoid_derivative(x):
+def lrelu_derivative(x):
     output = np.zeros(x.shape)
     if x[0] > 0:
         output[0] = 1.
@@ -62,14 +63,14 @@ def sigmoid_derivative(x):
 L = 0
 w1 = w1_start
 for x in xs:
-    l = np.dot(w2_fixed, sigmoid(w1*x) - sigmoid(w1_true*x))
+    l = np.dot(w2_fixed, lrelu(w1 * x) - lrelu(w1_true * x))
     L += 1/float(batch_size)*np.sum(l*l, 0)
 
 
 def loss(w1, w1_true, w2_fixed, xs):
     L = 0
     for x in xs:
-        l = np.dot(w2_fixed, sigmoid(w1 * x) - sigmoid(w1_true * x))
+        l = np.dot(w2_fixed, lrelu(w1 * x) - lrelu(w1_true * x))
         L += 1 / float(batch_size) * np.sum(l * l, 0)
     return L
 
@@ -87,16 +88,19 @@ def plot_contours(w1_true, w2_fixed, xs):
     levels = [0.001, 0.01,0.1,0.2, 0.5, 1, 1.5,2.]
     # plt.figure()
     # plt.contour(X,Y,Z)
-    fig, ax = plt.subplots()
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+    ax.tick_params(axis='both', which='major', labelsize=fontsize)
+    # fig, ax = plt.subplots()
     CS = ax.contour(X, Y, Z, levels=levels)
     # ax.clabel(CS, inline=1, fontsize=10)
 
 def BP_update(w1, w1_true, w2_fixed, xs, eta):
     update_bp = np.zeros(w1.shape)
     for x in xs:
-        # sigmoid_der = sigmoid(w1*x)*(1-sigmoid(w1*x))
-        sigmoid_der = sigmoid_derivative(w1*x)
-        error = sigmoid(w1*x) - sigmoid(w1_true*x)
+        # sigmoid_der = lrelu(w1*x)*(1-lrelu(w1*x))
+        sigmoid_der = lrelu_derivative(w1 * x)
+        error = lrelu(w1 * x) - lrelu(w1_true * x)
         update_bp += -1/batch_size*eta*x*sigmoid_der*np.dot(
             np.transpose(w2_fixed),np.dot(w2_fixed, error))
     return update_bp
@@ -104,9 +108,9 @@ def BP_update(w1, w1_true, w2_fixed, xs, eta):
 def TP_update(w1, w1_true, w2_fixed, xs, eta):
     update_tp = np.zeros(w1.shape)
     for x in xs:
-        # sigmoid_der = sigmoid(w1*x)*(1-sigmoid(w1*x))
-        sigmoid_der = sigmoid_derivative(w1 * x)
-        error = sigmoid(w1 * x) - sigmoid(w1_true * x)
+        # sigmoid_der = lrelu(w1*x)*(1-lrelu(w1*x))
+        sigmoid_der = lrelu_derivative(w1 * x)
+        error = lrelu(w1 * x) - lrelu(w1_true * x)
         update_tp += -1 / batch_size *x* eta * sigmoid_der * error
     return update_tp
 
@@ -114,11 +118,11 @@ def GN_update(w1, w1_true, w2_fixed, xs):
     H = np.zeros((2,2))
     gradient = np.zeros(w1.shape)
     for x in xs:
-        # sigmoid_der = sigmoid(w1*x)*(1-sigmoid(w1*x))
-        sigmoid_der = sigmoid_derivative(w1 * x)
+        # sigmoid_der = lrelu(w1*x)*(1-lrelu(w1*x))
+        sigmoid_der = lrelu_derivative(w1 * x)
         A = np.dot(w2_fixed, np.diag(sigmoid_der))
         H += 1/batch_size*x**2*np.dot(np.transpose(A),A)
-        error = sigmoid(w1 * x) - sigmoid(w1_true * x)
+        error = lrelu(w1 * x) - lrelu(w1_true * x)
         gradient += 1 / batch_size *x* sigmoid_der * np.dot(
             np.transpose(w2_fixed), np.dot(w2_fixed, error))
     return -np.dot(np.linalg.inv(H),gradient)
@@ -135,25 +139,25 @@ for iter in range(1, training_iter):
 fig1 = plt.figure()
 plot_contours(w1_true, w2_fixed, xs)
 plt.plot(w1_train_BP[0,:], w1_train_BP[1,:], 'r*-')
-plt.title('Error back propagation', fontsize=20)
-plt.xlabel('$w_{11}$', fontsize = 20)
-plt.ylabel('$w_{12}$', fontsize=20)
+# plt.title('Error back propagation', fontsize=20)
+plt.xlabel('$w_{11}$', fontsize = fontsize)
+plt.ylabel('$w_{12}$', fontsize=fontsize)
 plt.show()
 
 fig2 = plt.figure()
 plot_contours(w1_true, w2_fixed, xs)
 plt.plot(w1_train_TP[0,:], w1_train_TP[1,:], 'r*-')
-plt.title('Target propagation', fontsize=20)
-plt.xlabel('$w_{11}$', fontsize = 20)
-plt.ylabel('$w_{12}$', fontsize=20)
+# plt.title('Target propagation', fontsize=20)
+plt.xlabel('$w_{11}$', fontsize = fontsize)
+plt.ylabel('$w_{12}$', fontsize=fontsize)
 plt.show()
 
 fig3 = plt.figure()
 plot_contours(w1_true, w2_fixed, xs)
 plt.plot(w1_train_GN[0,:], w1_train_GN[1,:], 'r*-')
-plt.title('Gauss Newton', fontsize=20)
-plt.xlabel('$w_{11}$', fontsize = 20)
-plt.ylabel('$w_{12}$', fontsize=20)
+# plt.title('Gauss Newton', fontsize=20)
+plt.xlabel('$w_{11}$', fontsize = fontsize)
+plt.ylabel('$w_{12}$', fontsize=fontsize)
 plt.show()
 
 

@@ -14,6 +14,7 @@ from utils import helper_functions as hf
 from utils.helper_classes import NetworkError, NotImplementedError
 from layers.layer import Layer
 from layers.bidirectional_layer import BidirectionalLayer
+import numpy as np
 
 class TargetPropLayer(BidirectionalLayer):
     """ Target propagation with approximate inverses, but still the right
@@ -30,6 +31,13 @@ class TargetPropLayer(BidirectionalLayer):
                          weight_decay=weight_decay,
                          fixed=fixed)
         self.weight_decay_backward = weight_decay_backward
+        self.approx_errors = torch.Tensor([])
+        self.approx_error_angles = torch.Tensor([])
+        self.GN_errors = torch.Tensor([])
+        self.TP_errors = torch.Tensor([])
+        self.GN_angles = torch.Tensor([])
+        self.BP_angles = torch.Tensor([])
+        self.backward_approx_error = torch.zeros((2,2,1))
 
     def init_inverse(self, upper_layer):
         """ Initializes the backward weights to the inverse of the
@@ -39,7 +47,6 @@ class TargetPropLayer(BidirectionalLayer):
         inverses later in training"""
         self.backward_weights = torch.pinverse(
             upper_layer.forward_weights)
-        self.backward_bias = - upper_layer.forward_bias
 
     def inverse_nonlinearity(self, input):
         """ Returns the inverse of the forward nonlinear activation function,
@@ -75,6 +82,7 @@ class TargetPropLayer(BidirectionalLayer):
         updated_bias = self.backward_bias
 
         self.set_backward_parameters(updated_weights, updated_bias)
+        self.backward_approx_error = approx_error
 
     def propagate_backward(self, upper_layer):
         """Propagate the target signal from the upper layer to the current
@@ -105,11 +113,6 @@ class TargetPropLayer(BidirectionalLayer):
         parameters for all the batch samples
 
         """
-        if lower_layer.forward_output.shape[0] > 1:
-            raise NetworkError('only batch sizes of size 1 are allowed,'
-                               ' as otherwise the '
-                               'inverse computation with sherman-morrisson'
-                               ' is not possible')
         if self.loss_function == 'mse':
             local_loss_der = torch.mul(self.forward_output -
                                      self.backward_output, 2.)
@@ -153,11 +156,26 @@ class TargetPropLayer(BidirectionalLayer):
                                global_step=self.global_step)
 
     def propagate_GN_error(self, upper_layer):
-        D_inv = upper_layer.compute_inverse_vectorized_jacobian()
+        D_inv = self.compute_backward_vectorized_jacobian(
+            upper_layer.forward_output, upper_layer
+        )
         self.GN_error = torch.matmul(self.backward_weights,
                                      D_inv*upper_layer.GN_error)
 
-    def compute_inverse_vectorized_jacobian(self):
+    def propagate_real_GN_error(self, upper_layer):
+        D_inv = upper_layer.compute_inverse_vectorized_jacobian(
+            upper_layer.forward_output
+        )
+        weights_pinv = torch.pinverse(upper_layer.forward_weights)
+        self.real_GN_error = torch.matmul(weights_pinv,
+                                          D_inv*upper_layer.real_GN_error)
+
+    def propagate_BP_error(self, upper_layer):
+        D = upper_layer.compute_vectorized_jacobian()
+        self.BP_error = torch.matmul(torch.transpose(upper_layer.forward_weights, -1,-2),
+                                     D*upper_layer.BP_error)
+
+    def compute_inverse_vectorized_jacobian(self, linear_activation):
         """ Should be implemented by child class"""
         raise NetworkError('Should be implemented by child class')
 
@@ -171,25 +189,85 @@ class TargetPropLayer(BidirectionalLayer):
         angles = hf.get_angle(total_update, GN_update)
         return torch.tensor([torch.mean(angles)])
 
+    def compute_GN_error_angle(self):
+        total_update = self.backward_output - self.forward_output
+        GN_update = - self.real_GN_error
+        angles = hf.get_angle(total_update, GN_update)
+        return torch.tensor([torch.mean(angles)])
+
+    def compute_BP_error_angle(self):
+        total_update = self.backward_output - self.forward_output
+        BP_update = - self.BP_error
+        angles = hf.get_angle(total_update, BP_update)
+        return torch.tensor([torch.mean(angles)])
+
     def save_approx_angle_error(self):
         angle = self.compute_approx_angle_error()
-        # if angle < 0.5:
-        #     raise NetworkError('approx_angle_error smaller than 0.9: '
-        #                        '{}'.format(angle))
+        angle_GN = self.compute_GN_error_angle()
+        angle_BP = self.compute_BP_error_angle()
         self.writer.add_scalar(tag='{}/approx_angle_error'.format(self.name),
                                scalar_value=angle,
                                global_step=self.global_step)
+        self.writer.add_scalar(tag='{}/GN_angle'.format(self.name),
+                               scalar_value=angle_GN,
+                               global_step=self.global_step)
+        self.writer.add_scalar(tag='{}/BP_angle'.format(self.name),
+                               scalar_value=angle_BP,
+                               global_step=self.global_step)
+
+        self.approx_error_angles = torch.cat((self.approx_error_angles, angle))
+        self.GN_angles = torch.cat((self.GN_angles, angle_GN))
+        self.BP_angles = torch.cat((self.BP_angles, angle_BP))
 
     def save_approx_error(self):
-        error = torch.norm(torch.mean(self.compute_approx_error(),0))
+        error = torch.mean(torch.norm(self.compute_approx_error(), dim=1))
+        backward_approx_error = torch.mean(
+            torch.norm(self.backward_approx_error, dim=1))
+        # error = torch.norm(torch.mean(self.compute_approx_error(),0))
         self.writer.add_scalar(tag='{}/approx_error'.format(self.name),
                                scalar_value=error,
                                global_step=self.global_step)
+        self.writer.add_scalar(tag='{}/backward_approx_error'.format(self.name),
+                               scalar_value=backward_approx_error,
+                               global_step=self.global_step)
+        self.approx_errors = torch.cat((self.approx_errors,
+                                        torch.Tensor([error])))
+
+    def save_GN_error(self):
+        GN_error = torch.mean(torch.norm(self.GN_error, dim=1))
+        self.writer.add_scalar(tag='{}/GN_error'.format(self.name),
+                               scalar_value=GN_error,
+                               global_step=self.global_step)
+        self.GN_errors = torch.cat(((self.GN_errors,
+                                     torch.Tensor([GN_error]))))
+
+    def save_TP_error(self):
+        error = self.backward_output - self.forward_output
+        error = torch.mean(torch.norm(error, dim=1))
+        self.writer.add_scalar(tag='{}/TP_error'.format(self.name),
+                               scalar_value=error,
+                               global_step=self.global_step)
+        self.TP_errors = torch.cat((self.TP_errors,
+                                    torch.Tensor([error])))
 
     def save_state(self):
         super().save_state()
+        # self.save_approx_angle_error()
+        # self.save_approx_error()
+        # self.save_GN_error()
+        # self.save_TP_error()
+
+    def save_state_always(self):
         self.save_approx_angle_error()
         self.save_approx_error()
+        self.save_GN_error()
+        self.save_TP_error()
+
+
+    def compute_backward_vectorized_jacobian(self, linear_activation,
+                                             upper_layer):
+        """ has to be implemented by the child class"""
+        return upper_layer.compute_inverse_vectorized_jacobian(linear_activation)
 
 
 class TargetPropLeakyReluLayer(TargetPropLayer):
@@ -255,11 +333,11 @@ class TargetPropLeakyReluLayer(TargetPropLayer):
                     output[i, j, 0] = self.negative_slope
         return output
 
-    def compute_inverse_vectorized_jacobian(self):
-        output = torch.empty(self.forward_output.shape)
-        for i in range(self.forward_output.size(0)):
-            for j in range(self.forward_output.size(1)):
-                if self.forward_output[i, j, 0] >= 0:
+    def compute_inverse_vectorized_jacobian(self, linear_activation):
+        output = torch.empty(linear_activation.shape)
+        for i in range(linear_activation.size(0)):
+            for j in range(linear_activation.size(1)):
+                if linear_activation[i, j, 0] >= 0:
                     output[i, j, 0] = 1
                 else:
                     output[i, j, 0] = self.negative_slope**(-1)
@@ -405,8 +483,8 @@ class TargetPropLinearOutputLayer(TargetPropOutputLayer):
     def compute_vectorized_jacobian(self):
         return torch.ones(self.forward_output.shape)
 
-    def compute_inverse_vectorized_jacobian(self):
-        return torch.ones(self.forward_output.shape)
+    def compute_inverse_vectorized_jacobian(self, linear_activation):
+        return torch.ones(linear_activation.shape)
 
     def compute_backward_output(self, target):
         """ Compute the backward output based on a small move from the
@@ -428,6 +506,8 @@ class TargetPropLinearOutputLayer(TargetPropOutputLayer):
     def compute_GN_error(self, target):
         gradient = torch.mul(self.forward_output - target, 2)
         self.GN_error = torch.mul(gradient, self.step_size)
+        self.real_GN_error = torch.mul(gradient, self.step_size)
+        self.BP_error = gradient
 
 
 class TargetPropInputLayer(TargetPropLayer):

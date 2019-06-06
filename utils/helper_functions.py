@@ -12,6 +12,7 @@ import torch
 import matplotlib.pyplot as plt
 import os
 import numpy as np
+import pandas as pd
 
 
 def kronecker(i, j):
@@ -177,3 +178,114 @@ def get_invertible_diagonal_matrix(size, threshold=0.1, max_iter=500):
     while torch.min(torch.abs(diag)) < threshold:
         diag = torch.randn((size))
     return torch.diag(diag)
+
+def eye(rows, cols=None, batch_size=1):
+    if cols is None:
+        cols = rows
+    output = torch.empty(batch_size, rows, cols)
+    for i in range(batch_size):
+        output[i,:,:] = torch.eye(rows, cols)
+    return output
+
+def pinverse(tensor, rcond=1e-6):
+    output = torch.empty((tensor.shape[0], tensor.shape[2], tensor.shape[1]))
+    for i in range(tensor.shape[0]):
+        output[i,:,:] = torch.pinverse(tensor[i,:,:], rcond=rcond)
+    return output
+
+def get_stats_gridsearch(results, distances, learning_rates):
+    best_results = np.min(results, 2)
+    succesful_runs = best_results != 0
+    descending_runs = np.zeros(succesful_runs.shape,dtype=bool)
+    for i in range(len(distances)):
+        for j in range(len(learning_rates)):
+            if succesful_runs[i,j]:
+                if is_descending_run(results[i,j,:]):
+                    descending_runs[i,j] = True
+    best_results_distance = np.zeros(len(distances))
+    best_learning_rates = np.zeros(len(distances))
+    success_counts = np.zeros(len(distances))
+    descending_counts = np.zeros(len(distances))
+    for i in range(len(distances)):
+        valid_run = False
+        best_results_distance[i] = float('inf')
+        success_counts[i] = np.sum(succesful_runs[i,:])
+        descending_counts[i] = np.sum(descending_runs[i,:])
+        for j, learning_rate in enumerate(learning_rates):
+            if descending_runs[i,j]:
+                valid_run = True
+                best_result = best_results[i,j]
+                if best_result < best_results_distance[i]:
+                    best_results_distance[i] = best_result
+                    best_learning_rates[i] = learning_rate
+        if not valid_run:
+            best_results_distance[i] = np.nan
+            best_learning_rates[i] = np.nan
+    result_array = np.empty((len(distances), 4))
+    result_array[:,0] = success_counts
+    result_array[:,1] = descending_counts
+    result_array[:,2] = best_results_distance
+    result_array[:,3] = best_learning_rates
+    columns = ['success_count', 'descending_count', 'best_result', 'best_learning_rate']
+    result_frame = pd.DataFrame(result_array,index=distances,columns=columns)
+    pd.set_option('display.max_rows', None)
+    pd.set_option('display.max_columns', None)
+    print(result_frame)
+    return result_frame
+
+def get_stats_gridsearch2(results, distances, learning_rates, weight_decays):
+    best_results = np.min(results, 3)
+    succesful_runs = best_results != 0
+    descending_runs = np.zeros(succesful_runs.shape,dtype=bool)
+    for i in range(len(distances)):
+        for j in range(len(learning_rates)):
+            for k in range(len(weight_decays)):
+                if succesful_runs[i,j,k]:
+                    if is_descending_run(results[i,j,k,:]):
+                        descending_runs[i,j,k] = True
+    best_results_distance = np.zeros(len(distances))
+    best_learning_rates = np.zeros(len(distances))
+    best_weight_decays = np.zeros(len(distances))
+    success_counts = np.zeros(len(distances))
+    descending_counts = np.zeros(len(distances))
+    for i in range(len(distances)):
+        valid_run = False
+        best_results_distance[i] = float('inf')
+        success_counts[i] = np.sum(succesful_runs[i,:,:])
+        descending_counts[i] = np.sum(descending_runs[i,:,:])
+        for j, learning_rate in enumerate(learning_rates):
+            for k, weight_decay in enumerate(weight_decays):
+                if descending_runs[i,j,k]:
+                    valid_run = True
+                    best_result = best_results[i,j,k]
+                    if best_result < best_results_distance[i]:
+                        best_results_distance[i] = best_result
+                        best_learning_rates[i] = learning_rate
+                        best_weight_decays[i] = weight_decay
+        if not valid_run:
+            best_results_distance[i] = np.nan
+            best_learning_rates[i] = np.nan
+            best_weight_decays[i] = np.nan
+    result_array = np.empty((len(distances), 5))
+    result_array[:,0] = success_counts
+    result_array[:,1] = descending_counts
+    result_array[:,2] = best_results_distance
+    result_array[:,3] = best_learning_rates
+    result_array[:,4] = best_weight_decays
+    columns = ['success_count', 'descending_count', 'best_result',
+               'best_learning_rate', 'best_weight_decay']
+    result_frame = pd.DataFrame(result_array, index=distances, columns=columns)
+    pd.set_option('display.max_rows', None)
+    pd.set_option('display.max_columns', None)
+    print(result_frame)
+    return result_frame
+
+
+
+
+def is_descending_run(loss_array, threshold=1.5):
+    min_loss = np.min(loss_array)
+    if loss_array[-1] < threshold*min_loss:
+        return True
+    else:
+        return False

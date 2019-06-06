@@ -789,7 +789,7 @@ class LinearOutputLayer(OutputLayer):
                              'has shape' + str(target.shape))
 
         if self.loss_function == 'mse':
-            loss_function = nn.MSELoss(reduction='sum')
+            loss_function = nn.MSELoss()
             forward_output_squeezed = torch.reshape(self.forward_output,
                                                     (self.forward_output.shape[
                                                          0],

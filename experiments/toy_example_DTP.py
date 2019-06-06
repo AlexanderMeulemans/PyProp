@@ -38,8 +38,9 @@ random.seed(seed)
 nb_training_batches = 5000
 batch_size = 1
 testing_size = 1000
-n = 3
-distance = 0.1
+n = 6
+n_out = 3
+distance = 1.
 CPU = True
 debug = False
 weight_decay = 0.0000
@@ -79,7 +80,7 @@ hidden_layer_true = LeakyReluLayer(negative_slope=0.35, in_dim=n, layer_dim=n,
                                    name='hidden_layer_true_model',
                                    debug_mode=debug,
                                    weight_decay=weight_decay)
-output_layer_true = LinearOutputLayer(in_dim=n, layer_dim=n,
+output_layer_true = LinearOutputLayer(in_dim=n, layer_dim=n_out,
                                       loss_function='mse',
                                       writer=writer,
                                       name='output_layer_true_model',
@@ -122,13 +123,13 @@ inputlayer = DTPInputLayer(layer_dim=n, out_dim=n, loss_function='mse',
                                   debug_mode=debug,
                                   weight_decay=weight_decay)
 hiddenlayer = DTPLeakyReluLayer(negative_slope=0.35, in_dim=n,
-                                       layer_dim=n, out_dim=n, loss_function=
+                                       layer_dim=n, out_dim=n_out, loss_function=
                                        'mse',
                                        name='hidden_layer',
                                        writer=writer,
                                        debug_mode=debug,
                                        weight_decay=weight_decay)
-outputlayer = DTPLinearOutputLayer(in_dim=n, layer_dim=n,
+outputlayer = DTPLinearOutputLayer(in_dim=n, layer_dim=n_out,
                                           step_size=output_step_size,
                                           name='output_layer',
                                           writer=writer,
